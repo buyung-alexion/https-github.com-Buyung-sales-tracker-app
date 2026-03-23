@@ -1,0 +1,15 @@
+﻿src/pages/manager/AdminSettings.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/manager/AdminSettings.tsx(4,27): error TS6133: 'Trash2' is declared but its value is never read.
+src/pages/manager/LiveActivityFeed.tsx(3,1): error TS6133: 'Activity' is declared but its value is never read.
+src/pages/manager/ManagerCustomer.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/manager/ManagerProspek.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/manager/ManagerShell.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/manager/SalesVisit.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/mobile/CustomerMaintenance.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/mobile/CustomerMaintenance.tsx(5,1): error TS6133: 'Customer' is declared but its value is never read.
+src/pages/mobile/CustomerMaintenance.tsx(24,3): error TS1232: An import declaration can only be used at the top level of a namespace or module.
+src/pages/mobile/CustomerMaintenance.tsx(217,106): error TS2322: Type 'string' is not assignable to type 'Area'.
+src/pages/mobile/DashboardTarget.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/mobile/DashboardTarget.tsx(10,43): error TS6133: 'color' is declared but its value is never read.
+src/pages/mobile/MobileShell.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/pages/mobile/ProspectingTool.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
