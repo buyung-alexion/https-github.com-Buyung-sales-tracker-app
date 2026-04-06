@@ -1,6 +1,6 @@
 export type Area = string; // Changed to string for dynamic inputs
 export type StatusProspek = 'Cold' | 'Warm' | 'Hot';
-export type TipeAksi = 'WA' | 'Visit' | 'Call';
+export type TipeAksi = 'WA' | 'Visit' | 'Call' | 'Order' | 'Note';
 export type Armada = 'A' | 'B' | 'C';
 
 export interface Prospek {
@@ -11,6 +11,7 @@ export interface Prospek {
   area: Area;
   status: StatusProspek;
   sales_owner: string; // ID sales
+  channel?: string; // Lead source (e.g. Reference, Canvasing)
   foto_lokasi?: string;
   link_map?: string;
   kategori?: string;
@@ -50,19 +51,6 @@ export interface Activity {
   geotagging?: { area: Area; lat?: number; lng?: number; photo?: string };
 }
 
-export interface PlanBesok {
-  id: string;
-  sales_id: string;
-  target_id: string;
-  target_type: 'prospek' | 'customer';
-  target_nama: string;
-  tanggal_rencana: string; // YYYY-MM-DD
-  tipe_aksi: TipeAksi;
-  status: 'Belum Dikunjungi' | 'Selesai' | 'Batal';
-  catatan?: string;
-  created_at: string;
-}
-
 export interface Sales {
   id: string;
   nama: string;
@@ -72,6 +60,31 @@ export interface Sales {
   target_closing_baru: number;
   target_maintenance: number; // visits/month
   target_visit: number; // total visits targets
+  username?: string;
+  password?: string;
+  role?: string;
+  foto_profil?: string; // uploaded profile photo URL
+}
+
+export interface RoleDef {
+  id: string;
+  role: string;
+  akses: string; // Comma separated accesses
+}
+
+export interface SystemTargets {
+  id: number;
+  global_omset: string;
+  ind_omset: string;
+  global_prospek: number;
+  global_closing: number;
+  ind_poin: number;
+  b_visit: number;
+  b_prospek: number;
+  b_closing: number;
+  b_maint: number;
+  b_order: number;
+  b_chat: number;
 }
 
 export interface ChatMessage {
@@ -80,7 +93,19 @@ export interface ChatMessage {
   sender_id: string; // 'sys', 'Manager', or Sales ID
   sender_name: string; // Name representation
   text: string;
+  attachment?: string; // Base64 image URL
   timestamp: string; // ISO string
   status: 'sent' | 'delivered' | 'read';
 }
+
+export type ChatContact = {
+  id: string;
+  name: string;
+  type: 'group' | 'direct';
+  avatar?: string;
+  lastMessage: string;
+  lastMessageTime: string;
+  unreadCount: number;
+  online?: boolean;
+};
 

@@ -1,20 +1,16 @@
 import { supabase } from '../lib/supabase';
-import type { Sales, Prospek, Customer, Activity, Area, PlanBesok } from '../types';
+import type { Sales, Prospek, Customer, Activity, Area } from '../types';
 
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { foto_profil, ...dbPayload } = p as any;
-    const { data, error } = await supabase.from('prospek').insert([dbPayload]).select().single();
+    const { data, error } = await supabase.from('prospek').insert([p]).select().single();
     if (error) console.error('addProspek error:', error);
     return data;
   },
 
   async updateProspek(id: string, updates: Partial<Prospek>) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { foto_profil, ...dbPayload } = updates as any;
-    const { error } = await supabase.from('prospek').update(dbPayload).eq('id', id);
+    const { error } = await supabase.from('prospek').update(updates).eq('id', id);
     if (error) console.error('updateProspek error:', error);
   },
 
@@ -25,17 +21,13 @@ export const store = {
 
   // ─── CUSTOMER ───────────────────────────────────────────
   async addCustomer(c: Omit<Customer, 'id'>) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { foto_profil, ...dbPayload } = c as any;
-    const { data, error } = await supabase.from('customer').insert([dbPayload]).select().single();
+    const { data, error } = await supabase.from('customer').insert([c]).select().single();
     if (error) console.error('addCustomer error:', error);
     return data;
   },
 
   async updateCustomer(id: string, updates: Partial<Customer>) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { foto_profil, ...dbPayload } = updates as any;
-    const { error } = await supabase.from('customer').update(dbPayload).eq('id', id);
+    const { error } = await supabase.from('customer').update(updates).eq('id', id);
     if (error) console.error('updateCustomer error:', error);
   },
 
@@ -43,11 +35,16 @@ export const store = {
   async convertToCustomer(prospek: Prospek, orderVolume: number) {
     const customerData = {
       nama_toko: prospek.nama_toko,
+      nama_pic: prospek.nama_pic,
       no_wa: prospek.no_wa,
       area: prospek.area,
       total_order_volume: orderVolume,
       sales_pic: prospek.sales_owner,
       link_map: prospek.link_map,
+      kategori: prospek.kategori,
+      rating: prospek.rating,
+      foto_profil: prospek.foto_profil,
+      last_order_date: new Date().toISOString()
     };
     
     // 1. Insert Customer
@@ -87,10 +84,35 @@ export const store = {
       target_type: targetType,
       target_nama: targetNama,
       tipe_aksi: 'WA',
-      catatan_hasil: catatan || 'Dibuka via WhatsApp.'
+      catatan_hasil: catatan || 'Followup via WhatsApp.'
     });
     const msg = encodeURIComponent(`Halo ${targetNama}, kami dari Sales Daging—ada yang bisa dibantu?`);
     window.open(`https://wa.me/${noWA}?text=${msg}`, '_blank');
+  },
+
+  async logCall(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noTelp: string, catatan = '') {
+    await this.logActivity({
+      id_sales: salesId,
+      target_id: targetId,
+      target_type: targetType,
+      target_nama: targetNama,
+      tipe_aksi: 'Call',
+      catatan_hasil: catatan || 'Followup via telepon.'
+    });
+    window.open(`tel:${noTelp}`, '_self');
+  },
+
+  async logOrder(salesId: string, targetId: string, targetNama: string, volume: number) {
+    await this.logActivity({
+      id_sales: salesId,
+      target_id: targetId,
+      target_type: 'customer',
+      target_nama: targetNama,
+      tipe_aksi: 'Order',
+      catatan_hasil: `SALES ORDER: ${volume}kg.`
+    });
+    // In a real app, this might also update customer.total_order_volume or create a record in an 'orders' table.
+    // For this mock, we just log the activity as requested.
   },
 
   async logVisit(salesId: string, area: Area, catatan: string) {
@@ -105,20 +127,18 @@ export const store = {
     });
   },
 
-  // ─── PLAN BESOK (RENCANA) ───────────────────────────────
-  async addPlanBesok(p: Omit<PlanBesok, 'id' | 'created_at' | 'status'>) {
-    const { data, error } = await supabase.from('plan_besok').insert([p]).select().single();
-    if (error) console.error('addPlanBesok error:', error);
-    return data;
+  async logNote(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, catatan: string) {
+    await this.logActivity({
+      id_sales: salesId,
+      target_id: targetId,
+      target_type: targetType,
+      target_nama: targetNama,
+      tipe_aksi: 'Note',
+      catatan_hasil: catatan
+    });
   },
-  async updatePlanBesok(id: string, updates: Partial<PlanBesok>) {
-    const { error } = await supabase.from('plan_besok').update(updates).eq('id', id);
-    if (error) console.error('updatePlanBesok error:', error);
-  },
-  async deletePlanBesok(id: string) {
-    const { error } = await supabase.from('plan_besok').delete().eq('id', id);
-    if (error) console.error('deletePlanBesok error:', error);
-  },
+
+
 
   // ─── SALES CRUD ─────────────────────────────────────────
   async addSales(sales: Sales) {
@@ -128,6 +148,42 @@ export const store = {
   async updateSales(id: string, updates: Partial<Sales>) {
     const { error } = await supabase.from('sales').update(updates).eq('id', id);
     if (error) console.error('updateSales error:', error);
+  },
+  async deleteSales(id: string) {
+    const { error } = await supabase.from('sales').delete().eq('id', id);
+    if (error) console.error('deleteSales error:', error);
+  },
+
+  // ─── ROLES ──────────────────────────────────────────────
+  async fetchRoles() {
+    const { data, error } = await supabase.from('roles').select('*');
+    if (error) console.error('fetchRoles error:', error);
+    return data || [];
+  },
+  async addRole(roleData: { role: string; akses: string }) {
+    const { data, error } = await supabase.from('roles').insert([roleData]).select().single();
+    if (error) console.error('addRole error:', error);
+    return data;
+  },
+  async updateRole(id: string, roleData: { role: string; akses: string }) {
+    const { error } = await supabase.from('roles').update(roleData).eq('id', id);
+    if (error) console.error('updateRole error:', error);
+  },
+  async deleteRole(id: string) {
+    const { error } = await supabase.from('roles').delete().eq('id', id);
+    if (error) console.error('deleteRole error:', error);
+  },
+
+  // ─── SYSTEM TARGETS ─────────────────────────────────────
+  async fetchSystemTargets() {
+    const { data, error } = await supabase.from('system_targets').select('*').eq('id', 1).single();
+    if (error && error.code !== 'PGRST116') console.error('fetchSystemTargets error:', error);
+    return data;
+  },
+  async updateSystemTargets(targetsData: any) {
+    // Upsert pattern on ID=1
+    const { error } = await supabase.from('system_targets').upsert({ id: 1, ...targetsData });
+    if (error) console.error('updateSystemTargets error:', error);
   },
 };
 

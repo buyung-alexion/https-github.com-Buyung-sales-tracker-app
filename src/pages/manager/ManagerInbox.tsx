@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Info, Star, Archive, Trash2, Clock, MoreVertical, Search, CheckSquare, Square, RefreshCcw, User, ChevronLeft, ChevronRight, ArrowLeft, Send, Edit3, Navigation } from 'lucide-react';
+import { Mail, Info, Star, Archive, Trash2, Clock, MoreVertical, CheckSquare, Square, RefreshCcw, User, ChevronLeft, ChevronRight, ArrowLeft, Send, Edit3, Navigation } from 'lucide-react';
 
 type TabType = 'primary' | 'update';
 
@@ -194,11 +194,13 @@ export default function ManagerInbox() {
 
   useEffect(() => {
     // Lift title to ManagerShell top nav
-    const timer = setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: 'Info Tim', sub: 'Kirim broadcast, arahan sales, & notifikasi update sistem' } }));
-    }, 50);
+    window.dispatchEvent(new CustomEvent('setMgrTitle', { 
+      detail: { 
+        title: 'Info Tim', 
+        sub: 'Kirim broadcast, arahan sales, & notifikasi update sistem' 
+      } 
+    }));
     return () => {
-      clearTimeout(timer);
       window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: '', sub: '' } }));
     };
   }, []);
@@ -580,7 +582,7 @@ export default function ManagerInbox() {
                Keren! Semua pesan di folder ini sudah arsip atau kosong.
             </div>
           ) : (
-            (viewAll ? filteredMessages : filteredMessages.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)).map((msg, idx) => (
+            (viewAll ? filteredMessages : filteredMessages.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)).map((msg) => (
               <div 
                 key={msg.id}
                 onMouseEnter={() => setHoveredRow(msg.id)}

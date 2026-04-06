@@ -11,9 +11,9 @@ import 'leaflet/dist/leaflet.css';
 interface Props { salesId: string; }
 
 const AREA_CONFIG: { area: Area; emoji: string; desc: string; color: string; center: [number, number] }[] = [
-  { area: 'Sepaku', emoji: '🏘️', desc: 'Kawasan Sepaku & sekitarnya', color: '#6366f1', center: [-0.920, 116.75] },
-  { area: 'Gerogot', emoji: '🌿', desc: 'Kawasan Gerogot', color: '#10b981', center: [-1.890, 116.18] },
-  { area: 'Kota', emoji: '🏙️', desc: 'Kota Balikpapan', color: '#f59e0b', center: [-1.265, 116.83] },
+  { area: 'Sepaku', emoji: '🏘️', desc: 'Sepaku area & surroundings', color: '#6366f1', center: [-0.920, 116.75] },
+  { area: 'Gerogot', emoji: '🌿', desc: 'Gerogot area', color: '#10b981', center: [-1.890, 116.18] },
+  { area: 'Kota', emoji: '🏙️', desc: 'Balikpapan City', color: '#f59e0b', center: [-1.265, 116.83] },
 ];
 
 function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -121,7 +121,7 @@ export default function CheckInVisit({ salesId }: Props) {
         }
         setIsLocating(false);
       },
-      (err) => { alert('Gagal geolokasi: ' + err.message); setIsLocating(false); },
+      (err) => { alert('Location failed: ' + err.message); setIsLocating(false); },
       { enableHighAccuracy: true }
     );
   };
@@ -152,9 +152,9 @@ export default function CheckInVisit({ salesId }: Props) {
 
   const handleCheckIn = async () => {
     if (!selectedArea) return;
-    if (targetType !== 'General' && !targetId) return alert('Pilih toko!');
-    if (!photoBase64 || !location) return alert('Butuh GPS & Foto!');
-    if (lockCheckIn) return alert('Anda terlalu jauh dari target!');
+    if (targetType !== 'General' && !targetId) return alert('Select store!');
+    if (!photoBase64 || !location) return alert('GPS & Photo required!');
+    if (lockCheckIn) return alert('You are too far from target!');
 
     let tName = targetData ? targetData.name : `Check-in area ${selectedArea}`;
     await store.logActivity({
@@ -162,7 +162,7 @@ export default function CheckInVisit({ salesId }: Props) {
       target_id: targetType === 'General' ? salesId : targetId,
       target_type: targetType === 'General' ? 'area' : (targetType === 'Customer' ? 'customer' : 'prospek'),
       target_nama: tName, tipe_aksi: 'Visit',
-      catatan_hasil: catatan || `Visit ke ${tName}`,
+      catatan_hasil: catatan || `Visit to ${tName}`,
       geotagging: { area: selectedArea, lat: location.lat, lng: location.lng, photo: photoBase64 }
     });
 
@@ -181,7 +181,7 @@ export default function CheckInVisit({ salesId }: Props) {
           
           {location && (
             <Marker position={[location.lat, location.lng]} icon={iconBlue}>
-              <Popup>📌 Lokasi Anda</Popup>
+              <Popup>📌 Your Location</Popup>
             </Marker>
           )}
 
@@ -196,7 +196,7 @@ export default function CheckInVisit({ salesId }: Props) {
           <div className="distance-overlay" style={{ background: lockCheckIn ? '#FEF2F2' : '#ECFDF5', 
              position: 'absolute', top: '24px', left:'50%', transform:'translateX(-50%)', zIndex: 1000, 
              padding: '8px 20px', borderRadius: '30px', color: lockCheckIn ? '#EF4444' : '#059669', border: lockCheckIn ? '2px solid #FCA5A5' : '2px solid #6EE7B7', fontWeight: 900, fontSize: '13px', display:'flex', gap:'6px', alignItems:'center', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
-            <MapPin size={16} /> {distanceMeters}m dari {targetData.name}
+            <MapPin size={16} /> {distanceMeters}m from {targetData.name}
           </div>
         )}
 
@@ -214,16 +214,16 @@ export default function CheckInVisit({ salesId }: Props) {
       {/* FOREGROUND SLIDING PANEL */}
       <div style={{ background: '#ffffff', borderRadius: '32px 32px 0 0', marginTop: '-36px', position: 'relative', zIndex: 10, padding: '24px 24px 100px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 -10px 40px rgba(0,0,0,0.08)' }}>
         <div style={{ width: '40px', height: '6px', background: '#e2e8f0', borderRadius: '4px', margin: '0 auto -6px' }}></div>
-        <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>Check-In Laporan</h2>
+        <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>Check-In Report</h2>
 
         {success && (
           <div className="success-banner" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '12px', padding: '12px', color: '#34d399', fontWeight: '600', display: 'flex', gap: '8px', alignItems:'center' }}>
-            <CheckCircle size={18} /> Tersimpan!
+            <CheckCircle size={18} /> Saved!
           </div>
         )}
 
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Pilih Area Referensi</label>
+          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Select Reference Area</label>
           <select 
             className="form-input" 
             style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }} 
@@ -240,42 +240,42 @@ export default function CheckInVisit({ salesId }: Props) {
               }
             }}
           >
-             <option value="">-- Manual Area (Auto-Detect Biasa) --</option>
+             <option value="">-- Manual Area (General Auto-Detect) --</option>
              {AREA_CONFIG.map(a => <option key={a.area} value={a.area}>{a.area} - {a.desc}</option>)}
              {selectedArea && !AREA_CONFIG.find(a => a.area === selectedArea) && (
                 <option value={selectedArea}>{selectedArea}</option>
              )}
-             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Tambah Area Baru</option>
+             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Add New Area</option>
           </select>
         </div>
 
         <div className="form-group" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', margin: 0 }}>Tujuan Kunjungan (Toko)</label>
+            <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', margin: 0 }}>Visit Destination (Store)</label>
             {targetType === 'Customer' && (
-                <button onClick={() => navigate('/mobile/customer#new')} style={{ fontSize: '11px', color: '#059669', fontWeight: 800, background: '#ecfdf5', padding: '4px 10px', borderRadius: '8px', border: '1px solid #10b981', cursor: 'pointer' }}>+ Tambah Customer</button>
+                <button onClick={() => navigate('/mobile/customer#new')} style={{ fontSize: '11px', color: '#059669', fontWeight: 800, background: '#ecfdf5', padding: '4px 10px', borderRadius: '8px', border: '1px solid #10b981', cursor: 'pointer' }}>+ Add Customer</button>
             )}
             {targetType === 'Prospek' && (
-                <button onClick={() => navigate('/mobile/prospek#new')} style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: 800, background: '#eff6ff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #3b82f6', cursor: 'pointer' }}>+ Tambah Prospek</button>
+                <button onClick={() => navigate('/mobile/prospek#new')} style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: 800, background: '#eff6ff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #3b82f6', cursor: 'pointer' }}>+ Add Prospect</button>
             )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <select className="form-input" style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }} value={targetType} onChange={e => { setTargetType(e.target.value as any); setTargetId(''); }}>
-              <option value="General">Hanya Area (Kunjungan Umum)</option>
-              <option value="Customer">Customer Existing</option>
-              <option value="Prospek">Prospek Baru</option>
+              <option value="General">Area Only (General Visit)</option>
+              <option value="Customer">Existing Customer</option>
+              <option value="Prospek">New Prospect</option>
             </select>
 
             {targetType === 'Customer' && (
               <select className="form-input" style={{ width: '100%', border: '2px solid #10b981', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#ecfdf5' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
-                <option value="">-- Pilih Customer --</option>
+                <option value="">-- Select Customer --</option>
                 {myCustomers.map(c => <option key={c.id} value={c.id}>{c.nama_toko}</option>)}
               </select>
             )}
 
             {targetType === 'Prospek' && (
               <select className="form-input" style={{ width: '100%', border: '2px solid #3b82f6', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#1d4ed8', background: '#eff6ff' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
-                <option value="">-- Pilih Prospek --</option>
+                <option value="">-- Select Prospect --</option>
                 {myProspek.map(p => <option key={p.id} value={p.id}>{p.nama_toko}</option>)}
               </select>
             )}
@@ -283,19 +283,19 @@ export default function CheckInVisit({ salesId }: Props) {
         </div>
 
         <label style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', margin: 0, padding: '16px', background: photoBase64 ? '#ecfdf5' : '#f8fafc', color: photoBase64 ? '#059669' : '#111827', border: '2px dashed #cbd5e1', borderRadius: '16px', fontWeight: 800, fontSize: '14px', transition: 'all 0.2s' }}>
-          <Camera size={20} /> {photoBase64 ? 'Foto Berhasil Dilampirkan ✅' : 'Ambil Foto Bukti (Kamera)'}
+          <Camera size={20} /> {photoBase64 ? 'Photo Attached ✅' : 'Take Proof Photo (Camera)'}
           <input type="file" accept="image/*" style={{ display: 'none' }} capture="environment" onChange={handleCapturePhoto} />
         </label>
 
         {photoBase64 && <div style={{ padding: '4px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}><img src={photoBase64} alt="Bukti" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px' }} /></div>}
 
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Catatan Kunjungan</label>
-          <textarea className="form-input" style={{ width: '100%', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: 600, color: '#1e293b', minHeight: '80px' }} placeholder="Tuliskan hasil..." value={catatan} onChange={e => setCatatan(e.target.value)} />
+          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Visit Note</label>
+          <textarea className="form-input" style={{ width: '100%', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: 600, color: '#1e293b', minHeight: '80px' }} placeholder="Write result..." value={catatan} onChange={e => setCatatan(e.target.value)} />
         </div>
 
         <button onClick={handleCheckIn} disabled={lockCheckIn} style={{ width: '100%', padding: '18px', background: lockCheckIn ? '#f1f5f9' : 'var(--brand-yellow)', color: lockCheckIn ? '#94a3b8' : '#111827', borderRadius: '20px', fontWeight: 900, fontSize: '16px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: lockCheckIn ? 'none' : '0 10px 25px rgba(245, 158, 11, 0.3)', transition: 'all 0.3s', marginTop: '10px' }}>
-          {lockCheckIn ? <><AlertTriangle size={18} /> Lokasi Terlalu Jauh (&gt;100m)</> : <><MapPin size={20} /> Simpan Laporan Check-In</>}
+          {lockCheckIn ? <><AlertTriangle size={18} /> Location Too Far (&gt;100m)</> : <><MapPin size={20} /> Save Check-In Report</>}
         </button>
       </div>
     </div>

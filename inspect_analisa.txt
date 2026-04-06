@@ -1,0 +1,200 @@
+﻿           {/* COLUMN 2: ANALISA PROSPEK (Area & Salesman) */}
+           <div className="db-card" style={{ background: '#fff', borderRadius: '24px', padding: '24px', display: 'flex', flexDirection: 'column' }}>
+             <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '20px' }}>Chanel Prospek Distribusi</div>
+             
+             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
+               <div style={{ width: '120px', height: '120px', position: 'relative', flexShrink: 0 }}>
+                 <ResponsiveContainer width="100%" height="100%">
+                   <PieChart>
+                     <Pie 
+                       data={channelDistribution} 
+                       cx="50%" 
+                       cy="50%" 
+                       innerRadius={40} 
+                       outerRadius={55} 
+                       paddingAngle={4} 
+                       dataKey="value"
+                     >
+                       {channelDistribution.map((d, i) => <Cell key={`ch-${i}`} fill={d.color} stroke="none" />)}
+                     </Pie>
+                   </PieChart>
+                 </ResponsiveContainer>
+                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                   <div style={{ fontSize: '18px', fontWeight: 950, color: '#111827' }}>{prospek.length}</div>
+                   <div style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Total</div>
+                 </div>
+               </div>
+
+               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {channelDistribution.slice(0, 5).map((ch, i) => (
+                   <div key={i}>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                       <span style={{ fontSize: '10px', fontWeight: 800, color: '#475569' }}>{ch.name}</span>
+                       <span style={{ fontSize: '10px', fontWeight: 900, color: '#111827' }}>{ch.value} ({ch.percentage}%)</span>
+                     </div>
+                     <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                       <div style={{ height: '100%', background: ch.color, width: `${ch.percentage}%`, borderRadius: '10px' }} />
+                     </div>
+                   </div>
+                 ))}
+               </div>
+             </div>
+
+             {/* --- 3-Widget Micro Dashboard (Area & Salesman) --- */}
+             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+               
+               {/* Widget 1: Top Area (Segmented Bar) */}
+               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                   <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Top 5 Area</div>
+                   <div style={{ fontSize: '9px', fontWeight: 800, background: '#e2e8f0', color: '#475569', padding: '3px 7px', borderRadius: '10px' }}>Penyumbang</div>
+                 </div>
+                 {/* Segmented Bar */}
+                 <div style={{ display: 'flex', width: '100%', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
+                   {areaDistribution.slice(0, 5).map((ar, i) => (
+                     <div key={i} style={{ flex: ar.value || 1, background: ar.color }} />
+                   ))}
+                 </div>
+                 {/* List */}
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                   {areaDistribution.slice(0, 5).map((ar, i) => (
+                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                         <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: ar.color }} /> {ar.name.substring(0, 10)}
+                       </div>
+                       <div style={{ fontSize: '10px', fontWeight: 800, color: '#1e293b' }}>{ar.value}</div>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+
+               {/* Widget 2: Area Growth (Donut) */}
+               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                 <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                   <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Growth Top</div>
+                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>â€¢â                  <div style={{ position: 'relative', width: '100px', height: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.05))' }}>
+                    {(() => {
+                      const topAr = areaDistribution[0];
+                      const totalP = areaDistribution.reduce((acc, curr) => acc + curr.value, 0) || 1;
+                      return (
+                        <>
+                          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', zIndex: 2 }}>
+                            <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', lineHeight: 1 }}>{topAr?.name.substring(0,6)}</div>
+                            <div style={{ fontSize: '14px', fontWeight: 950, color: '#3b82f6' }}>+{topAr?.value}</div>
+                          </div>
+                          <div style={{ width: '100px', height: '100px' }}>
+                            <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)' }}>
+                              <circle cx="50" cy="50" r="35" fill="none" stroke="#f1f5f9" strokeWidth="6" />
+                              {topAr && (
+                                <circle 
+                                  cx="50" 
+                                  cy="50" 
+                                  r="35" 
+                                  fill="none" 
+                                  stroke="#3b82f6" 
+                                  strokeWidth="8" 
+                                  strokeDasharray={`${(topAr.value/totalP)*220} 220`}
+                                  strokeLinecap="round"
+                                />
+                              )}
+                            </svg>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+     </div>
+                  </div>
+               </div>
+
+               {/* Widget 3: Salesman Teraktif (Pin Chart) */}
+               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                 {(() => {
+                   const maxVal = Math.max(...salesLeadDistribution.map(s => s.value), 1);
+                   return (
+                     <>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Status Prospek</div>
+                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>â€¢â€¢â€¢</span>
+                       </div>
+                       <div style={{ fontSize: '8px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '6px' }}>
+                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
+                         Dominan: {salesLeadDistribution[0]?.name.split(' ')[0]}
+                       </div>
+                       {/* Mini Pin Chart (Sales) */}
+                       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', flex: 1, position: 'relative', minHeight: '85px', paddingBottom: '24px' }}>
+                      {salesLeadDistribution.slice(0, 2).map((s, si) => {
+                        const h = (s.value / maxVal) * 50;
+                        return (
+                          <div key={s.name} style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div style={{ position: 'absolute', bottom: `calc(1px + ${h}px)`, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                               <span style={{ fontSize: '8px', fontWeight: 900, color: '#1e293b', marginBottom: '2px' }}>{s.value}</span>
+                               <div style={{ width: '18px', height: '18px', background: '#3b82f6', borderRadius: '50%', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '7px', fontWeight: 950 }}>{s.name.slice(0,2).toUpperCase()}</div>
+                            </div>
+                            <div style={{ width: '1px', height: `${h}px`, background: 'linear-gradient(to top, #3b82f6, transparent)', position: 'absolute', bottom: '1px' }} />
+                            <div style={{ width: '4px', height: '4px', background: '#3b82f6', borderRadius: '50%', position: 'absolute', bottom: '0' }} />
+                            <div style={{ position: 'absolute', bottom: '-20px', fontSize: '8px', fontWeight: 900, color: '#94a3b8' }}>{s.name.slice(0,5)}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                     </>
+                   );
+                 })()}
+               </div>
+             </div>
+           </div>
+
+
+          {/* COLUMN 4: CUSTOMER HEALTH (Far Right) */}
+          <div className="db-card" style={{ 
+            background: 'linear-gradient(135deg, #fef08a 0%, #facc15 100%)', 
+            borderRadius: '24px', 
+            padding: '24px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(234, 179, 8, 0.2)',
+            border: '1px solid rgba(255, 255, 255, 0.4)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Subtle gloss effect overlay */}
+            <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%)', pointerEvents: 'none' }} />
+
+            <div style={{ fontSize: '18px', fontWeight: 950, color: '#854d0e', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Customer Health</div>
+            
+            <div style={{ width: '130px', height: '130px', position: 'relative', marginBottom: '16px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie 
+                    data={[{ value: Math.round((retentionAnalysis.activeCount/customers.length)*100) }, { value: 100 - Math.round((retentionAnalysis.activeCount/customers.length)*100) }]} 
+                    cx="50%" 
+                    cy="50%" 
+                    innerRadius={55} 
+                    outerRadius={75} 
+                    paddingAngle={3}
+                    startAngle={90} 
+                    endAngle={450} 
+                    dataKey="value"
+                    stroke="none"
+                    cornerRadius={8}
+                  >
+                    <Cell fill={Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '#10b981' : '#ef4444'} />
+                    <Cell fill="rgba(0,0,0,0.05)" />
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '38px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>
+                â¤ï¸
+              </div>
+            </div>
+
+            <div style={{ fontSize: '42px', fontWeight: 950, color: '#1e293b', marginBottom: '24px', letterSpacing: '-1.5px', textShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
+              {Math.round((retentionAnalysis.activeCount/customers.length)*100)}%
+            </div>
+
+            <div style={{ 
+              width: '100%', 
+              display: 'flex', 

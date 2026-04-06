@@ -1,24 +1,18 @@
-import { useState, ReactNode, useEffect } from 'react';
-import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, Users, Menu, X, Settings, Newspaper, Trophy, FileText, Database, LogOut, Mail, MessageCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Routes, Route, NavLink } from 'react-router-dom';
+import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle } from 'lucide-react';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
 import ManagerProspek from './ManagerProspek';
 import ManagerCustomer from './ManagerCustomer';
 import ManagerInbox from './ManagerInbox';
 import Leaderboard from './Leaderboard';
-import Summary from './Summary';
 import ManagerSettings from './ManagerSettings';
 import DataManagement from './DataManagement';
 import ManagerChat from './ManagerChat';
 
-type ManagerShellProps = {
-  children: ReactNode;
-};
-
-export default function ManagerShell({ children }: ManagerShellProps) {
+export default function ManagerShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
   const [shellTitle, setShellTitle] = useState('');
   const [shellSub, setShellSub] = useState('');
 
@@ -31,7 +25,7 @@ export default function ManagerShell({ children }: ManagerShellProps) {
     return () => window.removeEventListener('setMgrTitle', handleSetTitle);
   }, []);
 
-  const handleLogout = (e: React.MouseEvent) => {
+  const handleLogout = (e: any) => {
     e.preventDefault();
     if(window.confirm('Yakin ingin keluar?')) {
       localStorage.removeItem('st_user');
@@ -55,7 +49,6 @@ export default function ManagerShell({ children }: ManagerShellProps) {
       items: [
         { to: '/manager/analytics', icon: <BarChart2 size={18} />, label: 'Analytics' },
         { to: '/manager/leaderboard', icon: <Trophy size={18} />, label: 'Leaderboard' },
-        { to: '/manager/summary', icon: <FileText size={18} />, label: 'Summary' },
       ]
     },
     {
@@ -113,11 +106,32 @@ export default function ManagerShell({ children }: ManagerShellProps) {
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
           
-          {shellTitle && (
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '16px', marginRight: 'auto', textAlign: 'left' }}>
-              <h1 className="mgr-title" style={{ fontSize: '20px', margin: 0, padding: 0, lineHeight: 1.2 }}>{shellTitle}</h1>
-              {shellSub && <p className="mgr-sub" style={{ margin: 0, fontSize: '12px', marginTop: '2px', opacity: 0.8 }}>{shellSub}</p>}
+          {shellTitle ? (
+            <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto', gap: '14px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {shellTitle === 'Activity Stream' && (
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '5px', 
+                      background: 'rgba(239, 68, 68, 0.08)', 
+                      padding: '2px 10px', 
+                      borderRadius: '100px',
+                      border: '1px solid rgba(239, 68, 68, 0.15)',
+                      height: '24px'
+                    }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef4444' }} className="pulse" />
+                      <span style={{ fontSize: '9px', fontWeight: 900, color: '#ef4444', letterSpacing: '0.5px' }}>LIVE</span>
+                    </div>
+                  )}
+                  <h1 className="mgr-title" style={{ fontSize: '22px', fontWeight: 950, margin: 0, padding: 0, lineHeight: 1, letterSpacing: '-0.5px', color: '#1e293b' }}>{shellTitle}</h1>
+                </div>
+                {shellSub && <p className="mgr-sub" style={{ margin: 0, fontSize: '11px', marginTop: '2px', opacity: 0.7, fontWeight: 600 }}>{shellSub}</p>}
+              </div>
             </div>
+          ) : (
+            <div id="mgr-topbar-center" style={{ flex: 1, display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto' }} />
           )}
 
           <nav className="topbar-nav">
@@ -142,7 +156,6 @@ export default function ManagerShell({ children }: ManagerShellProps) {
             <Route path="inbox" element={<ManagerInbox />} />
             <Route path="chat" element={<ManagerChat />} />
             <Route path="leaderboard" element={<Leaderboard />} />
-            <Route path="summary" element={<Summary />} />
             <Route path="settings" element={<ManagerSettings />} />
             <Route path="data" element={<DataManagement />} />
           </Routes>

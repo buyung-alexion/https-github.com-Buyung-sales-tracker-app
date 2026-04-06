@@ -1,80 +1,132 @@
 import { useMemo, useState } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from 'recharts';
+import { AlertCircle, Users } from 'lucide-react';
 
 interface Props { salesId: string; }
 
 export default function DashboardTarget({ salesId }: Props) {
-  const { sales, activities, prospek } = useSalesData();
-  const salesInfo = sales.find(s => s.id === salesId);
+  const { activities, prospek, customers, systemTargets } = useSalesData();
   
-  const [filterType, setFilterType] = useState<'today'|'month'|'all'>('month');
+  const [filterType, setFilterType] = useState<'today'|'week'|'month'|'all'>('month');
 
   const acts = useMemo(() => {
     const now = new Date();
+    const day = now.getDay() || 7;
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - day + 1);
+
     return activities.filter(a => {
       if (a.id_sales !== salesId) return false;
       const d = new Date(a.timestamp);
       if (filterType === 'today') return d.toDateString() === now.toDateString();
+      if (filterType === 'week') return d >= startOfWeek;
       if (filterType === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       return true;
     });
   }, [salesId, activities, filterType]);
 
+  // ─── KPI Indicators (5 resmi) ──────────────────────────────────
+  const followupCount = acts.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
+  const soCount = acts.filter(a => a.tipe_aksi === 'Order').length;
+  const visitCount = acts.filter(a => a.tipe_aksi === 'Visit').length;
+  const closingCount = acts.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
+
   const prospekFiltered = useMemo(() => {
     const now = new Date();
+    const day = now.getDay() || 7;
+    const startOfWeek = new Date(now);
+    startOfWeek.setHours(0, 0, 0, 0);
+    startOfWeek.setDate(now.getDate() - day + 1);
+
     return prospek.filter(p => {
       if (p.sales_owner !== salesId) return false;
       const d = new Date(p.created_at);
       if (filterType === 'today') return d.toDateString() === now.toDateString();
+      if (filterType === 'week') return d >= startOfWeek;
       if (filterType === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       return true;
     });
   }, [salesId, prospek, filterType]);
-
   const prospekCount = prospekFiltered.length;
-  const targetProspek = salesInfo?.target_prospek_baru ?? 25;
-  
-  const closingCount = acts.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-  const targetClosing = salesInfo?.target_closing_baru ?? 6;
 
-  const maintenanceCount = acts.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
-  const targetMaintenance = salesInfo?.target_maintenance ?? 25;
-  
-  const visitCount = acts.filter(a => a.tipe_aksi === 'Visit').length;
-  const targetVisit = salesInfo?.target_visit ?? 50;
+  // ─── Total Actual Points ──────────────────────────────────────
+  const totalActual =
+    (followupCount * (systemTargets?.b_chat ?? 5)) +
+    (soCount * (systemTargets?.b_order ?? 20)) +
+    (visitCount * (systemTargets?.b_visit ?? 5)) +
+    (closingCount * (systemTargets?.b_closing ?? 15)) +
+    (prospekCount * (systemTargets?.b_prospek ?? 5));
 
-  const totalTarget = targetProspek + targetClosing + targetMaintenance;
-  const totalActual = prospekCount + closingCount + maintenanceCount;
+  const totalTarget = systemTargets?.ind_poin ?? 150;
   const overallPct = Math.min(100, totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0);
 
-  // SVG calculations for large main ring (Diet Goal style)
+  // ─── Donut Ring ────────────────────────────────────────────────
   const r = 70; const cx = 90; const cy = 90;
   const circumference = 2 * Math.PI * r;
   const dash = (overallPct / 100) * circumference;
 
-  // Data for Progress Performance (Bar Chart comparing Target vs Realisasi)
-  const performanceData = [
-    { name: 'Prospek', Target: targetProspek, Realisasi: prospekCount, color: '#3B82F6' },
-    { name: 'Closing', Target: targetClosing, Realisasi: closingCount, color: '#10B981' },
-    { name: 'Maint.', Target: targetMaintenance, Realisasi: maintenanceCount, color: '#F59E0B' },
-    { name: 'Visit', Target: targetVisit, Realisasi: visitCount, color: '#8B5CF6' }
-  ];
+  // ─── Progress Performance (5 indicators, inline in JSX) ────────
 
-  // Data for Activity Graphic (Area Chart showing Trend over 7 days)
+  // ─── Informasi Data ───────────────────────────────────────────
+  // Prospek Outstanding > 14 hari (belum ada aktivitas selama 14+ hari)
+  const now14 = new Date();
+  const day14Ms = 14 * 24 * 60 * 60 * 1000;
+  const myProspek = prospek.filter(p => p.sales_owner === salesId);
+
+  const prospekOutstanding = myProspek.filter(p => {
+    // Find last activity for this prospek
+    const lastAct = activities
+      .filter(a => a.target_id === p.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+    const lastContact = lastAct ? new Date(lastAct.timestamp) : new Date(p.created_at);
+    return (now14.getTime() - lastContact.getTime()) > day14Ms;
+  });
+
+  // Customer Aktif vs Tidak Aktif (aktif = order dalam 30 hari terakhir)
+  const myCustomers = customers.filter(c => c.sales_pic === salesId);
+  const day30Ms = 30 * 24 * 60 * 60 * 1000;
+  const customerAktif = myCustomers.filter(c => {
+    const lastOrder = activities
+      .filter(a => a.target_id === c.id && a.tipe_aksi === 'Order')
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+    if (!lastOrder) return false;
+    return (now14.getTime() - new Date(lastOrder.timestamp).getTime()) <= day30Ms;
+  });
+  const customerTidakAktif = myCustomers.filter(c => {
+    const lastOrder = activities
+      .filter(a => a.target_id === c.id && a.tipe_aksi === 'Order')
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+    if (!lastOrder) return true; // Belum pernah order
+    return (now14.getTime() - new Date(lastOrder.timestamp).getTime()) > day30Ms;
+  });
+
+  // ─── Top Active Customers (by order frequency) ───────────────
+  const topActiveCustomers = useMemo(() => {
+    return myCustomers
+      .map(c => {
+        const orderCount = acts.filter(
+          a => a.target_id === c.id && a.tipe_aksi === 'Order'
+        ).length;
+        return { ...c, orderCount };
+      })
+      .filter(c => c.orderCount > 0)
+      .sort((a, b) => b.orderCount - a.orderCount)
+      .slice(0, 5);
+  }, [myCustomers, acts]);
+
+  const maxOrderCount = topActiveCustomers[0]?.orderCount ?? 1;
+
+  // ─── Activity Trend Chart ─────────────────────────────────────
   const activityTrendData = useMemo(() => {
     const data = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dayStr = d.toLocaleDateString('id-ID', { weekday: 'short' });
-      
+      const dayStr = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
       const actsForDay = acts.filter(a => new Date(a.timestamp).getDate() === d.getDate());
-      
-      data.push({
-        name: dayStr,
-        Activity: actsForDay.length * 5 + Math.floor(Math.random() * 10), // Adding slightly smooth fake padding just for rich visual like reference
-      });
+      data.push({ name: dayStr, Aktivitas: actsForDay.length });
     }
     return data;
   }, [acts]);
@@ -82,7 +134,7 @@ export default function DashboardTarget({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingBottom: '80px', position: 'relative' }}>
       
-      {/* Seamless Curved Gradient Background */}
+      {/* Gradient Background Header */}
       <div style={{ 
         position: 'absolute', top: 0, left: 0, right: 0, height: '390px', 
         background: 'var(--brand-yellow)', 
@@ -96,34 +148,24 @@ export default function DashboardTarget({ salesId }: Props) {
         </div>
 
         {/* Date Filter Chips */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '30px' }}>
-          <button 
-            onClick={() => setFilterType('today')}
-            style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, border: 'none', background: filterType === 'today' ? '#111827' : 'rgba(255,255,255,0.3)', color: filterType === 'today' ? '#fff' : '#111827', cursor: 'pointer', transition: 'all 0.2s' }}>
-            Today
-          </button>
-          <button 
-            onClick={() => setFilterType('month')}
-            style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, border: 'none', background: filterType === 'month' ? '#111827' : 'rgba(255,255,255,0.3)', color: filterType === 'month' ? '#fff' : '#111827', cursor: 'pointer', transition: 'all 0.2s' }}>
-            This Month
-          </button>
-          <button 
-            onClick={() => setFilterType('all')}
-            style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, border: 'none', background: filterType === 'all' ? '#111827' : 'rgba(255,255,255,0.3)', color: filterType === 'all' ? '#fff' : '#111827', cursor: 'pointer', transition: 'all 0.2s' }}>
-            All Time
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '30px', flexWrap: 'wrap' }}>
+          {(['today', 'week', 'month', 'all'] as const).map(opt => (
+            <button 
+              key={opt}
+              onClick={() => setFilterType(opt)}
+              style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, border: 'none', background: filterType === opt ? '#111827' : 'rgba(255,255,255,0.3)', color: filterType === opt ? '#fff' : '#111827', cursor: 'pointer', transition: 'all 0.2s' }}>
+              {opt === 'today' ? 'Hari Ini' : opt === 'week' ? 'Minggu Ini' : opt === 'month' ? 'Bulan Ini' : 'Semua'}
+            </button>
+          ))}
         </div>
 
-        {/* Floating Ring & Side Metrics */}
+        {/* Donut Ring */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', width: '100%', padding: '0 20px' }}>
-          
-          {/* TERCAPAI (Left floating text) */}
-          <div style={{ position: 'absolute', left: '25px', textAlign: 'center', color: '#111827' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Tercapai</div>
-            <div style={{ fontSize: '20px', fontWeight: 900 }}>{totalActual}</div>
+          <div style={{ position: 'absolute', left: '15px', textAlign: 'center', color: '#111827', width: '60px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Aktual</div>
+            <div style={{ fontSize: '18px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')}</div>
           </div>
 
-          {/* Center White Donut Container */}
           <div style={{ 
             position: 'relative', width: '220px', height: '220px', background: '#fff', 
             borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
@@ -143,71 +185,255 @@ export default function DashboardTarget({ salesId }: Props) {
                 style={{ transition: 'stroke-dasharray 1s ease' }}
               />
             </svg>
-            <div style={{ 
-              position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', 
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' 
-            }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#10B981', letterSpacing: '0.5px', marginBottom: '-2px' }}>GOAL TARGET</span>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#10B981', letterSpacing: '0.5px', marginBottom: '-2px' }}>CAPAIAN</span>
               <span style={{ fontSize: '46px', fontWeight: 900, color: '#0f172a', letterSpacing: '-1.5px', margin: '4px 0' }}>{overallPct}%</span>
               <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.2px', textTransform: 'uppercase' }}>Performance</span>
             </div>
           </div>
 
-          {/* SISA TARGET (Right floating text) */}
-          <div style={{ position: 'absolute', right: '25px', textAlign: 'center', color: '#111827' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Sisa</div>
-            <div style={{ fontSize: '20px', fontWeight: 900 }}>{Math.max(0, totalTarget - totalActual)}</div>
+          <div style={{ position: 'absolute', right: '15px', textAlign: 'center', color: '#111827', width: '60px' }}>
+            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Target</div>
+            <div style={{ fontSize: '18px', fontWeight: 900 }}>{totalTarget}</div>
           </div>
-
         </div>
       </div>
 
-      {/* Goal List (Progress Bars) */}
-      <div style={{ position: 'relative', zIndex: 10, marginTop: '20px', background: '#fff', borderRadius: '20px', padding: '20px 16px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', margin: '20px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-          <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#111827', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Goal List</h3>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px rgba(16,185,129,0.5)' }}></div>
+      {/* ─── INFORMASI DATA ─────────────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '4px' }}>
+          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', margin: 0 }}>Informasi Data</h3>
+          <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '8px' }}>Butuh Perhatian</span>
         </div>
-        
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {performanceData.map((item, idx) => {
-            const pct = Math.min(100, item.Target > 0 ? Math.round((item.Realisasi / item.Target) * 100) : 0);
-            return (
-              <div key={idx}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
-                  <span style={{ color: '#334155' }}>{item.name}</span>
-                  <span style={{ color: '#64748b', fontSize: '13px' }}><span style={{ color: item.color, fontWeight: 800 }}>{item.Realisasi}</span> / {item.Target} Poin</span>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+          {/* Prospek Outstanding > 14 Hari */}
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: prospekOutstanding.length > 0 ? '1.5px solid #FECACA' : '1.5px solid #DCFCE7' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: prospekOutstanding.length > 0 ? '16px' : '0' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: prospekOutstanding.length > 0 ? '#FEF2F2' : '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <AlertCircle size={22} color={prospekOutstanding.length > 0 ? '#EF4444' : '#22C55E'} />
                 </div>
-                <div style={{ width: '100%', height: '5px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: item.color, borderRadius: '3px', transition: 'width 1s ease' }}></div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827' }}>Prospek Tidak Aktif</div>
+                  <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Belum disentuh lebih dari 14 hari</div>
                 </div>
               </div>
-            );
-          })}
+              <div style={{ 
+                fontSize: '22px', fontWeight: 900, 
+                color: prospekOutstanding.length > 0 ? '#EF4444' : '#22C55E',
+                background: prospekOutstanding.length > 0 ? '#FEF2F2' : '#F0FDF4',
+                width: '48px', height: '48px', borderRadius: '14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                {prospekOutstanding.length}
+              </div>
+            </div>
+            {prospekOutstanding.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {prospekOutstanding.slice(0, 3).map(p => (
+                  <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#FFF7F7', borderRadius: '12px', border: '1px solid #FEE2E2' }}>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#111827' }}>{p.nama_toko}</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{p.area} · {p.status}</div>
+                    </div>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#EF4444', background: '#FEE2E2', padding: '3px 8px', borderRadius: '8px' }}>
+                      &gt;14 hari
+                    </span>
+                  </div>
+                ))}
+                {prospekOutstanding.length > 3 && (
+                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 700, textAlign: 'center', padding: '4px' }}>
+                    +{prospekOutstanding.length - 3} prospek lainnya
+                  </div>
+                )}
+              </div>
+            )}
+            {prospekOutstanding.length === 0 && (
+              <div style={{ fontSize: '12px', color: '#22C55E', fontWeight: 700, marginTop: '4px', paddingLeft: '56px' }}>
+                Semua prospek terpantau dengan baik ✓
+              </div>
+            )}
+          </div>
+
+          {/* Customer Aktif vs Tidak Aktif */}
+          <div style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: '1.5px solid #E0F2FE' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={22} color="#3B82F6" />
+              </div>
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827' }}>Status Customer</div>
+                <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Total {myCustomers.length} customer terdaftar</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              {/* Aktif */}
+              <div style={{ background: '#F0FDF4', borderRadius: '16px', padding: '16px', border: '1.5px solid #DCFCE7', textAlign: 'center' }}>
+                <div style={{ fontSize: '30px', fontWeight: 900, color: '#22C55E', lineHeight: 1 }}>{customerAktif.length}</div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#15803D', marginTop: '6px' }}>✓ Aktif</div>
+                <div style={{ fontSize: '11px', color: '#86EFAC', fontWeight: 600, marginTop: '2px' }}>Order &lt;30 hari</div>
+              </div>
+              {/* Tidak Aktif */}
+              <div style={{ background: '#FFF7F7', borderRadius: '16px', padding: '16px', border: '1.5px solid #FECACA', textAlign: 'center' }}>
+                <div style={{ fontSize: '30px', fontWeight: 900, color: '#EF4444', lineHeight: 1 }}>{customerTidakAktif.length}</div>
+                <div style={{ fontSize: '12px', fontWeight: 800, color: '#DC2626', marginTop: '6px' }}>✗ Tidak Aktif</div>
+                <div style={{ fontSize: '11px', color: '#FCA5A5', fontWeight: 600, marginTop: '2px' }}>Belum/habis order</div>
+              </div>
+            </div>
+
+            {/* Progress bar aktif */}
+            {myCustomers.length > 0 && (
+              <div style={{ marginTop: '14px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' }}>
+                  <span>Tingkat Aktivitas Customer</span>
+                  <span>{Math.round((customerAktif.length / myCustomers.length) * 100)}%</span>
+                </div>
+                <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.round((customerAktif.length / myCustomers.length) * 100)}%`, background: 'linear-gradient(90deg, #22C55E, #16A34A)', borderRadius: '4px', transition: 'width 1s ease' }} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Progress Performance (Bar Chart comparing Realization vs Target) */}
-      <div style={{ position: 'relative', zIndex: 10, marginTop: '20px', margin: '20px 16px 0' }}>
+      {/* ─── TOP ACTIVE CUSTOMER ────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+          <div>
+            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', margin: 0 }}>Top Customer Aktif</h3>
+            <p style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, margin: '2px 0 0 0' }}>Berdasarkan frekuensi order terbanyak</p>
+          </div>
+          {topActiveCustomers.length > 0 && (
+            <span style={{ fontSize: '11px', fontWeight: 800, color: '#8B5CF6', background: '#F5F3FF', padding: '3px 10px', borderRadius: '10px' }}>
+              Top {topActiveCustomers.length}
+            </span>
+          )}
+        </div>
+
+        <div style={{ background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' }}>
+          {topActiveCustomers.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '28px 16px', color: '#94a3b8' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📦</div>
+              <div style={{ fontSize: '13px', fontWeight: 700 }}>Belum ada data order</div>
+              <div style={{ fontSize: '11px', marginTop: '4px', fontWeight: 600 }}>Tekan tombol Order saat kunjungan customer</div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {topActiveCustomers.map((c, idx) => {
+                const rankColors = ['#F59E0B', '#94a3b8', '#CD7F32', '#6366f1', '#10B981'];
+                const rankBg    = ['#FFFBEB', '#F8FAFC', '#FFF7ED', '#EEF2FF', '#ECFDF5'];
+                const barWidth  = Math.round((c.orderCount / maxOrderCount) * 100);
+                const barColor  = ['#F59E0B','#8B5CF6','#3B82F6','#10B981','#EC4899'][idx];
+                return (
+                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Rank badge */}
+                    <div style={{
+                      width: '34px', height: '34px', flexShrink: 0,
+                      borderRadius: '12px', background: rankBg[idx],
+                      border: `1.5px solid ${rankColors[idx]}30`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '14px', fontWeight: 900, color: rankColors[idx]
+                    }}>
+                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>
+                          {c.nama_toko}
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: 900, color: barColor, flexShrink: 0 }}>
+                          {c.orderCount}× order
+                        </span>
+                      </div>
+                      {/* frequency bar */}
+                      <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${barWidth}%`, background: barColor, borderRadius: '4px', transition: 'width 1s ease' }} />
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '3px' }}>{c.area}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── PROGRESS PERFORMANCE (Bar Chart) ─────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10, margin: '24px 16px 0' }}>
         <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '12px', paddingLeft: '4px' }}>Progress Performance</h3>
         <div style={{ background: '#fff', borderRadius: '20px', padding: '16px 12px 10px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={performanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
-              <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} iconType="circle" />
-              <Bar dataKey="Target" name="Target" fill="#E2E8F0" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Realisasi" name="Realisasi Goal" fill="var(--brand-yellow)" radius={[4, 4, 0, 0]} />
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart
+              data={[
+                { name: 'Followup', poin: followupCount * (systemTargets?.b_chat ?? 5), color: '#EC4899' },
+                { name: 'SO', poin: soCount * (systemTargets?.b_order ?? 20), color: '#8B5CF6' },
+                { name: 'Visit', poin: visitCount * (systemTargets?.b_visit ?? 5), color: '#F59E0B' },
+                { name: 'Closing', poin: closingCount * (systemTargets?.b_closing ?? 15), color: '#10B981' },
+                { name: 'Prospek', poin: prospekCount * (systemTargets?.b_prospek ?? 5), color: '#3B82F6' },
+              ]}
+              margin={{ top: 20, right: 8, left: -24, bottom: 0 }}
+              barCategoryGap="28%"
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fontWeight: 700, fill: '#64748B' }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 10, fill: '#94a3b8' }}
+                allowDecimals={false}
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.12)', fontSize: '12px', fontWeight: 700 }}
+              />
+              <Bar dataKey="poin" radius={[8, 8, 0, 0]} maxBarSize={48}>
+                {[
+                  '#EC4899', '#8B5CF6', '#F59E0B', '#10B981', '#3B82F6'
+                ].map((color, idx) => (
+                  <Cell key={idx} fill={color} />
+                ))}
+                <LabelList
+                  dataKey="poin"
+                  position="top"
+                  style={{ fontSize: '11px', fontWeight: 800, fill: '#334155' }}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
+
+          {/* Legend */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: '8px', justifyContent: 'center' }}>
+            {[
+              { label: 'Followup', color: '#EC4899' },
+              { label: 'SO', color: '#8B5CF6' },
+              { label: 'Visit', color: '#F59E0B' },
+              { label: 'Closing', color: '#10B981' },
+              { label: 'Prospek', color: '#3B82F6' },
+            ].map(item => (
+              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '3px', background: item.color }} />
+                <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b' }}>{item.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Activity Graphic (Area Chart for Volume Trend) */}
-      <div style={{ position: 'relative', zIndex: 10, marginTop: '20px', margin: '20px 16px 0' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '12px', paddingLeft: '4px' }}>Activity Graphic</h3>
+      {/* ─── ACTIVITY GRAPHIC ────────────────────────────────────── */}
+      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
+        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '12px', paddingLeft: '4px' }}>Tren Aktivitas (7 Hari)</h3>
         <div style={{ background: '#fff', borderRadius: '20px', padding: '16px 12px 10px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
           <ResponsiveContainer width="100%" height={180}>
             <AreaChart data={activityTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
@@ -218,10 +444,10 @@ export default function DashboardTarget({ salesId }: Props) {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B' }} />
               <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
               <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-              <Area type="monotone" dataKey="Activity" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAct)" />
+              <Area type="monotone" dataKey="Aktivitas" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAct)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>

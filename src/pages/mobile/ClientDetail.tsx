@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useSalesData } from '../../hooks/useSalesData';
-import { ArrowLeft, MapPin, Star, Calendar, MessageCircle, PhoneCall } from 'lucide-react';
+import { useSalesData, useCurrentSales } from '../../hooks/useSalesData';
+import { store } from '../../store/dataStore';
+import { ArrowLeft, MapPin, Star, Calendar, MessageCircle, PhoneCall, ShoppingCart, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
-export default function TargetProfile() {
+export default function ClientDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
+  const { currentSalesId } = useCurrentSales();
   const { prospek, customers, activities } = useSalesData();
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('history');
 
@@ -39,8 +41,42 @@ export default function TargetProfile() {
     switch (aksi) {
       case 'WA': return <MessageCircle size={16} color="#059669" />;
       case 'Call': return <PhoneCall size={16} color="#0284C7" />;
+      case 'Order': return <ShoppingCart size={16} color="#F59E0B" />;
+      case 'Note': return <FileText size={16} color="#6366F1" />;
       default: return <MapPin size={16} color="#7E22CE" />;
     }
+  };
+
+  const handleOrder = async () => {
+    if (type !== 'customer') return;
+    const vol = prompt('Masukkan volume order (kg):');
+    if (!vol) return;
+    const numVol = parseFloat(vol);
+    if (isNaN(numVol)) {
+      alert('Masukkan angka yang valid.');
+      return;
+    }
+    
+    if (!currentSalesId) {
+      alert('Sesi habis. Silakan login kembali.');
+      return;
+    }
+
+    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, numVol);
+    alert('Order berhasil dicatat!');
+  };
+
+  const handleNote = async () => {
+    const note = prompt('Masukkan catatan untuk customer ini:');
+    if (!note) return;
+    
+    if (!currentSalesId) {
+      alert('Sesi habis. Silakan login kembali.');
+      return;
+    }
+
+    await store.logNote(currentSalesId, targetData.id, type as 'prospek' | 'customer', targetData.nama_toko, note);
+    alert('Catatan berhasil ditambahkan!');
   };
 
   return (
@@ -80,6 +116,23 @@ export default function TargetProfile() {
             <span style={{ fontSize: '11px', fontWeight: 800, background: '#111827', color: 'var(--brand-yellow)', padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               {kategori}
             </span>
+            
+            <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+              {type === 'customer' && (
+                <button 
+                  onClick={handleOrder}
+                  style={{ background: '#111827', color: 'var(--brand-yellow)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                >
+                  <ShoppingCart size={14} /> ORDER
+                </button>
+              )}
+              <button 
+                onClick={handleNote}
+                style={{ background: '#fff', color: '#111827', border: '1px solid #111827', borderRadius: '12px', padding: '8px 16px', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+              >
+                <FileText size={14} /> CATATAN
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -152,7 +205,7 @@ export default function TargetProfile() {
                     </div>
                     <div>
                       <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827', marginBottom: '4px' }}>
-                        {act.tipe_aksi === 'WA' ? 'Follow Up via WhatsApp' : act.tipe_aksi === 'Visit' ? 'Kunjungan Langsung (Visit)' : 'Panggilan Telepon (Call)'}
+                        {act.tipe_aksi === 'WA' ? 'Follow Up via WhatsApp' : act.tipe_aksi === 'Visit' ? 'Kunjungan Langsung (Visit)' : act.tipe_aksi === 'Call' ? 'Panggilan Telepon (Call)' : 'Catatan Internal'}
                       </div>
                       <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5', marginBottom: '8px' }}>
                         "{act.catatan_hasil}"

@@ -1,22 +1,30 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, MapPin, Phone, AlertTriangle, CheckCircle, Image as ImageIcon, User, Filter } from 'lucide-react';
+import { Search, Image as ImageIcon, MapPin, Briefcase, Phone, UserCheck, Tag, ShoppingCart, User, ShieldAlert } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
 
 const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], salesData: any[] }) => {
-  // 1. Data Customer Per Salesman
+  // 1. Chart: Customer By Sales (Pill Design)
   const salesStats = useMemo(() => {
     return salesData.map(s => {
+      const count = customers.filter(c => c.sales_pic === s.id).length;
       return {
-        name: s.nama,
-        count: customers.filter(c => c.sales_pic === s.id).length
+        id: s.id,
+        nama: s.nama.split(' ')[0].toUpperCase(),
+        count
       };
     }).sort((a, b) => b.count - a.count).slice(0, 5); // top 5
   }, [customers, salesData]);
 
-  // 2. Data Aktif vs Non Aktif
-  const activeCount = customers.filter(c => c.daysSinceOrder <= 14 && c.contactCount > 0).length;
+  const maxSales = Math.max(1, ...salesStats.map(s => s.count));
+
+  // 2. Data Aktif vs Non Aktif (Berdasarkan Order Terakhir)
+  const activeCount = customers.filter(c => {
+    if (!c.last_order_date) return false;
+    const diffDays = (new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24);
+    return diffDays <= 14;
+  }).length;
   const activePercent = customers.length > 0 ? Math.round((activeCount / customers.length) * 100) : 0;
 
   // 3. Data Customer Per Area
@@ -39,109 +47,180 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
     return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 4);
   }, [customers]);
 
-  // Max values for scaling
-  const maxSales = Math.max(1, ...salesStats.map(s => s.count));
   const maxArea = Math.max(1, ...areaStats.map(s => s.count));
   const maxCat = Math.max(1, ...catStats.map(s => s.count));
 
-  const cardStyle = { background: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' as const, minHeight: '260px', border: '1px solid #f8fafc' };
-  const titleStyle = { fontSize: '15px', fontWeight: 800, color: '#1e293b', textAlign: 'center' as const, marginBottom: '24px' };
+  const cardStyle = { background: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' as const, minHeight: '340px', border: '1px solid #f8fafc' };
+  const titleStyle = { fontSize: '18px', fontWeight: 900, color: '#1e293b', textAlign: 'left' as const, margin: 0 };
+  const subTitleStyle = { fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: '0.5px', marginBottom: '24px' };
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '24px' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
       
-      {/* Chart 1: Customer Per Salesman (Vertical Bars) */}
+      {/* Chart 1: Customer By Sales (Modern Pill Design) */}
       <div style={cardStyle}>
-        <h3 style={titleStyle}>Customer By Sales</h3>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 10px', marginTop: 'auto' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={titleStyle}>Customer By Sales</h3>
+          <div style={subTitleStyle}>SEBARAN CUSTOMER PER SALES</div>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '8px' }}>
           {salesStats.map((s, idx) => {
-            const heightPercent = Math.max(10, (s.count / maxSales) * 100);
+            const heightPercent = (s.count / maxSales) * 100;
+            const gradients = [
+              'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)',
+              'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
+              'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)',
+              'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
+              'linear-gradient(180deg, #10b981 0%, #059669 100%)'
+            ];
+            
             return (
-              <div key={s.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{s.count}</div>
-                <div style={{ width: '12px', height: '100px', background: '#f1f5f9', borderRadius: '6px', position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${heightPercent}%`, background: idx === 0 ? 'linear-gradient(180deg, #334155 0%, #0f172a 100%)' : 'linear-gradient(180deg, #fde047 0%, #eab308 100%)', borderRadius: '6px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.4), 0 -2px 6px rgba(0,0,0,0.15)' }} />
+              <div key={s.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1 }}>
+                {/* Total Customer Badge */}
+                <div style={{ background: '#f1f5f9', padding: '4px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 950, color: '#475569', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                  {s.count} Toko
                 </div>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', width: '30px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name.split(' ')[0]}</div>
+
+                {/* Pillar Bar */}
+                <div style={{ 
+                  width: '32px', 
+                  height: '160px', 
+                  background: '#f8fafc', 
+                  borderRadius: '100px', 
+                  position: 'relative', 
+                  overflow: 'hidden',
+                  border: '1px solid #f1f5f9'
+                }}>
+                  <div style={{ 
+                    position: 'absolute', 
+                    bottom: 0, 
+                    left: 0, 
+                    right: 0, 
+                    height: `${heightPercent}%`, 
+                    background: gradients[idx % gradients.length], 
+                    borderRadius: '100px',
+                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3)'
+                  }} />
+                </div>
+
+                {/* Name Badge */}
+                <div style={{ 
+                  background: '#f59e0b', 
+                  padding: '6px 14px', 
+                  borderRadius: '100px', 
+                  fontSize: '11px', 
+                  fontWeight: 950, 
+                  color: '#1e293b',
+                  boxShadow: '0 6px 15px -3px rgba(245, 158, 11, 0.4)',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {s.nama}
+                </div>
               </div>
             );
           })}
         </div>
       </div>
 
-      {/* Chart 2: Aktif vs Non Aktif (Donut) */}
+      {/* Chart 2: Retention Status (Donut) */}
       <div style={cardStyle}>
-        <h3 style={titleStyle}>Active Status</h3>
+        <h3 style={{ ...titleStyle, textAlign: 'center' }}>Retention Status</h3>
+        <div style={{ ...subTitleStyle, textAlign: 'center' }}>Status Keaktifan Toko</div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ position: 'relative', width: '120px', height: '120px' }}>
-            <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)', filter: 'drop-shadow(0px 8px 12px rgba(0,0,0,0.15))' }}>
+          <div style={{ position: 'relative', width: '130px', height: '130px' }}>
+            <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <defs>
-                <linearGradient id="gradActive" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#fef08a" />
-                  <stop offset="100%" stopColor="#eab308" />
+                <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#10b981" />
+                  <stop offset="100%" stopColor="#059669" />
                 </linearGradient>
-                <linearGradient id="gradNon" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#475569" />
-                  <stop offset="100%" stopColor="#1e293b" />
+                <linearGradient id="nonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#94a3b8" />
+                  <stop offset="100%" stopColor="#64748b" />
                 </linearGradient>
               </defs>
-              {/* Background Track (Non-Active) */}
-              <circle cx="50" cy="50" r="40" fill="none" stroke="#f1f5f9" strokeWidth="12" />
-              {/* NonActive Data (Dark Slate) */}
-              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradNon)" strokeWidth="12" strokeDasharray={`${((100 - activePercent) / 100) * 251.2} 251.2`} strokeLinecap="round" />
-              {/* Active Data (Yellow) */}
-              <circle cx="50" cy="50" r="40" fill="none" stroke="url(#gradActive)" strokeWidth="12" strokeDasharray={`${(activePercent / 100) * 251.2} 251.2`} strokeDashoffset={`-${((100 - activePercent) / 100) * 251.2}`} strokeLinecap="round" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="8" />
+              <circle 
+                cx="50" cy="50" r="42" fill="none" 
+                stroke="url(#nonGrad)" strokeWidth="8" 
+                strokeDasharray={`${263.8}`} 
+                strokeDashoffset={`${(activePercent / 100) * 263.8}`} 
+                strokeLinecap="round"
+                style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+              />
+              <circle 
+                cx="50" cy="50" r="42" fill="none" 
+                stroke="url(#activeGrad)" strokeWidth="10" 
+                strokeDasharray={`${(activePercent / 100) * 263.8} 263.8`} 
+                strokeLinecap="round"
+                style={{ transition: 'stroke-dasharray 0.5s ease-in-out', filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.2))' }}
+              />
             </svg>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <span style={{ fontSize: '26px', fontWeight: 900, color: '#1e293b', lineHeight: '1' }}>{customers.length}</span>
-              <span style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', textAlign: 'center', lineHeight: '1.2', marginTop: '4px' }}>Total<br/>Customer</span>
+              <span style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b', lineHeight: '1' }}>{customers.length}</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: '#64748b' }}>
-               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#facc15' }}></span> Aktif
+          <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#1e293b' }}>
+               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span> Aktif
              </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 700, color: '#64748b' }}>
-               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#1e293b' }}></span> Non
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#64748b' }}>
+               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></span> Non-Aktif
              </div>
           </div>
         </div>
       </div>
 
-      {/* Chart 3: Customer Per Area (Horizontal Bars) */}
+      {/* Chart 3: Customer By Area (Horizontal Bars) */}
       <div style={cardStyle}>
         <h3 style={titleStyle}>Customer By Area</h3>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', justifyContent: 'center' }}>
+        <div style={subTitleStyle}>SEBARAN WILAYAH</div>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center' }}>
           {areaStats.map((a, idx) => {
              const widthPercent = Math.max(10, (a.count / maxArea) * 100);
+             const colors = ['#6366f1', '#a855f7', '#f59e0b', '#3b82f6', '#10b981'];
              return (
-               <div key={a.name}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: '#475569', marginBottom: '4px' }}>
-                   <span>{a.name}</span>
-                   <span>{a.count}</span>
-                 </div>
-                 <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)' }}>
-                   <div style={{ height: '100%', width: `${widthPercent}%`, background: idx % 2 === 0 ? 'linear-gradient(90deg, #1e293b 0%, #334155 100%)' : 'linear-gradient(90deg, #eab308 0%, #fde047 100%)', borderRadius: '3px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.2)' }} />
-                 </div>
-               </div>
+                <div key={idx}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, color: '#1e293b', marginBottom: '6px' }}>
+                    <span>{a.name}</span>
+                    <span style={{ color: colors[idx % colors.length] }}>{a.count} <span style={{fontSize: '9px', opacity: 0.6}}>toko</span></span>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '100px', overflow: 'hidden' }}>
+                    <div style={{ 
+                      height: '100%', width: `${widthPercent}%`, 
+                      background: colors[idx % colors.length], 
+                      borderRadius: '100px',
+                      boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.2)'
+                    }} />
+                  </div>
+                </div>
              )
           })}
         </div>
       </div>
 
-      {/* Chart 4: Customer Per Categori (Vertical Bars) */}
+      {/* Chart 4: By Category (Vertical Bars) */}
       <div style={cardStyle}>
         <h3 style={titleStyle}>By Category</h3>
+        <div style={subTitleStyle}>SEGMENTASI TOKO</div>
         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 10px', marginTop: 'auto' }}>
           {catStats.map((c, idx) => {
             const heightPercent = Math.max(10, (c.count / maxCat) * 100);
+            const gradients = [
+              'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
+              'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
+              'linear-gradient(180deg, #ec4899 0%, #db2777 100%)',
+              'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)'
+            ];
             return (
-              <div key={c.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{c.count}</div>
-                <div style={{ width: '16px', height: '100px', background: '#f1f5f9', borderRadius: '4px', position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${heightPercent}%`, background: idx === 0 ? 'linear-gradient(180deg, #334155 0%, #0f172a 100%)' : idx === 1 ? 'linear-gradient(180deg, #fde047 0%, #eab308 100%)' : 'linear-gradient(180deg, #cbd5e1 0%, #94a3b8 100%)', borderRadius: '4px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.4), 0 -2px 6px rgba(0,0,0,0.1)' }} />
+              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', flex: 1 }}>
+                <div style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{c.count}</div>
+                <div style={{ width: '14px', height: '110px', background: '#f1f5f9', borderRadius: '100px', position: 'relative', overflow: 'hidden' }}>
+                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${heightPercent}%`, background: gradients[idx % gradients.length], borderRadius: '100px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3)' }} />
                 </div>
-                <div style={{ fontSize: '10px', fontWeight: 600, color: '#94a3b8', width: '40px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name.split(' ')[0]}</div>
+                <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', width: '45px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
               </div>
             );
           })}
@@ -153,316 +232,450 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
 };
 
 export default function ManagerCustomer() {
-  const { customers, sales, activities } = useSalesData();
+  const { customers: rawCustomers, sales, activities } = useSalesData();
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'all' | 'overdue' | 'untouched'>('all');
-  const [filterDate, setFilterDate] = useState<string>('all');
-  const [filterSales, setFilterSales] = useState<string>('All');
-  const [page, setPage] = useState(1);
+  const [filterSales, setFilterSales] = useState('All');
+  const [filterArea, setFilterArea] = useState('All');
+  const [filterCategory, setFilterCategory] = useState('All');
   const [viewAll, setViewAll] = useState(false);
+  const [filterRetention, setFilterRetention] = useState('All');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: 'Data Master Customer', sub: 'Direktori seluruh customer beserta status retention (pembelian ulang)' } }));
-    }, 50);
+    window.dispatchEvent(new CustomEvent('setMgrTitle', { 
+      detail: { 
+        title: 'Direktori Customer', 
+        sub: 'Monitoring retention, segmentasi wilayah, dan performa salesman terhadap customer' 
+      } 
+    }));
     return () => {
-      clearTimeout(timer);
       window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: '', sub: '' } }));
     };
   }, []);
 
-  const ITEMS_PER_PAGE = 20;
+  const areas = useMemo(() => {
+    const set = new Set<string>();
+    rawCustomers.forEach(c => { if (c.area) set.add(c.area); });
+    return Array.from(set).sort();
+  }, [rawCustomers]);
 
-  const getSalesName = (id: string) => sales.find(s => s.id === id)?.nama || 'Unknown';
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    rawCustomers.forEach(c => { if (c.kategori) set.add(c.kategori); });
+    return Array.from(set).sort();
+  }, [rawCustomers]);
 
-  const customerWithStats = customers.map(c => {
-    const act = activities.filter(a => a.target_id === c.id);
-    act.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    const lastActivity = act.length > 0 ? act[0] : null;
+  const filteredCustomers = useMemo(() => {
+    return rawCustomers.filter(c => {
+      const matchSearch = c.nama_toko.toLowerCase().includes(search.toLowerCase()) || 
+                          (c.no_wa && c.no_wa.toLowerCase().includes(search.toLowerCase())) ||
+                          (c.area && c.area.toLowerCase().includes(search.toLowerCase()));
+      const matchSales = filterSales === 'All' || c.sales_pic === filterSales;
+      const matchArea = filterArea === 'All' || c.area === filterArea;
+      const matchCat = filterCategory === 'All' || c.kategori === filterCategory;
+      
+      // Retention Filter Logic
+      let matchRetention = true;
+      if (filterRetention !== 'All') {
+        const diffDays = c.last_order_date ? (new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24) : 999;
+        const isActive = diffDays <= 14;
+        matchRetention = filterRetention === 'Aktif' ? isActive : !isActive;
+      }
 
-    const msSinceLastOrder = Date.now() - new Date(c.last_order_date).getTime();
-    const daysSinceOrder = Math.floor(msSinceLastOrder / 86400000);
-    
+      return matchSearch && matchSales && matchArea && matchCat && matchRetention;
+    });
+  }, [rawCustomers, search, filterSales, filterArea, filterCategory, filterRetention]);
+
+  // Tab Counts Logic (Filtered by other Master Filters only)
+  const tabCounts = useMemo(() => {
+    const base = rawCustomers.filter(c => {
+      const matchSearch = c.nama_toko.toLowerCase().includes(search.toLowerCase()) || 
+                          (c.no_wa && c.no_wa.toLowerCase().includes(search.toLowerCase())) ||
+                          (c.area && c.area.toLowerCase().includes(search.toLowerCase()));
+      const matchSales = filterSales === 'All' || c.sales_pic === filterSales;
+      const matchArea = filterArea === 'All' || c.area === filterArea;
+      const matchCat = filterCategory === 'All' || c.kategori === filterCategory;
+      return matchSearch && matchSales && matchArea && matchCat;
+    });
+
+    const active = base.filter(c => {
+      const diffDays = c.last_order_date ? (new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24) : 999;
+      return diffDays <= 14;
+    }).length;
+
     return {
-      ...c,
-      contactCount: act.length,
-      daysSinceOrder,
-      lastActivity,
-      salesName: getSalesName(c.sales_pic)
+      all: base.length,
+      active: active,
+      nonActive: base.length - active
     };
-  });
+  }, [rawCustomers, search, filterSales, filterArea, filterCategory]);
 
-  const filtered = customerWithStats
-    .filter(c => {
-      if (filter === 'all') return true;
-      if (filter === 'overdue') return c.daysSinceOrder > 14;
-      if (filter === 'untouched') return c.contactCount === 0;
-      return true;
-    })
-    .filter(c => {
-      if (filterDate === 'all') return true;
-      const t = new Date(c.created_at || c.last_order_date).getTime();
-      const todayMs = new Date(new Date().setHours(0,0,0,0)).getTime();
-      if (filterDate === 'today') return t >= todayMs;
-      if (filterDate === 'week') return t >= (todayMs - 7 * 86400000);
-      if (filterDate === 'month') return t >= new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-      return true;
-    })
-    .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
-    .filter(c => c.nama_toko.toLowerCase().includes(search.toLowerCase()) || c.salesName.toLowerCase().includes(search.toLowerCase()));
+  const pagedCustomers = useMemo(() => {
+    if (viewAll) return filteredCustomers;
+    return filteredCustomers.slice(0, 20);
+  }, [filteredCustomers, viewAll]);
 
-  const overdueCount = customerWithStats.filter(c => c.daysSinceOrder > 14).length;
-  const untouchedCount = customerWithStats.filter(c => c.contactCount === 0).length;
 
   return (
-    <div className="mgr-page">
-      {/* GLOBAL DROPDOWN FILTERS (Above Charts, Top Right) */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px', gap: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-          <Filter size={14} color="#94a3b8" />
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Waktu:</span>
-          <select 
-            value={filterDate} 
-            onChange={e => {setFilterDate(e.target.value); setPage(1);}}
-            style={{ border: 'none', padding: '0', outline: 'none', fontSize: '13px', fontWeight: 800, color: '#0f172a', background: 'transparent', cursor: 'pointer' }}
-          >
-            <option value="all">Semua Waktu</option>
-            <option value="today">Hari Ini</option>
-            <option value="week">7 Hari Terakhir</option>
-            <option value="month">Bulan Ini</option>
-          </select>
+    <div className="mgr-page" style={{ padding: '0 0 40px 0' }}>
+      
+      {/* MASTER FILTER BAR */}
+      <div style={{ 
+        background: '#fff', 
+        padding: '24px', 
+        borderRadius: '32px', 
+        marginBottom: '32px', 
+        boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '24px',
+        border: '1px solid #f8fafc'
+      }}>
+        {/* Search Input */}
+        <div style={{ position: 'relative', flex: 1 }}>
+          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+          <input 
+            type="text" 
+            placeholder="Cari nama toko..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ 
+              width: '100%', 
+              padding: '14px 14px 14px 48px', 
+              borderRadius: '16px', 
+              border: '1px solid #f1f5f9', 
+              fontSize: '14px', 
+              background: '#f8fafc',
+              fontWeight: 750,
+              color: '#1e293b'
+            }}
+          />
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Sales:</span>
-          <select 
-            value={filterSales} 
-            onChange={e => {setFilterSales(e.target.value); setPage(1);}}
-            style={{ border: 'none', padding: '0', outline: 'none', fontSize: '13px', fontWeight: 800, color: '#0f172a', background: 'transparent', cursor: 'pointer', maxWidth: '140px' }}
-          >
-            <option value="All">Semua Sales</option>
-            {sales.map(s => (
-              <option key={s.id} value={s.id}>{s.nama}</option>
-            ))}
-          </select>
+        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
+
+        {/* Filter by Area */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MapPin size={18} color="#3b82f6" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Filter Area</span>
+            <select 
+              value={filterArea} 
+              onChange={(e) => setFilterArea(e.target.value)}
+              style={{ 
+                padding: '0', 
+                border: 'none', 
+                background: 'transparent', 
+                fontSize: '14px', 
+                fontWeight: 950, 
+                color: '#1e293b', 
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="All">Semua Wilayah</option>
+              {areas.map(a => <option key={a} value={a}>{a}</option>)}
+            </select>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', padding: '8px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Status:</span>
-          <select 
-            value={filter} 
-            onChange={e => {setFilter(e.target.value as any); setPage(1);}}
-            style={{ border: 'none', padding: '0', outline: 'none', fontSize: '13px', fontWeight: 800, color: '#0f172a', background: 'transparent', cursor: 'pointer' }}
-          >
-            <option value="all">Semua Customer</option>
-            <option value="overdue">Overdue &gt; 14 Hari</option>
-            <option value="untouched">Belum Pernah Dikontak</option>
-          </select>
+        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
+
+        {/* Filter by Category */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Tag size={18} color="#ec4899" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Segmentasi</span>
+            <select 
+              value={filterCategory} 
+              onChange={(e) => setFilterCategory(e.target.value)}
+              style={{ 
+                padding: '0', 
+                border: 'none', 
+                background: 'transparent', 
+                fontSize: '14px', 
+                fontWeight: 950, 
+                color: '#1e293b', 
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="All">Semua Kategori</option>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
+
+        {/* Filter by Sales */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Briefcase size={18} color="#f59e0b" />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Filter Sales</span>
+            <select 
+              value={filterSales} 
+              onChange={(e) => setFilterSales(e.target.value)}
+              style={{ 
+                padding: '0', 
+                border: 'none', 
+                background: 'transparent', 
+                fontSize: '14px', 
+                fontWeight: 950, 
+                color: '#1e293b', 
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+            >
+              <option value="All">Semua Sales</option>
+              {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
-      <CustomerOverviewCharts customers={customerWithStats} salesData={sales} />
+      <CustomerOverviewCharts 
+        customers={filteredCustomers} 
+        salesData={sales} 
+      />
 
-      <div className="chart-card" style={{ background: 'white', borderTop: '4px solid #facc15' }}>
-        
-        {/* LIST FILTERS: SEARCH AND TABS */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
-          {/* TAB FILTERS */}
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '30px', border: 'none', 
-                 background: filter === 'all' ? '#facc15' : '#f8fafc', 
-                 color: filter === 'all' ? '#000' : '#64748b',
-                 fontWeight: filter === 'all' ? 800 : 700,
-                 fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s', boxShadow: filter === 'all' ? '0 4px 10px rgba(250, 204, 21, 0.3)' : 'none'
-               }}
-               onClick={() => { setFilter('all'); setPage(1); }}
-            >
-              Semua Customer <span style={{ background: filter === 'all' ? '#000' : '#e2e8f0', color: filter === 'all' ? '#facc15' : '#475569', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>{customers.length}</span>
-            </button>
-            
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '30px', border: 'none', 
-                 background: filter === 'untouched' ? '#1e293b' : '#f8fafc', 
-                 color: filter === 'untouched' ? '#fff' : '#64748b',
-                 fontWeight: filter === 'untouched' ? 800 : 700,
-                 fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s', boxShadow: filter === 'untouched' ? '0 4px 10px rgba(30, 41, 59, 0.3)' : 'none'
-               }}
-               onClick={() => { setFilter('untouched'); setPage(1); }}
-            >
-              Belum Pernah Dikontak <span style={{ background: filter === 'untouched' ? '#fff' : '#e2e8f0', color: filter === 'untouched' ? '#1e293b' : '#475569', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>{untouchedCount}</span>
-            </button>
-            
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '30px', border: 'none', 
-                 background: filter === 'overdue' ? '#ef4444' : '#f8fafc', 
-                 color: filter === 'overdue' ? '#fff' : '#64748b',
-                 fontWeight: filter === 'overdue' ? 800 : 700,
-                 fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s', boxShadow: filter === 'overdue' ? '0 4px 10px rgba(239, 68, 68, 0.3)' : 'none'
-               }}
-               onClick={() => { setFilter('overdue'); setPage(1); }}
-            >
-              Lewat &gt; 14 Hari <span style={{ background: filter === 'overdue' ? '#fff' : '#e2e8f0', color: filter === 'overdue' ? '#ef4444' : '#475569', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>{overdueCount}</span>
-            </button>
+      {/* TABLE SECTION */}
+      <div style={{ background: '#fff', borderRadius: '32px', padding: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.03)', border: '1px solid #f8fafc' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '32px' }}>
+          <div>
+            <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Database Customer</h2>
+            <div style={{ fontSize: '14px', color: '#64748b', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
+              <UserCheck size={14} color="#10b981" />
+              {viewAll || filteredCustomers.length <= 20 ? (
+                <>Menampilkan semua {filteredCustomers.length} mitra toko aktif</>
+              ) : (
+                <>Menampilkan 20 dari {filteredCustomers.length} mitra toko aktif</>
+              )}
+            </div>
           </div>
 
-          {/* SEARCH BOX */}
-          <div style={{ 
-            display: 'flex', alignItems: 'center', background: '#f8fafc', 
-            border: '1px solid #e2e8f0', borderRadius: '14px', padding: '10px 20px', 
-            gap: '12px', flex: 1
-          }}>
-             <Search size={18} color="#94a3b8" />
-             <input 
-               placeholder="Cari berdasarkan nama toko, area, atau nama sales..." 
-               value={search} 
-               onChange={e => setSearch(e.target.value)} 
-               style={{ border: 'none', background: 'transparent', outline: 'none', flex: 1, fontSize: '14px', color: '#1e293b' }} 
-             />
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button 
+               style={{ 
+                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
+                 background: filterRetention === 'All' ? '#facc15' : '#f1f5f9', 
+                 color: filterRetention === 'All' ? '#000' : '#64748b',
+                 fontWeight: 800,
+                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                 transition: 'all 0.2s'
+               }}
+               onClick={() => {setFilterRetention('All'); setViewAll(false);}}
+            >
+              SEMUA <span style={{ background: filterRetention === 'All' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'All' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.all}</span>
+            </button>
+            
+            <button 
+               style={{ 
+                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
+                 background: filterRetention === 'Non-Aktif' ? '#facc15' : '#f1f5f9', 
+                 color: filterRetention === 'Non-Aktif' ? '#000' : '#64748b',
+                 fontWeight: 800,
+                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                 transition: 'all 0.2s'
+               }}
+               onClick={() => {setFilterRetention('Non-Aktif'); setViewAll(false);}}
+            >
+              NON-AKTIF <span style={{ background: filterRetention === 'Non-Aktif' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Non-Aktif' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.nonActive}</span>
+            </button>
+
+            <button 
+               style={{ 
+                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
+                 background: filterRetention === 'Aktif' ? '#facc15' : '#f1f5f9', 
+                 color: filterRetention === 'Aktif' ? '#000' : '#64748b',
+                 fontWeight: 800,
+                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                 transition: 'all 0.2s'
+               }}
+               onClick={() => {setFilterRetention('Aktif'); setViewAll(false);}}
+            >
+              AKTIF <span style={{ background: filterRetention === 'Aktif' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Aktif' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.active}</span>
+            </button>
           </div>
         </div>
 
-        <div className="activity-table-wrap">
-          <table className="activity-table">
+        <div className="custom-table-container" style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 12px' }}>
             <thead>
               <tr>
-                <th>Nama Toko</th>
-                <th>Area</th>
-                <th>Sales Maintained</th>
-                <th>Order Terakhir</th>
-                <th>Aktivitas Follow-up</th>
-                <th>Status Retention</th>
-                <th>Foto</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Toko / PIC</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Area</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sales PIC</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Followup</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Last Order</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Category</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Catatan</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Retention</th>
+                <th style={{ textAlign: 'center', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
-              {(() => {
-                const sortedFiltered = filtered.sort((a, b) => b.daysSinceOrder - a.daysSinceOrder);
-                const displayedData = viewAll ? sortedFiltered : sortedFiltered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+              {pagedCustomers.map(c => {
+                const sName = sales.find(s => s.id === c.sales_pic)?.nama || 'No PIC';
+                const lastAct = activities.filter(a => a.target_id === c.id).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+                const diffOrderDays = c.last_order_date ? Math.floor((new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24)) : 999;
 
                 return (
-                  <>
-                    {displayedData.map(c => {
-                      let followupText = 'Belum di-followup';
-                      let followupTime = '';
-                      if (c.lastActivity) {
-                        followupText = `Di ${c.lastActivity.tipe_aksi}`;
-                        followupTime = formatDistanceToNow(new Date(c.lastActivity.timestamp), { addSuffix: true, locale: dateFnsId });
-                      }
-
-                      return (
-                        <tr key={c.id}>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              {c.foto_profil ? (
-                                <img src={c.foto_profil} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid #f1f5f9' }} />
-                              ) : (
-                                <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                                  <User size={20} />
-                                </div>
-                              )}
-                              <div>
-                                <strong>{c.nama_toko}</strong>
-                                <div className="time-sub">{c.no_wa}</div>
-                              </div>
+                  <tr key={c.id} style={{ transition: 'all 0.2s ease' }}>
+                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '24px 0 0 24px', border: '1px solid #f1f5f9', borderRight: 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ position: 'relative' }}>
+                          {c.foto_profil ? (
+                            <img src={c.foto_profil} alt="" style={{ width: 44, height: 44, borderRadius: '14px', objectFit: 'cover', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }} />
+                          ) : (
+                            <div style={{ width: 44, height: 44, borderRadius: '14px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                              <User size={20} />
                             </div>
-                          </td>
-                          <td>{c.area}</td>
-                          <td>{c.salesName}</td>
-                          <td>
-                            {new Date(c.last_order_date).toLocaleDateString('id-ID')}
-                            <div className="time-sub">{c.daysSinceOrder} hari yang lalu</div>
-                          </td>
-                          <td>
-                            {c.lastActivity ? (
-                              <>
-                                <div style={{ fontWeight: 700, color: '#111827', fontSize: '13px' }}>{followupText}</div>
-                                <div style={{ fontSize: '11px', color: '#64748b' }}>{followupTime}</div>
-                              </>
-                            ) : (
-                              <span style={{ color: '#94a3b8', fontSize: '12px', fontStyle: 'italic' }}>Belum ada</span>
-                            )}
-                          </td>
-                          <td>
-                            {c.daysSinceOrder > 14 ? (
-                              <span className="alert-badge" style={{ display: 'inline-flex' }}><AlertTriangle size={12}/> Overdue</span>
-                            ) : c.contactCount === 0 ? (
-                              <span className="alert-badge" style={{ display: 'inline-flex', background: 'rgba(239,68,68,0.2)', color: '#fca5a5', borderColor: '#ef4444' }}><AlertTriangle size={12}/> Belum Follow-up</span>
-                            ) : (
-                              <span className="status-badge status-hot" style={{ background: 'transparent', color: 'var(--emerald)', borderColor: 'var(--emerald)' }}><CheckCircle size={12}/> Aman</span>
-                            )}
-                          </td>
-                          <td style={{ width: '50px' }}>
-                            {c.lastActivity?.geotagging?.photo ? (
-                              <div style={{ width: '36px', height: '36px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer' }} onClick={() => window.open(c.lastActivity!.geotagging!.photo, '_blank')}>
-                                <img src={c.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                              </div>
-                            ) : (
-                              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
-                                <ImageIcon size={16} />
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {filtered.length === 0 && (
-                      <tr><td colSpan={7} className="empty-row">Tidak ada data customer.</td></tr>
-                    )}
-                  </>
+                          )}
+                          <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', width: '16px', height: '16px', borderRadius: '50%', background: '#10b981', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{c.nama_toko}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{c.nama_pic}</div>
+                            <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }} />
+                            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '2px' }}>
+                              <Phone size={10} /> {c.no_wa}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
+                        <MapPin size={14} color="#3b82f6" />
+                        {c.area}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 900, color: '#475569', letterSpacing: '0.3px' }}>{sName.toUpperCase()}</span>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      {lastAct ? (
+                        <div>
+                          <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                             {lastAct.tipe_aksi === 'Order' ? 'Order Produk' : lastAct.tipe_aksi === 'Visit' ? 'Melakukan Kunjungan' : 'Menghubungi Toko'}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>{formatDistanceToNow(new Date(lastAct.timestamp), { addSuffix: true, locale: dateFnsId })}</div>
+                        </div>
+                      ) : (
+                        <span style={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 600 }}>Belum ada log</span>
+                      )}
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <ShoppingCart size={14} color="#d946ef" />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>
+                            {c.last_order_date ? formatDistanceToNow(new Date(c.last_order_date), { addSuffix: true, locale: dateFnsId }) : 'Belum Order'}
+                          </div>
+                          {c.last_order_date && (
+                            <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginTop: '2px' }}>
+                              {new Date(c.last_order_date).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        padding: '6px 12px', 
+                        borderRadius: '10px', 
+                        fontSize: '11px', 
+                        fontWeight: 900,
+                        background: '#f0f9ff',
+                        color: '#0ea5e9',
+                        border: '1px solid #e0f2fe'
+                      }}>
+                        {(c.kategori || 'Retail').toUpperCase()}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
+                      <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
+                        {lastAct?.catatan_hasil || <span style={{ color: '#cbd5e1' }}>-</span>}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        padding: '6px 12px', 
+                        borderRadius: '10px', 
+                        fontSize: '11px', 
+                        fontWeight: 800,
+                        background: diffOrderDays <= 14 ? '#ecfdf5' : '#fef2f2',
+                        color: diffOrderDays <= 14 ? '#10b981' : '#ef4444',
+                        border: `1px solid ${diffOrderDays <= 14 ? '#d1fae5' : '#fee2e2'}`
+                      }}>
+                        <ShieldAlert size={12} style={{ marginRight: '6px' }}/> {diffOrderDays <= 14 ? 'AKTIF' : 'NON-AKTIF'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '0 24px 24px 0', border: '1px solid #f1f5f9', borderLeft: 'none', textAlign: 'center' }}>
+                      {lastAct?.geotagging?.photo ? (
+                        <div 
+                          style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} 
+                          onClick={() => window.open(lastAct!.geotagging!.photo, '_blank')}
+                        >
+                          <img src={lastAct.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        </div>
+                      ) : (
+                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto' }}>
+                          <ImageIcon size={18} />
+                        </div>
+                      )}
+                    </td>
+                  </tr>
                 );
-              })()}
+              })}
             </tbody>
           </table>
         </div>
-        
-        {/* Pagination Footer */}
-        {filtered.length > 0 && (
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid #f1f5f9' }}>
-            <span style={{ fontSize: '13px', color: '#64748b' }}>Menampilkan {viewAll ? filtered.length : Math.min(ITEMS_PER_PAGE, filtered.length - (page - 1) * ITEMS_PER_PAGE)} dari {filtered.length} customer</span>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button 
-                className="btn-outline" 
-                style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                disabled={page === 1 || viewAll} 
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-              >
-                Prev
-              </button>
-              
-              {!viewAll && (
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#475569', margin: '0 8px' }}>
-                  Hal {page} / {Math.ceil(filtered.length / ITEMS_PER_PAGE)}
-                </span>
+
+        {/* VIEW ALL TOGGLE (BOTTOM RIGHT) */}
+        {filteredCustomers.length > 3 && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
+            <button
+              onClick={() => setViewAll(!viewAll)}
+              style={{
+                padding: '12px 32px',
+                borderRadius: '100px',
+                border: 'none',
+                background: viewAll ? '#f1f5f9' : 'linear-gradient(135deg, #1e293b, #334155)',
+                color: viewAll ? '#475569' : '#fff',
+                fontSize: '13px',
+                fontWeight: 900,
+                cursor: 'pointer',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: viewAll ? 'none' : '0 10px 20px rgba(30, 41, 59, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                letterSpacing: '0.5px'
+              }}
+            >
+              {viewAll ? (
+                <>TAMPILKAN LEBIH SEDIKIT</>
+              ) : (
+                <>LIHAT SEMUA ({filteredCustomers.length})</>
               )}
-              
-              <button 
-                className="btn-outline" 
-                style={{ padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px' }}
-                disabled={page === Math.ceil(filtered.length / ITEMS_PER_PAGE) || viewAll} 
-                onClick={() => setPage(p => Math.min(Math.ceil(filtered.length / ITEMS_PER_PAGE), p + 1))}
-              >
-                Next
-              </button>
-              
-              <div style={{ width: '1px', height: '24px', background: '#cbd5e1', margin: '0 8px' }}></div>
-              
-              <button 
-                className={`filter-chip ${viewAll ? 'active' : ''}`}
-                style={{ margin: 0, padding: '6px 16px', fontWeight: 600 }}
-                onClick={() => { setViewAll(!viewAll); setPage(1); }}
-              >
-                {viewAll ? 'Tampilkan Sebagian' : 'View All'}
-              </button>
-            </div>
+            </button>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { ChatMessage } from '../types';
+import type { ChatMessage, ChatContact } from '../types';
 
 export const chatStore = {
   /**
@@ -83,5 +83,43 @@ export const chatStore = {
     return () => {
       supabase.removeChannel(channel);
     };
+  },
+
+  /**
+   * Mengambil list kontak secara dinamis berdasarkan data tabel sales.
+   */
+  async loadContacts(): Promise<ChatContact[]> {
+    const { data: sales, error } = await supabase
+      .from('sales')
+      .select('*')
+      .order('nama', { ascending: true });
+
+    if (error || !sales) {
+      console.error('loadContacts error:', error);
+      return [];
+    }
+
+    const contacts: ChatContact[] = sales.map((s) => ({
+      id: s.id,
+      name: s.nama,
+      type: 'direct',
+      lastMessage: 'Ketuk untuk mulai obrolan...',
+      lastMessageTime: '',
+      unreadCount: 0,
+    }));
+
+    // Inject grup default
+    const groups: ChatContact[] = [
+      {
+        id: 'g-pusat',
+        name: 'Grup Pengumuman Pusat',
+        type: 'group',
+        lastMessage: 'Channel resmi tim Sales',
+        lastMessageTime: '',
+        unreadCount: 0,
+      }
+    ];
+
+    return [...groups, ...contacts];
   }
 };

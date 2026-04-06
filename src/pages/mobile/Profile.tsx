@@ -1,26 +1,36 @@
 import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Edit3, Camera, CheckSquare, Target, Settings, LogOut, Check } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { 
+  ArrowLeft, Edit3, Camera, Target, 
+  LogOut, Check, User, Phone, Activity, TrendingUp, Lock
+} from 'lucide-react';
 import { useSalesData, useCurrentSales } from '../../hooks/useSalesData';
 import { store } from '../../store/dataStore';
-import type { Armada } from '../../types';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { currentSalesId, setSales, salesData } = useCurrentSales();
   const { activities } = useSalesData();
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isEditing = searchParams.get('edit') === 'true';
+  const setIsEditing = (val: boolean) => {
+    if (val) {
+      setSearchParams({ edit: 'true' });
+    } else {
+      setSearchParams({});
+    }
+  };
+
   const [profilePhoto, setProfilePhoto] = useState<string | null>((salesData as any)?.foto_profil || null);
   const [formData, setFormData] = useState({
     nama: salesData?.nama || '',
     no_wa: salesData?.no_wa || '',
-    armada: salesData?.armada || 'A',
-    target_prospek_baru: salesData?.target_prospek_baru || 0,
-    target_closing_baru: salesData?.target_closing_baru || 0,
-    target_maintenance: salesData?.target_maintenance || 0,
-    target_visit: salesData?.target_visit || 0,
+    username: salesData?.username || '',
+    password: salesData?.password || '',
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!salesData) return null;
 
@@ -62,161 +72,268 @@ export default function Profile() {
     reader.readAsDataURL(file);
   };
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+  const handleCancel = () => {
+    setFormData({
+      nama: salesData?.nama || '',
+      no_wa: salesData?.no_wa || '',
+      username: salesData?.username || '',
+      password: salesData?.password || '',
+    });
+    setIsEditing(false);
+  };
 
   return (
-    <div className="page-content" style={{ paddingBottom: '90px', background: '#f8fafc', minHeight: '100vh' }}>
+    <div className="page-content" style={{ paddingBottom: '120px', background: '#F9FBFC', minHeight: '100vh' }}>
       
-      {/* Top Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: '#fff' }}>
-        <button onClick={() => navigate('/mobile/home')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', marginLeft: '-8px' }}>
-          <ArrowLeft size={24} color="#111827" />
-        </button>
-        <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#111827', margin: 0 }}>Profile</h2>
-        <div style={{ width: '40px' }}></div> {/* Spacer for centering */}
-      </div>
-
-      <div style={{ padding: '0 20px', marginTop: '10px' }}>
+      {/* Top Header - Premium Brand Theme */}
+      <div style={{ 
+        padding: '36px 24px 56px', 
+        background: 'var(--brand-yellow)', 
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Animated background highlights */}
+        <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '160px', height: '160px', borderRadius: '50%', background: 'rgba(255,255,255,0.25)', filter: 'blur(40px)' }} />
+        <div style={{ position: 'absolute', bottom: '-40px', left: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(0,0,0,0.03)', filter: 'blur(30px)' }} />
         
-        {/* Profile Info Card */}
-        <div style={{ background: '#fff', borderRadius: '30px', padding: '30px 20px 20px', textAlign: 'center', position: 'relative', boxShadow: '0 10px 40px rgba(0,0,0,0.03)' }}>
-          
-          {/* Hidden file input */}
-          <input ref={fileInputRef} type="file" accept="image/*" capture="user" style={{ display: 'none' }} onChange={handleCaptureProfilePhoto} />
-
-          <div style={{ position: 'relative', width: '90px', height: '90px', margin: '0 auto 16px' }}>
-            <img
-              src={profilePhoto || `https://ui-avatars.com/api/?name=${salesData.nama}&background=random`}
-              alt="Avatar"
-              style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '3px solid #fff', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}
-            />
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              style={{ position: 'absolute', bottom: 0, right: 0, background: '#111827', width: '30px', height: '30px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', cursor: 'pointer' }}
-            >
-              <Camera size={14} color="#fff" />
-            </div>
-          </div>
-
-          <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: '0 0 4px', letterSpacing: '-0.5px' }}>{salesData.nama}</h3>
-          <p style={{ fontSize: '14px', color: '#64748b', fontWeight: 600, margin: 0 }}>Sales Armada {salesData.armada}</p>
-
-          {/* Points / Rank Grid */}
-          <div style={{ display: 'flex', justifyContent: 'space-around', margin: '30px 0 0', borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><CheckSquare size={20} color="#10B981" /></div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, marginBottom: '2px' }}>Aktivitas</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>{actCount}</div>
-            </div>
-            <div style={{ borderLeft: '1px solid #f1f5f9', borderRight: '1px solid #f1f5f9', padding: '0 20px' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><Target size={20} color="var(--brand-yellow)" /></div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, marginBottom: '2px' }}>Poin</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>{achievedPoints}</div>
-            </div>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}><Settings size={20} color="#3B82F6" /></div>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700, marginBottom: '2px' }}>Rating</div>
-              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>5.0</div>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 5 }}>
+          <button 
+            className="tap-active" 
+            onClick={() => navigate('/mobile/home')} 
+            style={{ 
+              background: 'rgba(255,255,255,0.4)', 
+              border: '2px solid rgba(255,255,255,0.6)', 
+              borderRadius: '16px', 
+              width: '46px', height: '46px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              backdropFilter: 'blur(12px)',
+              boxShadow: '0 8px 16px rgba(0,0,0,0.05)'
+            }}
+          >
+            <ArrowLeft size={22} color="#111827" strokeWidth={3} />
+          </button>
+          <h2 style={{ fontSize: '20px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Profil Saya</h2>
+          <button 
+            className="tap-active" 
+            onClick={handleLogout}
+            style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: 800, fontSize: '13px', display: 'flex', alignItems: 'center', gap: '4px' }}
+          >
+            Keluar <LogOut size={16} />
+          </button>
         </div>
-
-        {/* Settings Form or List */}
-        <div style={{ marginTop: '30px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>Pengaturan</h3>
-            {!isEditing ? (
-              <button onClick={() => setIsEditing(true)} style={{ background: 'none', border: 'none', color: '#3B82F6', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <Edit3 size={14} /> Edit Profile
-              </button>
-            ) : (
-              <button onClick={handleSave} style={{ background: '#10B981', border: 'none', color: '#fff', fontSize: '13px', fontWeight: 700, padding: '6px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-                <Check size={14} /> Simpan
-              </button>
-            )}
-          </div>
-
-          <div style={{ background: '#fff', borderRadius: '24px', padding: '10px 20px', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
-            
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Nama Sales</label>
-                {isEditing ? (
-                  <input style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.nama} onChange={e => setFormData({...formData, nama: e.target.value})} />
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{salesData.nama}</div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Nomor WhatsApp Anda</label>
-                {isEditing ? (
-                  <input placeholder="628..." style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.no_wa} onChange={e => setFormData({...formData, no_wa: e.target.value})} />
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{salesData.no_wa || 'Belum diatur'}</div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Role Armada</label>
-                {isEditing ? (
-                  <select style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.armada} onChange={e => setFormData({...formData, armada: e.target.value as Armada})}>
-                    <option value="A">Armada A (Motor)</option>
-                    <option value="B">Armada B (Moko)</option>
-                    <option value="C">Armada C (Mobil)</option>
-                  </select>
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>Armada {salesData.armada}</div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Target Prospek Bulanan</label>
-                {isEditing ? (
-                  <input type="number" style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.target_prospek_baru} onChange={e => setFormData({...formData, target_prospek_baru: parseInt(e.target.value) || 0})} />
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{salesData.target_prospek_baru} Prospek</div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ padding: '16px 0', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Target Closing Bulanan</label>
-                {isEditing ? (
-                  <input type="number" style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.target_closing_baru} onChange={e => setFormData({...formData, target_closing_baru: parseInt(e.target.value) || 0})} />
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{salesData.target_closing_baru} Closing</div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ padding: '16px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ fontSize: '12px', fontWeight: 700, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Target Visit Bulanan</label>
-                {isEditing ? (
-                  <input type="number" style={{ width: '100%', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '8px', fontSize: '14px', fontWeight: 600 }} value={formData.target_visit} onChange={e => setFormData({...formData, target_visit: parseInt(e.target.value) || 0})} />
-                ) : (
-                  <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{salesData.target_visit} Visit</div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Logout Button */}
-        <button onClick={handleLogout} style={{ width: '100%', marginTop: '30px', background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#EF4444', fontSize: '15px', fontWeight: 800, padding: '16px', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer' }}>
-          <LogOut size={18} /> Logout
-        </button>
       </div>
 
+      <div style={{ padding: '0 20px', marginTop: '-32px', position: 'relative', zIndex: 10 }}>
+        
+        {/* Profile Identity Card */}
+        <div 
+          className="shadow-premium animate-fade-up" 
+          style={{ 
+            background: '#fff', 
+            borderRadius: '32px', 
+            padding: '32px 20px 24px', 
+            textAlign: 'center', 
+            position: 'relative', 
+            border: '1px solid rgba(0,0,0,0.02)'
+          }}
+        >
+          {/* Avatar Section */}
+          <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 16px' }}>
+            <div style={{ width: '100%', height: '100%', borderRadius: '38px', padding: '4px', background: 'linear-gradient(135deg, #FFCC00 0%, #F59E0B 100%)', boxShadow: '0 12px 24px rgba(245,158,11,0.2)' }}>
+              <img
+                src={profilePhoto || `https://ui-avatars.com/api/?name=${salesData.nama}&background=random`}
+                alt="Avatar"
+                style={{ width: '100%', height: '100%', borderRadius: '34px', objectFit: 'cover', border: '3px solid #fff' }}
+              />
+            </div>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="tap-active"
+              style={{ position: 'absolute', bottom: '-4px', right: '-4px', background: '#111827', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #fff', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}
+            >
+              <Camera size={16} color="#fff" strokeWidth={3} />
+            </button>
+            <input ref={fileInputRef} type="file" accept="image/*" capture="user" style={{ display: 'none' }} onChange={handleCaptureProfilePhoto} />
+          </div>
+
+          <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#111827', margin: '0 0 4px', letterSpacing: '-0.8px' }}>{salesData.nama}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+            <div style={{ background: '#F1F5F9', color: '#64748B', fontSize: '11px', fontWeight: 900, padding: '4px 12px', borderRadius: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Sales Manager
+            </div>
+            <div style={{ background: '#ECFDF5', color: '#10B981', fontSize: '11px', fontWeight: 900, padding: '4px 12px', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} /> ACTIVE
+            </div>
+          </div>
+
+          {/* Premium Stats Grid */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '32px 0 0', gap: '12px' }}>
+            {[
+              { label: 'Aktivitas', val: actCount, icon: Activity, color: '#10B981' },
+              { label: 'Poin', val: achievedPoints, icon: Target, color: '#F59E0B' },
+              { label: 'Rating', val: '5.0', icon: TrendingUp, color: '#3B82F6' }
+            ].map((stat, i) => (
+              <div key={i} style={{ flex: 1, background: '#F8FAFC', borderRadius: '20px', padding: '16px 10px', border: '1px solid #F1F5F9' }}>
+                <div style={{ color: stat.color, marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                  <stat.icon size={20} strokeWidth={2.5} />
+                </div>
+                <div style={{ fontSize: '18px', fontWeight: 950, color: '#111827', marginBottom: '2px' }}>{stat.val}</div>
+                <div style={{ fontSize: '10px', color: '#94A3B8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dynamic Content Section */}
+        <div style={{ marginTop: '36px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 4px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Pengaturan Akun</h3>
+          </div>
+
+          {/* Group 1: Personal Info */}
+          <div className="animate-fade-up" style={{ background: '#fff', borderRadius: '28px', padding: '8px 20px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9', animationDelay: '0.1s' }}>
+            {[
+              { label: 'Nama Lengkap', val: formData.nama, key: 'nama', icon: User, type: 'text', color: '#3B82F6', bg: '#EFF6FF' },
+              { label: 'WhatsApp', val: formData.no_wa || 'Belum diatur', key: 'no_wa', icon: Phone, type: 'tel', color: '#10B981', bg: '#ECFDF5' }
+            ].map((field, i) => (
+              <div key={field.key} style={{ padding: '18px 0', borderBottom: i < 1 ? '1px solid #F1F5F9' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: field.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: field.color }}>
+                    <field.icon size={20} strokeWidth={2.5} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '11px', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>{field.label}</label>
+                    {isEditing ? (
+                      <input 
+                        type={field.type}
+                        style={{ width: '100%', border: '1.5px solid #F1F5F9', background: '#F8FAFC', borderRadius: '12px', padding: '12px', fontSize: '14px', fontWeight: 800, color: '#111827' }} 
+                        value={field.val === 'Belum diatur' ? '' : field.val} 
+                        onChange={e => setFormData({...formData, [field.key]: e.target.value})}
+                        placeholder={field.label}
+                      />
+                    ) : (
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{field.val}</div>
+                    )}
+                  </div>
+                  {!isEditing && (
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="tap-active"
+                      style={{ background: 'none', border: 'none', color: '#CBD5E1', padding: '8px' }}
+                    >
+                      <Edit3 size={18} strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <h3 style={{ fontSize: '14px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '36px', marginBottom: '12px', padding: '0 4px' }}>Keamanan & Autentikasi</h3>
+
+          {/* Group 2: Account Security */}
+          <div className="animate-fade-up" style={{ background: '#fff', borderRadius: '28px', padding: '8px 20px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9', animationDelay: '0.2s' }}>
+            {[
+              { label: 'Username Login', val: formData.username || 'Belum diatur', key: 'username', type: 'text', icon: User, color: '#F59E0B', bg: '#FFFBEB' },
+              { label: 'Password', val: formData.password || 'Belum diatur', key: 'password', type: 'text', icon: Lock, color: '#EF4444', bg: '#FEF2F2' }
+            ].map((field, i) => (
+              <div key={field.key} style={{ padding: '18px 0', borderBottom: i < 1 ? '1px solid #F1F5F9' : 'none' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: field.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', color: field.color }}>
+                    <field.icon size={20} strokeWidth={2.5} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: '11px', fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', marginBottom: '4px', display: 'block' }}>{field.label}</label>
+                    {isEditing ? (
+                      <input 
+                        type="text"
+                        style={{ width: '100%', border: '1.5px solid #F1F5F9', background: '#F8FAFC', borderRadius: '12px', padding: '12px', fontSize: '14px', fontWeight: 800, color: '#111827' }} 
+                        value={field.val === 'Belum diatur' ? '' : field.val} 
+                        onChange={e => setFormData({...formData, [field.key]: e.target.value})}
+                        placeholder={`Isi ${field.label}`}
+                      />
+                    ) : (
+                      <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827', fontFamily: field.key === 'password' && field.val !== 'Belum diatur' ? 'monospace' : 'inherit' }}>
+                        {field.key === 'password' && field.val !== 'Belum diatur' ? '••••••••' : field.val}
+                      </div>
+                    )}
+                  </div>
+                  {!isEditing && (
+                    <button 
+                      onClick={() => setIsEditing(true)}
+                      className="tap-active"
+                      style={{ background: 'none', border: 'none', color: '#CBD5E1', padding: '8px' }}
+                    >
+                      <Edit3 size={18} strokeWidth={2.5} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Action Bar for Edit Mode - Replaces Nav Area */}
+      {isEditing && (
+        <div 
+          className="animate-fade-up"
+          style={{ 
+            position: 'fixed', 
+            bottom: 0, 
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '100%',
+            maxWidth: '480px',
+            background: '#ffffff', 
+            padding: '16px 24px calc(16px + env(safe-area-inset-bottom))', 
+            borderTop: '2px solid #F1F5F9',
+            display: 'flex', 
+            gap: '12px', 
+            zIndex: 2000, 
+            boxShadow: '0 -8px 30px rgba(0,0,0,0.08)'
+          }}
+        >
+          <button 
+            className="tap-active"
+            onClick={handleCancel}
+            style={{ 
+              flex: 1, 
+              height: '54px', 
+              borderRadius: '20px', 
+              background: '#F8FAFC', 
+              color: '#64748B', 
+              fontSize: '15px', 
+              fontWeight: 800,
+              border: '1.5px solid #F1F5F9'
+            }}
+          >
+            Batal
+          </button>
+          <button 
+            className="tap-active"
+            onClick={handleSave}
+            style={{ 
+              flex: 2, 
+              height: '54px', 
+              borderRadius: '20px', 
+              background: 'var(--brand-yellow)', 
+              color: '#111827', 
+              fontSize: '15px', 
+              fontWeight: 950, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              gap: '8px',
+              boxShadow: '0 8px 24px rgba(255, 204, 0, 0.4)'
+            }}
+          >
+            <Check size={20} strokeWidth={3} /> Simpan Perubahan
+          </button>
+        </div>
+      )}
     </div>
   );
 }
