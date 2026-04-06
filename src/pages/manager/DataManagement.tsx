@@ -31,7 +31,16 @@ export default function DataManagement() {
 
       setData({
         roles: roles,
-        teams: (sales || []).map((s:any) => ({ id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role })),
+        teams: (sales || []).map((s:any) => ({ 
+          id: s.id, 
+          nama: s.nama, 
+          username: s.username, 
+          pass: s.password, 
+          role: s.role,
+          foto_profil: s.foto_profil,
+          no_wa: s.no_wa,
+          target_visit: s.target_visit
+        })),
         targets: {
           globalOmset: targets.global_omset || 'Rp 1.000.000.000',
           indOmset: targets.ind_omset || 'Rp 200.000.000',
@@ -41,8 +50,8 @@ export default function DataManagement() {
           bVisit: targets.b_visit || 5,
           bProspek: targets.b_prospek || 5,
           bClosing: targets.b_closing || 20,
-          bOrder: targets.b_order || 20,
-          bChat: targets.b_chat || 5
+          bOrder: targets.b_order || 5,
+          bChat: targets.b_chat || 1
         }
       });
       setIsLoading(false);
@@ -66,7 +75,16 @@ export default function DataManagement() {
   const [roleForm, setRoleForm] = useState({ role: 'Sales', akses: 'Mobile App, Limited Analytics' });
 
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
-  const [teamForm, setTeamForm] = useState({ id: '', nama: '', username: '', pass: '', role: '' });
+  const [teamForm, setTeamForm] = useState({ 
+    id: '', 
+    nama: '', 
+    username: '', 
+    pass: '', 
+    role: '', 
+    foto_profil: '', 
+    no_wa: '', 
+    target_visit: 20 
+  });
 
   // --- ROLE ACTIONS ---
   const openRoleModal = (existingData?: any) => {
@@ -104,7 +122,7 @@ export default function DataManagement() {
       setTeamForm(existingData);
       setTeamModal({ isOpen: true, data: existingData });
     } else {
-      setTeamForm({ id: '', nama: '', username: '', pass: '', role: '' });
+      setTeamForm({ id: '', nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '', target_visit: 20 });
       setTeamModal({ isOpen: true, data: null });
     }
   };
@@ -116,7 +134,10 @@ export default function DataManagement() {
          nama: teamForm.nama,
          username: teamForm.username,
          password: teamForm.pass,
-         role: teamForm.role
+         role: teamForm.role,
+         foto_profil: teamForm.foto_profil,
+         no_wa: teamForm.no_wa,
+         target_visit: teamForm.target_visit
        });
     } else {
        if(data.teams.some((t:any) => t.id === teamForm.id)) {
@@ -130,15 +151,26 @@ export default function DataManagement() {
          target_prospek_baru: 0,
          target_closing_baru: 0,
          target_maintenance: 0,
-         target_visit: 0,
+         target_visit: teamForm.target_visit || 20,
          username: teamForm.username,
          password: teamForm.pass,
-         role: teamForm.role
+         role: teamForm.role,
+         foto_profil: teamForm.foto_profil,
+         no_wa: teamForm.no_wa
        } as any);
     }
     setTeamModal({isOpen: false, data: null});
     const { data: sales } = await supabase.from('sales').select('*');
-    setData(d => ({...d, teams: (sales || []).map((s:any) => ({ id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role }))}));
+    setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
+      id: s.id, 
+      nama: s.nama, 
+      username: s.username, 
+      pass: s.password, 
+      role: s.role,
+      foto_profil: s.foto_profil,
+      no_wa: s.no_wa,
+      target_visit: s.target_visit
+    }))}));
   };
 
   const handleDeleteTeam = async (id: string) => {
@@ -326,9 +358,12 @@ export default function DataManagement() {
                         width: '56px', height: '56px', borderRadius: '18px', 
                         background: '#f8fafc',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '20px', fontWeight: 900, color: '#1e293b', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.03)'
+                        fontSize: '20px', fontWeight: 900, color: '#1e293b', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
+                        overflow: 'hidden'
                       }}>
-                        {u.nama.charAt(0)}
+                        {u.foto_profil ? (
+                          <img src={u.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : u.nama.charAt(0)}
                       </div>
                       <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -627,6 +662,40 @@ export default function DataManagement() {
 
               <label style={labelStyle}>Password Kredensial</label>
               <input required style={inputStyle} value={teamForm.pass} onChange={e => setTeamForm({...teamForm, pass: e.target.value})} placeholder="Ketik sandi baru..." />
+
+              <label style={labelStyle}>Nomor WhatsApp</label>
+              <input style={inputStyle} value={teamForm.no_wa || ''} onChange={e => setTeamForm({...teamForm, no_wa: e.target.value})} placeholder="Contoh: 62812345678" />
+
+              <label style={labelStyle}>Target Visit Bulanan</label>
+              <input type="number" style={inputStyle} value={teamForm.target_visit} onChange={e => setTeamForm({...teamForm, target_visit: +e.target.value})} />
+
+              <label style={labelStyle}>URL Foto Profil (Optional)</label>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input style={inputStyle} value={teamForm.foto_profil || ''} onChange={e => setTeamForm({...teamForm, foto_profil: e.target.value})} placeholder="https://..." />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  style={{ display: 'none' }} 
+                  id="sales-photo-input" 
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setTeamForm(prev => ({ ...prev, foto_profil: reader.result as string }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                />
+                <button 
+                  type="button"
+                  onClick={() => document.getElementById('sales-photo-input')?.click()}
+                  style={{ padding: '0 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
+                >
+                  UP
+                </button>
+              </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button type="button" onClick={() => setTeamModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Batal</button>

@@ -111,12 +111,12 @@ export default function PerformanceAnalytics() {
       
       // KPI points formula (Synchronized): 
       const points = 
-        (closingCount * (systemTargets?.b_closing ?? 15)) +
-        (soCount * (systemTargets?.b_order ?? 20)) +
+        (closingCount * (systemTargets?.b_closing ?? 20)) +
+        (soCount * (systemTargets?.b_order ?? 5)) +
         (visitCount * (systemTargets?.b_visit ?? 5)) +
         (maintainCount * (systemTargets?.b_maint ?? 5)) +
         (prospekBaru * (systemTargets?.b_prospek ?? 5)) +
-        (waCount + callCount) * (systemTargets?.b_chat ?? 5);
+        (waCount + callCount) * (systemTargets?.b_chat ?? 1);
       
       const revenueReal = closingCount * 3500000; // Multiplier fixed for now as per user preference
       const closingRate = totalActs > 0 ? Math.round((closingCount / totalActs) * 100) : 0;
