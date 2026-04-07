@@ -414,23 +414,22 @@ export default function CustomerMaintenance({ salesId }: Props) {
         className="tap-active"
         onClick={() => setAddModal(true)}
         style={{ 
-          position: 'fixed', 
-          bottom: 'calc(40px + env(safe-area-inset-bottom))', 
+          bottom: 'calc(110px + env(safe-area-inset-bottom))', 
           right: '25px', 
-          width: '60px', 
-          height: '60px', 
-          borderRadius: '50%', 
+          width: '64px', 
+          height: '64px', 
+          borderRadius: '22px', 
           background: '#3B82F6', 
           color: '#fff', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          boxShadow: '0 8px 25px rgba(59, 130, 246, 0.4)',
+          boxShadow: '0 12px 30px rgba(59, 130, 246, 0.45)',
           border: 'none',
           zIndex: 99,
           opacity: showFab ? 1 : 0,
           transform: showFab ? 'scale(1) translateY(0)' : 'scale(0.5) translateY(40px)',
-          transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
           pointerEvents: showFab ? 'auto' : 'none'
         }}
       >
