@@ -384,17 +384,18 @@ export default function ProspectingTool({ salesId }: Props) {
         className="tap-active"
         onClick={() => setAddModal(true)}
         style={{ 
-          bottom: 'calc(110px + env(safe-area-inset-bottom))', 
+          position: 'fixed', 
+          bottom: 'calc(98px + env(safe-area-inset-bottom))', 
           right: '25px', 
-          width: '64px', 
-          height: '64px', 
-          borderRadius: '22px', 
+          width: '60px', 
+          height: '60px', 
+          borderRadius: '50%', 
           background: '#3B82F6', 
           color: '#fff', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          boxShadow: '0 12px 30px rgba(59, 130, 246, 0.45)',
+          boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)',
           border: 'none',
           zIndex: 99,
           opacity: showFab ? 1 : 0,
