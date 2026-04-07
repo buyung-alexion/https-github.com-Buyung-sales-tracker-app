@@ -6,29 +6,32 @@ export const store = {
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
     const { data, error } = await supabase.from('prospek').insert([p]).select().single();
     if (error) console.error('addProspek error:', error);
-    return data;
+    return { data, error };
   },
 
   async updateProspek(id: string, updates: Partial<Prospek>) {
-    const { error } = await supabase.from('prospek').update(updates).eq('id', id);
+    const { data, error } = await supabase.from('prospek').update(updates).eq('id', id).select().single();
     if (error) console.error('updateProspek error:', error);
+    return { data, error };
   },
 
   async deleteProspek(id: string) {
     const { error } = await supabase.from('prospek').delete().eq('id', id);
     if (error) console.error('deleteProspek error:', error);
+    return { error };
   },
 
   // ─── CUSTOMER ───────────────────────────────────────────
   async addCustomer(c: Omit<Customer, 'id'>) {
     const { data, error } = await supabase.from('customer').insert([c]).select().single();
     if (error) console.error('addCustomer error:', error);
-    return data;
+    return { data, error };
   },
 
   async updateCustomer(id: string, updates: Partial<Customer>) {
-    const { error } = await supabase.from('customer').update(updates).eq('id', id);
+    const { data, error } = await supabase.from('customer').update(updates).eq('id', id).select().single();
     if (error) console.error('updateCustomer error:', error);
+    return { data, error };
   },
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
@@ -51,7 +54,7 @@ export const store = {
     const { data: customer, error: errC } = await supabase.from('customer').insert([customerData]).select().single();
     if (errC || !customer) {
       console.error('convertToCustomer error:', errC);
-      return null;
+      return { data: null, error: errC };
     }
 
     // 2. Delete Prospek
@@ -67,14 +70,14 @@ export const store = {
       catatan_hasil: `CLOSING! Order pertama ${orderVolume}kg. Data dipindahkan ke Customer.`,
     });
 
-    return customer;
+    return { data: customer, error: null };
   },
 
   // ─── ACTIVITY ───────────────────────────────────────────
   async logActivity(a: Omit<Activity, 'id' | 'timestamp'>) {
     const { data, error } = await supabase.from('activity').insert([a]).select().single();
     if (error) console.error('logActivity error:', error);
-    return data;
+    return { data, error };
   },
 
   async logWA(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noWA: string, catatan = '') {
@@ -142,16 +145,19 @@ export const store = {
 
   // ─── SALES CRUD ─────────────────────────────────────────
   async addSales(sales: Sales) {
-    const { error } = await supabase.from('sales').insert([sales]);
+    const { data, error } = await supabase.from('sales').insert([sales]).select().single();
     if (error) console.error('addSales error:', error);
+    return { data, error };
   },
   async updateSales(id: string, updates: Partial<Sales>) {
-    const { error } = await supabase.from('sales').update(updates).eq('id', id);
+    const { data, error } = await supabase.from('sales').update(updates).eq('id', id).select().single();
     if (error) console.error('updateSales error:', error);
+    return { data, error };
   },
   async deleteSales(id: string) {
     const { error } = await supabase.from('sales').delete().eq('id', id);
     if (error) console.error('deleteSales error:', error);
+    return { error };
   },
 
   // ─── ROLES ──────────────────────────────────────────────

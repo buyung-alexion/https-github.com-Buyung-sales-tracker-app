@@ -3,6 +3,17 @@ import type { ChatMessage, ChatContact } from '../types';
 
 export const chatStore = {
   /**
+   * Menghasilkan Chat ID yang konsisten untuk Direct Message antara dua user.
+   * Menggunakan sorting agar ID yang dihasilkan sama siapapun yang memulai.
+   */
+   getChatId(id1: string, id2: string): string {
+    if (id1.startsWith('g-') || id2.startsWith('g-')) {
+      return id1.startsWith('g-') ? id1 : id2;
+    }
+    return [id1, id2].sort().join('_');
+  },
+
+  /**
    * Mengambil riwayat pesan antara dua pihak (atau dalam satu grup/chat_id).
    */
   async loadMessages(chatId: string): Promise<ChatMessage[]> {
@@ -88,7 +99,7 @@ export const chatStore = {
   /**
    * Mengambil list kontak secara dinamis berdasarkan data tabel sales.
    */
-  async loadContacts(): Promise<ChatContact[]> {
+  async loadContacts(currentUserId: string, includeManager = false): Promise<ChatContact[]> {
     const { data: sales, error } = await supabase
       .from('sales')
       .select('*')
@@ -99,26 +110,51 @@ export const chatStore = {
       return [];
     }
 
-    const contacts: ChatContact[] = sales.map((s) => ({
-      id: s.id,
-      name: s.nama,
-      type: 'direct',
-      lastMessage: 'Ketuk untuk mulai obrolan...',
-      lastMessageTime: '',
-      unreadCount: 0,
-    }));
+    // Mengambil jumlah unread secara batch
+    const { data: unreadData } = await supabase
+      .from('messages')
+      .select('chat_id')
+      .neq('sender_id', currentUserId)
+      .neq('status', 'read');
 
-    // Inject grup default
+    const getUnreadCount = (chatId: string) => {
+      return unreadData?.filter(m => m.chat_id === chatId).length || 0;
+    };
+
+    const contacts: ChatContact[] = sales.map((s) => {
+      const chatId = [currentUserId, s.id].sort().join('_');
+      return {
+        id: s.id,
+        name: s.nama,
+        type: 'direct' as const,
+        lastMessage: 'Ketuk untuk mulai obrolan...',
+        lastMessageTime: '',
+        unreadCount: getUnreadCount(chatId),
+      };
+    });
+
     const groups: ChatContact[] = [
       {
         id: 'g-pusat',
         name: 'Grup Pengumuman Pusat',
-        type: 'group',
+        type: 'group' as const,
         lastMessage: 'Channel resmi tim Sales',
         lastMessageTime: '',
-        unreadCount: 0,
+        unreadCount: getUnreadCount('g-pusat'),
       }
     ];
+
+    if (includeManager) {
+      groups.unshift({
+        id: 'Manager-1',
+        name: 'Admin Pusat',
+        type: 'direct' as const,
+        lastMessage: 'Hubungi admin pusat untuk bantuan',
+        lastMessageTime: '',
+        unreadCount: getUnreadCount([currentUserId, 'Manager-1'].sort().join('_')),
+        online: true
+      });
+    }
 
     return [...groups, ...contacts];
   }

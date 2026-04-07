@@ -1,8 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 
-import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 const ACT_ICON: Record<string, React.ReactNode> = {
   WA: <MessageSquare size={14} />,
@@ -20,28 +20,23 @@ const getActLabel = (tipe: string) => {
 const ACT_COLOR: Record<string, string> = { WA: 'act-followup', Visit: 'act-visit', Call: 'act-followup', Order: 'act-order' };
 
 export default function LiveActivityFeed() {
-  const { activities, refresh, sales, prospek: allProspek } = useSalesData();
+  const { activities, sales, prospek: allProspek } = useSalesData();
   const [filterSales, setFilterSales] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const [autoRefresh] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Pagination states
   const [page, setPage] = useState(1);
   const [viewAll, setViewAll] = useState(false);
   const ITEMS_PER_PAGE = 20;
 
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => refresh(), 30000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, refresh]);
-
   const getSalesName = (id: string) => sales.find(s => s.id === id)?.nama || id;
 
-  const now = new Date();
+  // Use a stable reference for "now" for data-binding logic
+  const [now] = useState(new Date());
   const todayMs = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const weekMs = todayMs - (7 * 86400000);
   const monthMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
@@ -110,38 +105,6 @@ export default function LiveActivityFeed() {
   
   const totalActs = pieData.reduce((acc, curr) => acc + curr.value, 0);
 
-  // Area Chart Data (Trend by hour or day)
-  let chartData: any[] = [];
-  if (dateFilter === 'today') {
-    const hours = Array.from({length: 24}, (_, i) => i);
-    chartData = hours.map(h => {
-      const acts = filtered.filter(a => new Date(a.timestamp || 0).getHours() === h);
-      const pros = filteredProspek.filter(p => new Date(p.created_at || 0).getHours() === h);
-
-      return {
-        label: `${h}:00`,
-        visit: acts.filter(a => a.tipe_aksi === 'Visit').length,
-        followup: acts.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length,
-        order: acts.filter(a => a.tipe_aksi === 'Order').length,
-        prospek: pros.length
-      }
-    });
-  } else {
-    const days = 7; 
-    chartData = Array.from({length: days}).map((_, i) => {
-      const d = new Date(now.getTime() - ((days - 1 - i) * 86400000));
-      const acts = filtered.filter(a => new Date(a.timestamp).toDateString() === d.toDateString());
-      const pros = filteredProspek.filter(p => new Date(p.created_at || 0).toDateString() === d.toDateString());
-
-      return {
-        label: d.toLocaleDateString('id-ID', {day: 'numeric', month: 'short'}),
-        visit: acts.filter(a => a.tipe_aksi === 'Visit').length,
-        followup: acts.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length,
-        order: acts.filter(a => a.tipe_aksi === 'Order').length,
-        prospek: pros.length
-      }
-    });
-  }
 
   const salesPerformanceData = useMemo(() => {
     return (sales || []).map(s => {
@@ -240,7 +203,7 @@ export default function LiveActivityFeed() {
   }, []);
 
   return (
-    <div className="mgr-page" style={{ padding: '0px 0 24px' }}>
+    <div className="mgr-page" style={{ padding: '0px 0 24px', minHeight: '800px' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* 1. TOP: MASTER FILTER BAR (Now Moved Above Grid) */}
@@ -332,7 +295,7 @@ export default function LiveActivityFeed() {
         {/* 2. MIDDLE: DASHBOARD ANALYTICS GRID */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: '1.1fr 1.5fr 0.8fr', 
+          gridTemplateColumns: '1.2fr 0.8fr', 
           gap: '24px',
           width: '100%'
         }}>
@@ -383,60 +346,6 @@ export default function LiveActivityFeed() {
             </div>
           </div>
 
-          {/* Activity Trend (Area Chart) */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '32px', 
-            padding: '32px', 
-            boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-            border: '1px solid #f1f5f9',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '450px'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
-              <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Trend Waktu</h3>
-                <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>DISTRIBUSI AKTIVITAS</p>
-              </div>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                {[
-                  { label: 'Followup', color: '#f472b6' },
-                  { label: 'Visit', color: '#fbbf24' },
-                  { label: 'Order', color: '#f87171' },
-                  { label: 'Prospek', color: '#818cf8' }
-                ].map(cat => (
-                  <div key={cat.label} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '8px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: cat.color }} /> {cat.label}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ flex: 1, minHeight: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorFup" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f472b6" stopOpacity={0.3}/><stop offset="95%" stopColor="#f472b6" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="colorVis" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3}/><stop offset="95%" stopColor="#fbbf24" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="colorOrd" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#f87171" stopOpacity={0.3}/><stop offset="95%" stopColor="#f87171" stopOpacity={0}/></linearGradient>
-                    <linearGradient id="colorPrs" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#818cf8" stopOpacity={0.3}/><stop offset="95%" stopColor="#818cf8" stopOpacity={0}/></linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                  <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94a3b8' }} />
-                  <RechartsTooltip 
-                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', padding: '12px' }}
-                    itemStyle={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase' }}
-                  />
-                  <Area stackId="1" type="monotone" dataKey="followup" stroke="#f472b6" strokeWidth={2} fillOpacity={1} fill="url(#colorFup)" />
-                  <Area stackId="1" type="monotone" dataKey="visit" stroke="#fbbf24" strokeWidth={2} fillOpacity={1} fill="url(#colorVis)" />
-                  <Area stackId="1" type="monotone" dataKey="order" stroke="#f87171" strokeWidth={2} fillOpacity={1} fill="url(#colorOrd)" />
-                  <Area stackId="1" type="monotone" dataKey="prospek" stroke="#818cf8" strokeWidth={2} fillOpacity={1} fill="url(#colorPrs)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
 
           {/* Activity Share (Pie Chart) */}
           <div style={{ 
@@ -559,12 +468,15 @@ export default function LiveActivityFeed() {
                           <td>{a.geotagging?.area || '—'}</td>
                           <td style={{ textAlign: 'center', width: '60px' }}>
                             {a.geotagging?.photo ? (
-                              <div style={{ width: '36px', height: '36px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto' }} onClick={() => window.open(a.geotagging?.photo, '_blank')}>
+                              <div 
+                                style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} 
+                                onClick={() => setSelectedImage(a.geotagging?.photo || null)}
+                              >
                                 <img src={a.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                               </div>
                             ) : (
-                              <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto' }}>
-                                <ImageIcon size={16} />
+                              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto', border: '1px dashed #e2e8f0' }}>
+                                <ImageIcon size={18} />
                               </div>
                             )}
                           </td>
@@ -624,6 +536,42 @@ export default function LiveActivityFeed() {
           )}
         </div>
       </div>
+
+      {/* Image View Modal (Premium) */}
+      {selectedImage && (
+        <div 
+          style={{ 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(10px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '40px', animation: 'fade-in 0.3s ease'
+          }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            style={{ position: 'relative', maxWidth: '90%', maxHeight: '90%', animation: 'scale-up 0.3s ease' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button 
+              onClick={() => setSelectedImage(null)}
+              style={{ 
+                position: 'absolute', top: '-12px', right: '-12px', 
+                width: '40px', height: '40px', borderRadius: '50%', 
+                background: '#fff', border: 'none', color: '#0f172a',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.2)', cursor: 'pointer', zIndex: 10
+              }}
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={selectedImage} 
+              alt="Bukti Aktivitas" 
+              style={{ width: '100%', height: '100%', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)', objectFit: 'contain' }} 
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

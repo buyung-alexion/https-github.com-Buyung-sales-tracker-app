@@ -134,17 +134,30 @@ export default function DashboardTarget({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingBottom: '80px', position: 'relative' }}>
       
-      {/* Gradient Background Header */}
-      <div style={{ 
-        position: 'absolute', top: 0, left: 0, right: 0, height: '390px', 
-        background: 'var(--brand-yellow)', 
-        borderBottomLeftRadius: '40px', borderBottomRightRadius: '40px',
-        zIndex: 0
-      }}></div>
-
-      <div style={{ position: 'relative', zIndex: 10, paddingTop: '16px' }}>
-        <div className="page-title-row" style={{ marginBottom: '16px', justifyContent: 'center' }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 800, color: '#111827' }}>Analytic Dashboard</h2>
+      {/* Top Header - Premium Grab Style */}
+      <div className="yellow-bg-top" style={{ 
+        padding: '0 24px 20px', 
+        height: '280px',
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        zIndex: 50,
+        marginBottom: '-60px'
+      }}>
+        {/* Decorative elements */}
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'relative', zIndex: 6 }}>
+        <div className="page-title-row" style={{ marginBottom: '12px', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Performance</h2>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Sales Analytics & Targets</div>
+          </div>
+          <div style={{ background: '#111827', color: 'var(--brand-yellow)', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 900 }}>
+            LVL 1
+          </div>
         </div>
 
         {/* Date Filter Chips */}
@@ -158,7 +171,10 @@ export default function DashboardTarget({ salesId }: Props) {
             </button>
           ))}
         </div>
+        </div>
+      </div>
 
+      <div style={{ position: 'relative', zIndex: 60, marginTop: '20px' }}>
         {/* Donut Ring */}
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', width: '100%', padding: '0 20px' }}>
           <div style={{ position: 'absolute', left: '15px', textAlign: 'center', color: '#111827', width: '60px' }}>
@@ -452,7 +468,6 @@ export default function DashboardTarget({ salesId }: Props) {
           </ResponsiveContainer>
         </div>
       </div>
-
     </div>
   );
 }

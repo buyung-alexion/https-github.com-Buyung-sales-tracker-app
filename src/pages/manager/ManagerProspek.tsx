@@ -95,71 +95,84 @@ export default function ManagerProspek() {
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
   const nowMs = new Date().getTime();
 
-  const prospekWithStats = prospek.map(p => {
-    const prospectActs = activities.filter(a => a.target_id === p.id);
-    prospectActs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-    
-    const lastActivity = prospectActs.length > 0 ? prospectActs[0] : null;
-    const ageMs = nowMs - new Date(p.created_at).getTime();
+  const prospekWithStats = useMemo(() => {
+    return prospek.map(p => {
+      const prospectActs = activities.filter(a => a.target_id === p.id);
+      prospectActs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      
+      const lastActivity = prospectActs.length > 0 ? prospectActs[0] : null;
+      const ageMs = nowMs - new Date(p.created_at).getTime();
 
-    return {
-      ...p,
-      contactCount: prospectActs.length,
-      lastActivity,
-      ageMs,
-      salesName: getSalesName(p.sales_owner)
-    };
-  });
+      return {
+        ...p,
+        contactCount: prospectActs.length,
+        lastActivity,
+        ageMs,
+        salesName: getSalesName(p.sales_owner)
+      };
+    });
+  }, [prospek, activities, sales, nowMs]);
 
-  const nocontactCount = prospekWithStats.filter(p => p.contactCount === 0).length;
-  const old30Count = prospekWithStats.filter(p => p.ageMs > thirtyDaysMs).length;
+  const kpiStats = useMemo(() => {
+    const nocontactCount = prospekWithStats.filter(p => p.contactCount === 0).length;
+    const old30Count = prospekWithStats.filter(p => p.ageMs > thirtyDaysMs).length;
 
-  const closingCount = customers.length;
-  const activeCount = prospek.length;
-  const totalCount = closingCount + activeCount;
+    const todayMs = new Date(new Date().setHours(0,0,0,0)).getTime();
+    const weekMs = todayMs - (7 * 86400000);
+    const monthMs = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
 
-  const todayMs = new Date(new Date().setHours(0,0,0,0)).getTime();
-  const weekMs = todayMs - (7 * 86400000);
-  const monthMs = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+    return { nocontactCount, old30Count, todayMs, weekMs, monthMs };
+  }, [prospekWithStats, thirtyDaysMs]);
+
+  const { nocontactCount, old30Count, todayMs, weekMs, monthMs } = kpiStats;
 
   // 1. FILTER LOGIC (Synchronized)
-  const filteredProspek = prospekWithStats
-    .filter(p => {
-      if (filterType === 'all') return true;
-      if (filterType === 'nocontact') return p.contactCount === 0;
-      if (filterType === 'old30') return p.ageMs > thirtyDaysMs;
-      return true;
-    })
-    .filter(p => filterSales === 'All' || p.sales_owner === filterSales)
-    .filter(p => {
-      if (filterDate === 'all') return true;
-      const t = new Date(p.created_at).getTime();
-      if (filterDate === 'today') return t >= todayMs;
-      if (filterDate === 'week') return t >= weekMs;
-      if (filterDate === 'month') return t >= monthMs;
-      return true;
-    })
-    .filter(p => p.nama_toko.toLowerCase().includes(search.toLowerCase()) || p.salesName.toLowerCase().includes(search.toLowerCase()));
+  const filteredData = useMemo(() => {
+    const filteredP = prospekWithStats
+      .filter(p => {
+        if (filterType === 'all') return true;
+        if (filterType === 'nocontact') return p.contactCount === 0;
+        if (filterType === 'old30') return p.ageMs > thirtyDaysMs;
+        return true;
+      })
+      .filter(p => filterSales === 'All' || p.sales_owner === filterSales)
+      .filter(p => {
+        if (filterDate === 'all') return true;
+        const t = new Date(p.created_at).getTime();
+        if (filterDate === 'today') return t >= todayMs;
+        if (filterDate === 'week') return t >= weekMs;
+        if (filterDate === 'month') return t >= monthMs;
+        return true;
+      })
+      .filter(p => p.nama_toko.toLowerCase().includes(search.toLowerCase()) || p.salesName.toLowerCase().includes(search.toLowerCase()));
 
-  const filteredCustomers = customers
-    .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
-    .filter(c => {
-      if (filterDate === 'all') return true;
-      const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
-      if (filterDate === 'today') return t >= todayMs;
-      if (filterDate === 'week') return t >= weekMs;
-      if (filterDate === 'month') return t >= monthMs;
-      return true;
-    })
-    .filter(c => c.nama_toko.toLowerCase().includes(search.toLowerCase()) || getSalesName(c.sales_pic).toLowerCase().includes(search.toLowerCase()));
+    const filteredC = customers
+      .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
+      .filter(c => {
+        if (filterDate === 'all') return true;
+        const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
+        if (filterDate === 'today') return t >= todayMs;
+        if (filterDate === 'week') return t >= weekMs;
+        if (filterDate === 'month') return t >= monthMs;
+        return true;
+      })
+      .filter(c => c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === c.sales_pic)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
+
+    return { 
+      filteredP: filteredP.sort((a, b) => b.created_at.localeCompare(a.created_at)), 
+      filteredC 
+    };
+  }, [prospekWithStats, customers, search, filterSales, filterDate, filterType, todayMs, weekMs, monthMs, thirtyDaysMs, sales]);
+
+  const { filteredP, filteredC } = filteredData;
 
   // 2. CALCULATE KPIs FROM FILTERED DATA
-  const syncClosingCount = filteredCustomers.length;
-  const syncActiveCount = filteredProspek.length;
+  const syncClosingCount = filteredC.length;
+  const syncActiveCount = filteredP.length;
   const syncTotalCount = syncClosingCount + syncActiveCount;
-  const syncOverdueCount = filteredProspek.filter(p => p.ageMs > thirtyDaysMs).length;
+  const syncOverdueCount = filteredP.filter(p => p.ageMs > thirtyDaysMs).length;
 
-  const sortedFiltered = filteredProspek.sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const sortedFiltered = filteredP;
   const pagedProspek = useMemo(() => {
     if (viewAll) return sortedFiltered;
     return sortedFiltered.slice(0, 20);
@@ -283,7 +296,7 @@ export default function ManagerProspek() {
                }}
                onClick={() => {setFilterType('all');}}
             >
-              SEMUA <span style={{ background: filterType === 'all' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'all' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{totalCount}</span>
+              SEMUA <span style={{ background: filterType === 'all' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'all' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{syncTotalCount}</span>
             </button>
             
             <button 
@@ -448,7 +461,7 @@ export default function ManagerProspek() {
                   </tr>
                 );
               })}
-              {filteredProspek.length === 0 && (
+              {filteredP.length === 0 && (
                 <tr><td colSpan={9} className="empty-row">Tidak ada data prospek.</td></tr>
               )}
             </tbody>

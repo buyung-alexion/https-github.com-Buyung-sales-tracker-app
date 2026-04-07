@@ -309,10 +309,22 @@ export default function ManagerCustomer() {
     };
   }, [rawCustomers, search, filterSales, filterArea, filterCategory]);
 
+  const customerWithStats = useMemo(() => {
+    return filteredCustomers.map(c => {
+      const cActs = activities.filter(a => a.target_id === c.id);
+      cActs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+      return {
+        ...c,
+        lastAct: cActs.length > 0 ? cActs[0] : null,
+        salesName: sales.find(s => s.id === c.sales_pic)?.nama || 'No PIC'
+      };
+    });
+  }, [filteredCustomers, activities, sales]);
+
   const pagedCustomers = useMemo(() => {
-    if (viewAll) return filteredCustomers;
-    return filteredCustomers.slice(0, 20);
-  }, [filteredCustomers, viewAll]);
+    if (viewAll) return customerWithStats;
+    return customerWithStats.slice(0, 20);
+  }, [customerWithStats, viewAll]);
 
 
   return (
@@ -521,8 +533,8 @@ export default function ManagerCustomer() {
             </thead>
             <tbody>
               {pagedCustomers.map(c => {
-                const sName = sales.find(s => s.id === c.sales_pic)?.nama || 'No PIC';
-                const lastAct = activities.filter(a => a.target_id === c.id).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
+                const sName = c.salesName;
+                const lastAct = c.lastAct;
                 const diffOrderDays = c.last_order_date ? Math.floor((new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24)) : 999;
 
                 return (

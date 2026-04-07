@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Mail, Info, Star, Archive, Trash2, Clock, MoreVertical, CheckSquare, Square, RefreshCcw, User, ChevronLeft, ChevronRight, ArrowLeft, Send, Edit3, Navigation } from 'lucide-react';
+import { useSalesData } from '../../hooks/useSalesData';
+import { formatDistanceToNow } from 'date-fns';
 
 type TabType = 'primary' | 'update';
 
@@ -23,156 +25,10 @@ type Message = {
   };
 };
 
-const MOCK_INBOX_DATA: Message[] = [
-  {
-    id: 1,
-    tab: 'primary',
-    sender: 'Burhan',
-    subject: 'Customer Baru',
-    snippet: 'Burhan berhasil menambah Customer baru atas nama PT Setia Budi Makmur di area Sepaku.',
-    date: '10:30 AM',
-    isRead: false,
-    isStarred: true,
-    isArchived: false,
-    details: {
-      nama: 'PT Setia Budi Makmur',
-      kategori: 'Wholesaler / Distributor',
-      alamat: 'Jl. Raya Sepaku No. 14, Penajam Paser Utara',
-      noHp: '0812-3456-7890',
-      catatan: 'Customer prospek tinggi, jadwal pengantaran minta hari Senin pagi.'
-    }
-  },
-  {
-    id: 2,
-    tab: 'primary',
-    sender: 'Erlan',
-    subject: 'Prospek Baru',
-    snippet: 'Erlan mendaftarkan prospek baru atas nama Toko Laris Manis. Harap pastikan jadwal kunjungan segera direncanakan.',
-    date: 'Mar 22',
-    isRead: false,
-    isStarred: false,
-    isArchived: false,
-    details: {
-      nama: 'Toko Laris Manis',
-      kategori: 'Retailer',
-      alamat: 'Pasar Klandasan, Balikpapan',
-      noHp: '0853-9999-1234',
-      catatan: 'Tertarik dengan produk baru kita. Perlu sampel dikirim ke toko besok siang.'
-    }
-  },
-  {
-    id: 3,
-    tab: 'primary',
-    sender: 'Pepin',
-    subject: 'Customer Baru',
-    snippet: 'Pepin berhasil menambah Customer baru atas nama CV Angkasa Supermarket. Dokumen registrasi sudah lengkap.',
-    date: 'Mar 21',
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    details: {
-      nama: 'CV Angkasa Supermarket',
-      kategori: 'Supermarket / Modern Trade',
-      alamat: 'Komo, Balikpapan Utara',
-      noHp: '0811-2222-3333',
-      catatan: 'Sudah TTD Kontrak awal. PO pertama senilai 15 Juta.'
-    }
-  },
-  {
-    id: 4,
-    tab: 'primary',
-    sender: 'System',
-    subject: 'Target Tercapai',
-    snippet: 'Tim Sales area Balikpapan berhasil mencapai 90% target akuisisi pelanggan baru bulan ini!',
-    date: 'Mar 18',
-    isRead: true,
-    isStarred: true,
-    isArchived: false,
-    details: {
-      fullText: (
-        <div>
-          <p style={{marginBottom: '12px'}}>Halo Bapak/Ibu Manager,</p>
-          <p style={{marginBottom: '12px'}}>Dengan bangga kami sampaikan bahwa <strong>Tim Sales area Balikpapan</strong> telah berhasil mencapai <strong>90%</strong> dari target akuisisi pelanggan baru untuk bulan ini.</p>
-          <p style={{marginBottom: '12px'}}>Pencapaian ini mencerminkan kerja keras tim gabungan minggu ini. Mari terus dukung untuk 10% terakhir!</p>
-          <p>Salam hangat,<br/>System</p>
-        </div>
-      )
-    }
-  },
-  {
-    id: 5,
-    tab: 'update',
-    sender: 'System Admin',
-    subject: 'Update Fitur Dashboard v3.2',
-    snippet: 'Halaman Data Customer kini telah ditingkatkan. Filter dan pencarian data menjadi lebih akurat dengan desain baru.',
-    date: 'Mar 23',
-    isRead: false,
-    isStarred: true,
-    isArchived: false,
-    details: {
-      fullText: (
-        <div>
-          <p style={{marginBottom: '16px', fontSize: '16px'}}><strong>Update Fitur Dashboard versi 3.2 telah Live! 🚀</strong></p>
-          <p style={{marginBottom: '12px'}}>Berikut pembaruan utama yang sudah bisa Anda nikmati:</p>
-          <ul style={{marginLeft: '24px', marginBottom: '24px', lineHeight: '1.8'}}>
-            <li><strong>Halaman Data Customer:</strong> Filter dropdown kini dipisah di pojok atas, dan pencarian table jadi jauh lebih responsif dengan layout Split yang fresh.</li>
-            <li><strong>Halaman Inbox Baru:</strong> Selamat datang di Inbox versi terbaru! Penambahan fungsi arsipkan pesan (Archive), hapus (Delete), dan navigasi Detail Pesan seperti layaknya email client modern.</li>
-            <li><strong>Optimasi Kecepatan:</strong> Sinkronisasi data real-time kini direkayasa untuk lebih mulus tanpa reload halaman penuh.</li>
-          </ul>
-          <p>Apabila Anda mendapati masalah bug pada rilis kali ini, jangan ragu membalas notifikasi ini atau hubungi tim IT kami.</p>
-          <p style={{marginTop: '24px'}}>Terima kasih,<br/><strong>System Admin Teams</strong></p>
-        </div>
-      )
-    }
-  },
-  {
-    id: 6,
-    tab: 'update',
-    sender: 'IT Operation',
-    subject: 'Jadwal Pemeliharaan Server',
-    snippet: 'Pemeliharaan rutin server database akan dilakukan malam ini pukul 00:00 - 02:00 WITA. Layanan mungkin mengalami jeda sementara.',
-    date: 'Mar 20',
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    details: {
-      fullText: (
-        <div>
-          <p style={{marginBottom: '12px'}}>Pemberitahuan kepada seluruh user,</p>
-          <p style={{marginBottom: '12px'}}><strong>Jadwal Pemeliharaan Server:</strong></p>
-          <p style={{marginBottom: '12px'}}>Malam ini, mulai pukul <strong>00:00 hingga 02:00 WITA</strong>, IT Operation akan melakukan indexing ulang dan update sertifikat SSL di cluster database utama.</p>
-          <p style={{marginBottom: '12px'}}>Diharapkan Anda menyimpan semua draft inputan sebelum waktu tersebut untuk menghindari <em>Time Out</em> form submission. Setelah waktu ini layanan akan kembali beroperasi normal.</p>
-          <p>Terima kasih atas pengertiannya.</p>
-        </div>
-      )
-    }
-  },
-  {
-    id: 7,
-    tab: 'update',
-    sender: 'Product Team',
-    subject: 'Fitur Leaderboard Baru Saja Rilis',
-    snippet: 'Sekarang Anda dapat memantau produktivitas tim Sales secara real-time melalui halaman Leaderboard. Segera cek!',
-    date: 'Mar 10',
-    isRead: true,
-    isStarred: false,
-    isArchived: false,
-    details: {
-      fullText: (
-        <div>
-          <p style={{marginBottom: '12px'}}>Hai Manager,</p>
-          <p style={{marginBottom: '12px'}}>Fitur <strong>Leaderboard</strong> terbaru kini sudah mengudara!</p>
-          <p style={{marginBottom: '12px'}}>Pantau produktivitas tim sales secara kompetitif dan identifikasi bintang top-seller minggu ini melalui tabel peringkat otomatis.</p>
-          <button style={{background: '#0ea5e9', color: 'white', padding: '10px 20px', border: 'none', borderRadius: '6px', fontWeight: 600, marginTop: '8px', cursor: 'pointer'}}>Lihat Leaderboard</button>
-        </div>
-      )
-    }
-  }
-];
 
 export default function ManagerInbox() {
+  const { activities, prospek, customers, sales } = useSalesData();
   const [activeTab, setActiveTab] = useState<TabType>('primary');
-  const [messages, setMessages] = useState<Message[]>(MOCK_INBOX_DATA);
   const [sentMessages, setSentMessages] = useState<any[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
@@ -187,17 +43,85 @@ export default function ManagerInbox() {
 
   const [page, setPage] = useState(1);
   const [viewAll, setViewAll] = useState(false);
-  const ITEMS_PER_PAGE = 3; // using 3 to show pagination effects since we only have a few mock items
+  const ITEMS_PER_PAGE = 8; 
 
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [activeMessageId, setActiveMessageId] = useState<number | null>(null);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+
+  // Convert Live Activities to Inbox Messages
+  const messages: Message[] = useMemo(() => {
+    // 1. Primary: Reports from Activities
+    const reports = activities
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 50)
+      .map((act, index) => {
+        const salesName = sales.find(s => s.id === act.id_sales)?.nama || 'Sales';
+        const target = act.target_type === 'prospek' 
+          ? prospek.find(p => p.id === act.target_id)
+          : customers.find(c => c.id === act.target_id);
+
+        let subject = `${act.tipe_aksi} Report`;
+        if (act.tipe_aksi === 'Order') subject = `📦 Pesanan Baru: ${act.target_nama}`;
+        if (act.tipe_aksi === 'Visit') subject = `📍 Kunjungan: ${act.target_nama}`;
+        if (act.tipe_aksi === 'Note') subject = `📝 Catatan: ${act.target_nama}`;
+
+        return {
+          id: index + 1000,
+          tab: 'primary' as TabType,
+          sender: salesName,
+          subject,
+          snippet: act.catatan_hasil,
+          date: formatDistanceToNow(new Date(act.timestamp), { addSuffix: true }),
+          isRead: false,
+          isStarred: act.tipe_aksi === 'Order',
+          isArchived: false,
+          details: {
+            nama: act.target_nama,
+            kategori: (target as any)?.kategori || '-',
+            alamat: (target as any)?.area || '-',
+            noHp: (target as any)?.no_wa || '-',
+            catatan: act.catatan_hasil,
+          }
+        };
+      });
+
+    // 2. Updates: System messages
+    const systemUpdates: Message[] = [
+      {
+        id: 1,
+        tab: 'update',
+        sender: 'System Admin',
+        subject: '🚀 Dashboard v4.0 is Live!',
+        snippet: 'Aesthetics improved with GrabFood style and real-time Chat sync.',
+        date: 'Just Now',
+        isRead: false,
+        isStarred: true,
+        isArchived: false,
+        details: {
+          fullText: (
+            <div>
+              <p style={{marginBottom: '16px', fontSize: '16px'}}><strong>Update Fitur Dashboard versi 4.0 telah Live! 🚀</strong></p>
+              <ul style={{marginLeft: '24px', marginBottom: '24px', lineHeight: '1.8'}}>
+                <li><strong>Gaya GrabFood:</strong> Layout header di HP lebih ramping dan premium.</li>
+                <li><strong>Chat Sync:</strong> Sinkronisasi pesan antara Manager & Sales sudah real-time.</li>
+                <li><strong>Data Inbox:</strong> Sekarang Inbox menampilkan aktivitas tim secara langsung!</li>
+              </ul>
+              <p>Selamat bekerja dan sukses hari ini!</p>
+            </div>
+          )
+        }
+      }
+    ];
+
+    return [...reports, ...systemUpdates];
+  }, [activities, sales, prospek, customers]);
 
   useEffect(() => {
     // Lift title to ManagerShell top nav
     window.dispatchEvent(new CustomEvent('setMgrTitle', { 
       detail: { 
         title: 'Info Tim', 
-        sub: 'Kirim broadcast, arahan sales, & notifikasi update sistem' 
+        sub: 'Pantau aktivitas real-time & kirim instruksi' 
       } 
     }));
     return () => {
@@ -211,29 +135,28 @@ export default function ManagerInbox() {
   const unreadUpdate = messages.filter(m => m.tab === 'update' && !m.isRead && !m.isArchived).length;
 
   const toggleStar = (id: number) => {
-    setMessages(msgs => msgs.map(m => m.id === id ? { ...m, isStarred: !m.isStarred } : m));
+     console.log('Toggling star for:', id);
   };
 
   const markAsRead = (id: number) => {
-    setMessages(msgs => msgs.map(m => m.id === id ? { ...m, isRead: true } : m));
+    console.log('Marking as read:', id);
   };
 
   const handleArchive = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMessages(msgs => msgs.map(m => m.id === id ? { ...m, isArchived: true } : m));
+    console.log('Archiving:', id);
   };
 
   const handleDelete = (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    setMessages(msgs => msgs.filter(m => m.id !== id));
+    console.log('Deleting:', id);
   };
 
   const handleRefresh = () => {
-    setMessages(MOCK_INBOX_DATA); // reset to original mock data
+    window.location.reload();
   };
 
   const handleMarkAllRead = () => {
-    setMessages(msgs => msgs.map(m => m.tab === activeTab ? { ...m, isRead: true } : m));
     setShowMoreMenu(false);
   };
 
@@ -328,9 +251,9 @@ export default function ManagerInbox() {
                    style={{ flex: 1, border: 'none', outline: 'none', fontSize: '15px', color: '#0f172a', fontWeight: 500, cursor: 'pointer', background: 'transparent' }}
                  >
                    <option value="Semua Sales">Semua Tim Sales</option>
-                   <option value="Burhan">Burhan</option>
-                   <option value="Erlan">Erlan</option>
-                   <option value="Pepin">Pepin</option>
+                   {sales.map(s => (
+                     <option key={s.id} value={s.nama}>{s.nama}</option>
+                   ))}
                  </select>
                </div>
                <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', marginBottom: '24px' }}>

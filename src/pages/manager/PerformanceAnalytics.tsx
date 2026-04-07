@@ -22,7 +22,8 @@ export default function PerformanceAnalytics() {
     };
   }, []);
 
-  const now = new Date();
+  // Use a stable reference for "now" to avoid re-calculating everything on every render
+  const [now] = useState(new Date());
   
   // Filtering Engine
   const { activities, prospek, customers } = useMemo(() => {
@@ -264,28 +265,7 @@ export default function PerformanceAnalytics() {
     return { healthData, activeCount, dormantCount, consistencyScore };
   }, [activities, customers, now, pointTrendsData]);
 
-  const activeAnalysis = useMemo(() => {
-    const areaStats: Record<string, { closing: number; so: number; count: number; score: number }> = {};
-    activities.forEach(a => {
-      const area = a.geotagging?.area || 'Unknown';
-      if (!areaStats[area]) areaStats[area] = { closing: 0, so: 0, count: 0, score: 0 };
-      if (a.catatan_hasil.toLowerCase().includes('closing')) areaStats[area].closing++;
-      if (a.tipe_aksi === 'Order') areaStats[area].so++;
-      areaStats[area].count++;
-    });
-    const sortedAreas = Object.entries(areaStats).map(([name, s]) => ({
-      name,
-      ...s,
-      score: (s.closing * 5) + (s.so * 3) + (s.count * 1)
-    })).sort((a,b) => b.score - a.score);
-    const activeArea = sortedAreas[0]?.name || 'N/A';
-    const prospekStats: Record<string, number> = {};
-    activities.filter(a => a.target_type === 'prospek').forEach(a => {
-      prospekStats[a.target_nama] = (prospekStats[a.target_nama] || 0) + 1;
-    });
-    const activeProspek = Object.entries(prospekStats).sort((a,b) => b[1] - a[1])[0]?.[0] || 'N/A';
-    return { activeArea, activeProspek };
-  }, [activities]);
+
 
   const channelDistribution = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -706,8 +686,8 @@ export default function PerformanceAnalytics() {
             </div>
 
             {/* Rows */}
-            <div className="custom-scrollbar" style={{ overflowY: 'auto', maxHeight: '220px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {statsPerSales.slice(0, 8).map((s, idx) => {
+            <div className="custom-scrollbar" style={{ overflowY: 'auto', maxHeight: '500px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              {statsPerSales.map((s, idx) => {
                 const followup = s.waCount + s.callCount;
 
                 return (

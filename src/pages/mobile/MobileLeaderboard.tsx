@@ -56,17 +56,39 @@ export default function MobileLeaderboard() {
   return (
     <div className="page-content" style={{ paddingBottom: '30px', background: 'var(--bg-deep)', minHeight: '100vh' }}>
       
-      {/* Sticky Header */}
-      <div style={{ 
-        position: 'sticky', top: 0, zIndex: 100, background: 'rgba(255,255,255,0.8)', 
-        backdropFilter: 'blur(12px)', padding: '16px 20px', display: 'flex', 
-        alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.05)'
+      {/* Top Header - Premium Grab Style */}
+      <div className="yellow-bg-top" style={{ 
+        height: '180px', 
+        position: 'relative',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        padding: '0 24px 20px',
+        zIndex: 100
       }}>
-        <button className="tap-active" onClick={() => navigate(-1)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <ChevronLeft size={24} color="#111827" />
-        </button>
-        <h2 style={{ fontSize: '18px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.5px' }}>Leaderboard</h2>
-        <div style={{ width: '40px' }} />
+        {/* Decorative elements */}
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 6 }}>
+          <button 
+            className="tap-active" 
+            onClick={() => navigate(-1)} 
+            style={{ 
+              background: 'rgba(255,255,255,0.45)', 
+              border: '1px solid rgba(255,255,255,0.3)', 
+              borderRadius: '16px', 
+              width: '46px', height: '46px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.03)'
+            }}
+          >
+            <ChevronLeft size={24} color="#111827" strokeWidth={3} />
+          </button>
+          <h2 style={{ fontSize: '24px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-1.2px' }}>Leaderboard</h2>
+        </div>
       </div>
 
       {/* Podium Background */}

@@ -13,19 +13,21 @@ export default function SalesChat({ salesId }: Props) {
   const currentUser = sales.find(s => s.id === salesId);
   
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [selectedContact, setSelectedContact] = useState<ChatContact | null>(null);
   const [contacts, setContacts] = useState<ChatContact[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load Contacts
   useEffect(() => {
-    chatStore.loadContacts().then(c => {
+    chatStore.loadContacts(salesId, true).then(c => {
       // Filter out self from contacts, but keep groups and Manager
       const filtered = c.filter(contact => contact.id !== salesId);
       setContacts(filtered);
@@ -61,6 +63,16 @@ export default function SalesChat({ salesId }: Props) {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  const handleSelectContact = (c: ChatContact) => {
+    const cid = chatStore.getChatId(salesId, c.id);
+    setSelectedContact(c);
+    setActiveChatId(cid);
+    // Mark as read immediately when selected
+    chatStore.markAllAsRead(cid, salesId);
+    // Update local count
+    setContacts(contacts.map(con => con.id === c.id ? { ...con, unreadCount: 0 } : con));
+  };
 
   const handleSend = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -98,7 +110,6 @@ export default function SalesChat({ salesId }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const activeContact = contacts.find(c => c.id === activeChatId);
   const filteredContacts = contacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   // Render Chat List
@@ -128,16 +139,21 @@ export default function SalesChat({ salesId }: Props) {
           ) : filteredContacts.length === 0 ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No contacts found.</div>
           ) : filteredContacts.map(c => (
-            <div key={c.id} onClick={() => setActiveChatId(c.id)} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', borderBottom: '1px solid #f8fafc', cursor: 'pointer' }}>
-               <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: c.type === 'group' ? '#e0e7ff' : '#E0F2FE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.type === 'group' ? '#6366f1' : '#0ea5e9', fontWeight: 800 }}>
+            <div key={c.id} onClick={() => handleSelectContact(c)} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', borderBottom: '1px solid #f8fafc', cursor: 'pointer', position: 'relative' }}>
+               <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: c.type === 'group' ? '#e0e7ff' : (c.id === 'Manager-1' ? '#FFFBEB' : '#E0F2FE'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.type === 'group' ? '#6366f1' : (c.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontWeight: 800, position: 'relative' }}>
                  {c.type === 'group' ? <Users size={24} /> : c.name.charAt(0)}
+                 {c.unreadCount > 0 && (
+                   <div style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: '#fff', fontSize: '10px', minWidth: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', fontWeight: 900 }}>
+                     {c.unreadCount}
+                   </div>
+                 )}
                </div>
                <div style={{ flex: 1 }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                   <span style={{ fontWeight: 800, fontSize: '15px' }}>{c.name}</span>
-                   <span style={{ fontSize: '11px', color: '#94a3b8' }}>{c.lastMessageTime}</span>
+                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                   <span style={{ fontWeight: 800, fontSize: '15px', color: '#111827' }}>{c.name}</span>
+                   <span style={{ fontSize: '11px', color: c.unreadCount > 0 ? '#EF4444' : '#94a3b8', fontWeight: c.unreadCount > 0 ? 800 : 500 }}>{c.lastMessageTime}</span>
                  </div>
-                 <div style={{ fontSize: '13px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
+                 <div style={{ fontSize: '13px', color: c.unreadCount > 0 ? '#111827' : '#64748b', fontWeight: c.unreadCount > 0 ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
                    {c.lastMessage}
                  </div>
                </div>
@@ -153,14 +169,22 @@ export default function SalesChat({ salesId }: Props) {
     <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5' }}>
       {/* Header */}
       <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e2e8f0', zIndex: 10 }}>
-        <button onClick={() => setActiveChatId(null)} style={{ background: 'none', border: 'none', padding: 0 }}><ArrowLeft size={24} /></button>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: activeContact?.type === 'group' ? '#e0e7ff' : '#E0F2FE', display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeContact?.type === 'group' ? '#6366f1' : '#0ea5e9', fontSize: '16px', fontWeight: 800 }}>
-          {activeContact?.type === 'group' ? <Users size={20} /> : activeContact?.name.charAt(0)}
+        <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'none', border: 'none', padding: 0 }}><ArrowLeft size={24} /></button>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: selectedContact?.type === 'group' ? '#e0e7ff' : (selectedContact?.id === 'Manager-1' ? '#FFFBEB' : '#E0F2FE'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800 }}>
+          {selectedContact?.type === 'group' ? <Users size={20} /> : selectedContact?.name.charAt(0)}
         </div>
-        <div>
-          <div style={{ fontSize: '15px', fontWeight: 800 }}>{activeContact?.name}</div>
-          <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>Online</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: '15px', fontWeight: 800 }}>{selectedContact?.name}</div>
+          <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>{selectedContact?.type === 'group' ? `${contacts.length} Members` : 'Online'}</div>
         </div>
+        {selectedContact?.type === 'group' && (
+          <button 
+            onClick={() => setShowInviteModal(true)}
+            style={{ background: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, color: '#111827', display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Users size={16} /> INVITE
+          </button>
+        )}
       </div>
 
       {/* Messages Area */}
@@ -178,7 +202,7 @@ export default function SalesChat({ salesId }: Props) {
                 boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
                 position: 'relative'
               }}>
-                {activeContact?.type === 'group' && !isMe && (
+                {selectedContact?.type === 'group' && !isMe && (
                    <div style={{ fontSize: '10px', color: '#6366f1', fontWeight: 800, marginBottom: '2px' }}>{m.sender_name}</div>
                 )}
                 {m.attachment && (
@@ -223,6 +247,36 @@ export default function SalesChat({ salesId }: Props) {
           </form>
         </div>
       </div>
+
+      {/* Invite Member Modal */}
+      {showInviteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
+          <div className="animate-fade-up" style={{ background: '#fff', width: '100%', borderRadius: '32px 32px 0 0', padding: '24px 20px calc(30px + env(safe-area-inset-bottom))', maxHeight: '80vh', overflowY: 'auto' }}>
+            <div style={{ width: '40px', height: '6px', background: '#f1f5f9', borderRadius: '4px', margin: '0 auto 20px' }}></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ fontSize: '20px', fontWeight: 950, margin: 0 }}>Undang ke Grup</h3>
+              <button onClick={() => setShowInviteModal(false)} style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', color: '#64748b', fontWeight: 900 }}>×</button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {contacts.filter(c => c.type === 'direct' && c.id !== 'Manager-1').map(c => (
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '12px 16px', background: '#f8fafc', borderRadius: '16px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e0f2fe', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                    {c.name.charAt(0)}
+                  </div>
+                  <div style={{ flex: 1, fontWeight: 700, fontSize: '15px' }}>{c.name}</div>
+                  <button 
+                    onClick={() => { alert(`Anggota ${c.name} telah diundang.`); setShowInviteModal(false); }}
+                    style={{ background: 'var(--brand-yellow)', border: 'none', padding: '8px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 900 }}
+                  >
+                    UNDANG
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

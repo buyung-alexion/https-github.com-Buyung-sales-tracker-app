@@ -6,6 +6,7 @@ import type { ChatMessage, ChatContact } from '../../types';
 
 export default function ManagerChat() {
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [selectedContact, setSelectedContact] = useState<ChatContact | null>(null);
   const [inputText, setInputText] = useState('');
   const [attachmentBase64, setAttachmentBase64] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -17,6 +18,12 @@ export default function ManagerChat() {
 
   const EMOJI_LIST = ['😀','😂','😍','🙏','👍','🔥','🎉','😊','👋','😎'];
 
+  const handleSelectContact = (c: ChatContact) => {
+    const cid = chatStore.getChatId('Manager-1', c.id);
+    setSelectedContact(c);
+    setActiveChatId(cid);
+  };
+
   useEffect(() => {
     // Hide title from ManagerShell top nav to save space as requested
     const timer = setTimeout(() => {
@@ -24,9 +31,11 @@ export default function ManagerChat() {
     }, 50);
     
     // Load dynamic contacts from backend
-    chatStore.loadContacts().then(c => {
+    chatStore.loadContacts('Manager-1').then(c => {
       setContacts(c);
-      if (c.length > 0) setActiveChatId(c[0].id);
+      if (c.length > 0) {
+        handleSelectContact(c[0]);
+      }
     });
 
     return () => {
@@ -70,7 +79,7 @@ export default function ManagerChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [activeMessages]);
 
-  const activeContact = contacts.find(c => c.id === activeChatId);
+  const activeContact = selectedContact;
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,7 +160,7 @@ export default function ManagerChat() {
           {filteredContacts.map(contact => (
             <div 
               key={contact.id} 
-              onClick={() => setActiveChatId(contact.id)}
+              onClick={() => handleSelectContact(contact)}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 

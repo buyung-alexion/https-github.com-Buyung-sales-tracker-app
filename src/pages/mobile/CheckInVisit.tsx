@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MapPin, CheckCircle, Camera, AlertTriangle, Crosshair, Loader2 } from 'lucide-react';
+import { MapPin, CheckCircle, Camera, AlertTriangle, Crosshair, Loader2, Users } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Area } from '../../types';
@@ -38,17 +37,20 @@ const iconBlue = createIcon('#3b82f6');
 // MapUpdater is deprecated in favor of mapRef
 
 export default function CheckInVisit({ salesId }: Props) {
-  const navigate = useNavigate();
-  const { activities, customers, prospek } = useSalesData();
+  const { activities, customers, prospek, refresh } = useSalesData();
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
   const [catatan, setCatatan] = useState('');
   const [success, setSuccess] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [targetType, setTargetType] = useState<'General' | 'Customer' | 'Prospek'>('General');
   const [targetId, setTargetId] = useState<string>('');
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>({ lat: -1.265, lng: 116.83 }); // Default Balikpapan
   const [isLocating, setIsLocating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const mapRef = useRef<L.Map | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   // Derived Target Info
   const myCustomers = customers.filter(c => c.sales_pic === salesId);
@@ -132,7 +134,7 @@ export default function CheckInVisit({ salesId }: Props) {
     }
   }, [targetData]);
 
-  const handleCapturePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
@@ -151,31 +153,47 @@ export default function CheckInVisit({ salesId }: Props) {
   };
 
   const handleCheckIn = async () => {
-    if (!selectedArea) return;
+    if (isSubmitting) return; // Prevention
+    if (!selectedArea) return alert('Select area!');
     if (targetType !== 'General' && !targetId) return alert('Select store!');
     if (!photoBase64 || !location) return alert('GPS & Photo required!');
     if (lockCheckIn) return alert('You are too far from target!');
 
-    let tName = targetData ? targetData.name : `Check-in area ${selectedArea}`;
-    await store.logActivity({
-      id_sales: salesId,
-      target_id: targetType === 'General' ? salesId : targetId,
-      target_type: targetType === 'General' ? 'area' : (targetType === 'Customer' ? 'customer' : 'prospek'),
-      target_nama: tName, tipe_aksi: 'Visit',
-      catatan_hasil: catatan || `Visit to ${tName}`,
-      geotagging: { area: selectedArea, lat: location.lat, lng: location.lng, photo: photoBase64 }
-    });
+    setIsSubmitting(true);
+    setSaveError(null);
+    try {
+      let tName = targetData ? targetData.name : `Check-in area ${selectedArea}`;
+      const { error } = await store.logActivity({
+        id_sales: salesId,
+        target_id: targetType === 'General' ? salesId : targetId,
+        target_type: targetType === 'General' ? 'area' : (targetType === 'Customer' ? 'customer' : 'prospek'),
+        target_nama: tName, tipe_aksi: 'Visit',
+        catatan_hasil: catatan || `Visit to ${tName}`,
+        geotagging: { area: selectedArea, lat: location.lat, lng: location.lng, photo: photoBase64 }
+      });
 
-    setSuccess(true);
-    setTimeout(() => {
-        setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
-    }, 2000);
+      if (error) {
+        setSaveError('Gagal menyimpan laporan. Periksa koneksi Anda.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      setSuccess(true);
+      await refresh();
+      setTimeout(() => {
+          setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
+          setIsSubmitting(false);
+      }, 2000);
+    } catch (err) {
+      setSaveError('Kesalahan sistem saat menyimpan.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="page-content" style={{ padding: 0 }}>
+    <div className="page-content" style={{ padding: 0, overflow: 'hidden' }}>
       {/* MAP BACKGROUND LAYER */}
-      <div style={{ height: '52vh', width: '100%', position: 'relative', background: '#e2e8f0', zIndex: 0, flexShrink: 0 }}>
+      <div style={{ height: '45vh', width: '100%', position: 'relative', background: '#e2e8f0', zIndex: 0, flexShrink: 0 }}>
         <MapContainer center={mapCenter} zoom={16} style={{ height: '100%', width: '100%' }} zoomControl={false} ref={mapRef}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
           
@@ -195,13 +213,13 @@ export default function CheckInVisit({ salesId }: Props) {
         {targetData && targetData.loc && distanceMeters !== null && (
           <div className="distance-overlay" style={{ background: lockCheckIn ? '#FEF2F2' : '#ECFDF5', 
              position: 'absolute', top: '24px', left:'50%', transform:'translateX(-50%)', zIndex: 1000, 
-             padding: '8px 20px', borderRadius: '30px', color: lockCheckIn ? '#EF4444' : '#059669', border: lockCheckIn ? '2px solid #FCA5A5' : '2px solid #6EE7B7', fontWeight: 900, fontSize: '13px', display:'flex', gap:'6px', alignItems:'center', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
+             padding: '8px 20px', borderRadius: '30px', color: lockCheckIn ? '#EF4444' : '#059669', border: lockCheckIn ? '1px solid #FCA5A5' : '1px solid #6EE7B7', fontWeight: 900, fontSize: '13px', display:'flex', gap:'6px', alignItems:'center', boxShadow: '0 8px 20px rgba(0,0,0,0.1)' }}>
             <MapPin size={16} /> {distanceMeters}m from {targetData.name}
           </div>
         )}
 
         <button 
-          style={{ position: 'absolute', bottom: '60px', right: '20px', zIndex: 1000, background: '#ffffff', width: '52px', height: '52px', borderRadius: '50%', boxShadow: '0 8px 25px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', opacity: isLocating ? 0.7 : 1 }}
+          style={{ position: 'absolute', bottom: '50px', right: '20px', zIndex: 1000, background: '#ffffff', width: '52px', height: '52px', borderRadius: '50%', boxShadow: '0 8px 25px rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', opacity: isLocating ? 0.7 : 1 }}
           onClick={handleGetLocation}
           disabled={isLocating}
         >
@@ -211,91 +229,138 @@ export default function CheckInVisit({ salesId }: Props) {
         </button>
       </div>
 
-      {/* FOREGROUND SLIDING PANEL */}
-      <div style={{ background: '#ffffff', borderRadius: '32px 32px 0 0', marginTop: '-36px', position: 'relative', zIndex: 10, padding: '24px 24px 100px', display: 'flex', flexDirection: 'column', gap: '16px', boxShadow: '0 -10px 40px rgba(0,0,0,0.08)' }}>
-        <div style={{ width: '40px', height: '6px', background: '#e2e8f0', borderRadius: '4px', margin: '0 auto -6px' }}></div>
-        <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>Check-In Report</h2>
+      {/* PREMIUM HEADER - Grab Style */}
+      <div className="hero-compact" style={{ 
+        padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
+        position: 'relative', 
+        overflow: 'hidden',
+        background: 'var(--brand-yellow)',
+        borderBottomLeftRadius: '32px',
+        borderBottomRightRadius: '32px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        zIndex: 50,
+        marginTop: '-30px' // Pull up over the map slightly
+      }}>
+        <div style={{ width: '40px', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', margin: '0 auto 12px' }}></div>
+        <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px', margin: 0 }}>Laporan Kunjungan</h2>
+      </div>
+
+      {/* FOREGROUND PANEL */}
+      <div style={{ 
+        background: '#ffffff', 
+        position: 'relative', zIndex: 10, padding: '24px 20px 100px', 
+        display: 'flex', flexDirection: 'column', gap: '16px', 
+        maxHeight: '55vh', overflowY: 'auto'
+      }}>
 
         {success && (
-          <div className="success-banner" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '12px', padding: '12px', color: '#34d399', fontWeight: '600', display: 'flex', gap: '8px', alignItems:'center' }}>
-            <CheckCircle size={18} /> Saved!
+          <div className="animate-fade-up" style={{ background: '#ECFDF5', border: '1px solid #34D399', borderRadius: '16px', padding: '14px', color: '#059669', fontWeight: '800', display: 'flex', gap: '8px', alignItems:'center', fontSize: '14px' }}>
+            <CheckCircle size={18} /> Laporan Kunjungan Berhasil Disimpan!
+          </div>
+        )}
+
+        {saveError && (
+          <div className="animate-shake" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '16px', padding: '14px', color: '#EF4444', fontWeight: '800', display: 'flex', gap: '8px', alignItems:'center', fontSize: '14px' }}>
+            <AlertTriangle size={18} /> {saveError}
           </div>
         )}
 
         <div className="form-group" style={{ marginBottom: 0 }}>
-          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Select Reference Area</label>
+          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Pilih Area Referensi</label>
           <select 
             className="form-input" 
-            style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }} 
+            style={{ width: '100%', background: '#F8FAFC', border: '2px solid #E2E8F0', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b', outline: 'none' }} 
             value={selectedArea || ''} 
             onChange={e => {
               if (e.target.value === 'ADD_NEW') {
                 const newArea = prompt('Masukkan nama area baru:');
-                if (newArea && newArea.trim() !== '') {
-                  // Tambahkan ke AREA_CONFIG lokal atau biarkan input state menerima string bebas
-                  setSelectedArea(newArea.trim());
-                }
+                if (newArea && newArea.trim() !== '') setSelectedArea(newArea.trim());
               } else {
                 setSelectedArea(e.target.value);
               }
             }}
           >
-             <option value="">-- Manual Area (General Auto-Detect) --</option>
-             {AREA_CONFIG.map(a => <option key={a.area} value={a.area}>{a.area} - {a.desc}</option>)}
+             <option value="">-- Deteksi Area Otomatis --</option>
+             {AREA_CONFIG.map(a => <option key={a.area} value={a.area}>{a.area}</option>)}
              {selectedArea && !AREA_CONFIG.find(a => a.area === selectedArea) && (
                 <option value={selectedArea}>{selectedArea}</option>
              )}
-             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Add New Area</option>
+             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah Area Baru</option>
           </select>
         </div>
 
         <div className="form-group" style={{ marginBottom: 0 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', margin: 0 }}>Visit Destination (Store)</label>
-            {targetType === 'Customer' && (
-                <button onClick={() => navigate('/mobile/customer#new')} style={{ fontSize: '11px', color: '#059669', fontWeight: 800, background: '#ecfdf5', padding: '4px 10px', borderRadius: '8px', border: '1px solid #10b981', cursor: 'pointer' }}>+ Add Customer</button>
-            )}
-            {targetType === 'Prospek' && (
-                <button onClick={() => navigate('/mobile/prospek#new')} style={{ fontSize: '11px', color: '#1d4ed8', fontWeight: 800, background: '#eff6ff', padding: '4px 10px', borderRadius: '8px', border: '1px solid #3b82f6', cursor: 'pointer' }}>+ Add Prospect</button>
-            )}
+            <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', margin: 0 }}>Tujuan Kunjungan (Toko)</label>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <select className="form-input" style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }} value={targetType} onChange={e => { setTargetType(e.target.value as any); setTargetId(''); }}>
-              <option value="General">Area Only (General Visit)</option>
-              <option value="Customer">Existing Customer</option>
-              <option value="Prospek">New Prospect</option>
+            <select className="form-input" style={{ width: '100%', background: '#F8FAFC', border: '2px solid #E2E8F0', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }} value={targetType} onChange={e => { setTargetType(e.target.value as any); setTargetId(''); }}>
+              <option value="General">Kunjungan Umum</option>
+              <option value="Customer">Customer</option>
+              <option value="Prospek">Prospek</option>
             </select>
 
             {targetType === 'Customer' && (
-              <select className="form-input" style={{ width: '100%', border: '2px solid #10b981', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#ecfdf5' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
-                <option value="">-- Select Customer --</option>
+              <select className="form-input" style={{ width: '100%', border: '2px solid #10B981', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#059669', background: '#F0FDF4' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
+                <option value="">-- Pilih Pelanggan --</option>
                 {myCustomers.map(c => <option key={c.id} value={c.id}>{c.nama_toko}</option>)}
               </select>
             )}
 
             {targetType === 'Prospek' && (
-              <select className="form-input" style={{ width: '100%', border: '2px solid #3b82f6', borderRadius: '12px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#1d4ed8', background: '#eff6ff' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
-                <option value="">-- Select Prospect --</option>
+              <select className="form-input" style={{ width: '100%', border: '2px solid #3b82f6', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: 800, color: '#1d4ed8', background: '#EFF6FF' }} value={targetId} onChange={e => setTargetId(e.target.value)}>
+                <option value="">-- Pilih Prospek --</option>
                 {myProspek.map(p => <option key={p.id} value={p.id}>{p.nama_toko}</option>)}
               </select>
             )}
           </div>
         </div>
 
-        <label style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', margin: 0, padding: '16px', background: photoBase64 ? '#ecfdf5' : '#f8fafc', color: photoBase64 ? '#059669' : '#111827', border: '2px dashed #cbd5e1', borderRadius: '16px', fontWeight: 800, fontSize: '14px', transition: 'all 0.2s' }}>
-          <Camera size={20} /> {photoBase64 ? 'Photo Attached ✅' : 'Take Proof Photo (Camera)'}
-          <input type="file" accept="image/*" style={{ display: 'none' }} capture="environment" onChange={handleCapturePhoto} />
-        </label>
-
-        {photoBase64 && <div style={{ padding: '4px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}><img src={photoBase64} alt="Bukti" style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '12px' }} /></div>}
-
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Visit Note</label>
-          <textarea className="form-input" style={{ width: '100%', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: 600, color: '#1e293b', minHeight: '80px' }} placeholder="Write result..." value={catatan} onChange={e => setCatatan(e.target.value)} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Lampiran Foto Bukti</label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <button 
+              className="tap-active"
+              onClick={() => cameraInputRef.current?.click()}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '16px', borderRadius: '20px', border: '2px dashed #CBD5E1', background: '#F8FAFC', color: '#475569', fontSize: '12px', fontWeight: 800 }}
+            >
+              <Camera size={20} />
+              <span>Ambil Foto</span>
+            </button>
+            <button 
+              className="tap-active"
+              onClick={() => fileInputRef.current?.click()}
+              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '16px', borderRadius: '20px', border: '2px dashed #CBD5E1', background: '#F8FAFC', color: '#475569', fontSize: '12px', fontWeight: 800 }}
+            >
+              <Users size={20} />
+              <span>Pilih Galeri</span>
+            </button>
+          </div>
+          <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
+          <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
         </div>
 
-        <button onClick={handleCheckIn} disabled={lockCheckIn} style={{ width: '100%', padding: '18px', background: lockCheckIn ? '#f1f5f9' : 'var(--brand-yellow)', color: lockCheckIn ? '#94a3b8' : '#111827', borderRadius: '20px', fontWeight: 900, fontSize: '16px', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: lockCheckIn ? 'none' : '0 10px 25px rgba(245, 158, 11, 0.3)', transition: 'all 0.3s', marginTop: '10px' }}>
-          {lockCheckIn ? <><AlertTriangle size={18} /> Location Too Far (&gt;100m)</> : <><MapPin size={20} /> Save Check-In Report</>}
+        {photoBase64 && <div className="animate-scale" style={{ padding: '4px', background: '#fff', border: '2px solid #E2E8F0', borderRadius: '20px', overflow: 'hidden' }}><img src={photoBase64} alt="Bukti" style={{ width: '100%', height: '160px', objectFit: 'cover', borderRadius: '16px' }} /></div>}
+
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', display: 'block', marginBottom: '8px' }}>Catatan Hasil</label>
+          <textarea className="form-input" style={{ width: '100%', background: '#F8FAFC', border: '2px solid #E2E8F0', borderRadius: '16px', padding: '16px', fontSize: '14px', fontWeight: 600, color: '#1e293b', minHeight: '100px', outline: 'none' }} placeholder="Tulis hasil kunjungan..." value={catatan} onChange={e => setCatatan(e.target.value)} />
+        </div>
+
+        <button 
+          onClick={handleCheckIn} 
+          disabled={lockCheckIn || isSubmitting} 
+          className="tap-active"
+          style={{ 
+            width: '100%', padding: '18px', 
+            background: lockCheckIn ? '#F1F5F9' : (isSubmitting ? '#E2E8F0' : 'var(--brand-yellow)'), 
+            color: lockCheckIn ? '#94A3B8' : '#111827', 
+            borderRadius: '20px', fontWeight: 900, fontSize: '16px', border: 'none', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+            boxShadow: lockCheckIn ? 'none' : '0 10px 20px rgba(255, 204, 0, 0.2)'
+          }}
+        >
+          {isSubmitting ? <Loader2 size={22} className="animate-spin" /> : 'Kirim Laporan Kunjungan'}
         </button>
       </div>
     </div>

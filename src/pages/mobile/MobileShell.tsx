@@ -1,7 +1,6 @@
-import { useState } from 'react';
-import { Routes, Route, NavLink, useNavigate, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, MapPin, BarChart2, MessageSquare } from 'lucide-react';
-import { useCurrentSales, useSalesData } from '../../hooks/useSalesData';
+import { useAuth } from '../../hooks/useAuth';
 import Homepage from './Homepage';
 import DashboardTarget from './DashboardTarget';
 import ProspectingTool from './ProspectingTool';
@@ -12,43 +11,16 @@ import Profile from './Profile';
 import ClientDetail from './ClientDetail';
 import SalesChat from './SalesChat';
 import MobileLeaderboard from './MobileLeaderboard';
+import { useChatNotifications } from '../../hooks/useChatNotifications';
 
 export default function MobileShell() {
-  const { currentSalesId, setSales } = useCurrentSales();
-  const { sales: allSales } = useSalesData();
-  const navigate = useNavigate();
+  const { user } = useAuth();
   const location = useLocation();
-  const [showLogin, setShowLogin] = useState(!currentSalesId);
+  const chatUnread = useChatNotifications(user?.id);
   
   const isEditingProfile = location.pathname === '/mobile/profile' && location.search.includes('edit=true');
 
-  if (showLogin || !currentSalesId) {
-    return (
-      <div className="mobile-login" style={{ background: 'var(--bg-deep)' }}>
-        <div className="login-card animate-scale shadow-premium" style={{ border: 'none', background: '#fff', borderRadius: '40px', padding: '48px 32px' }}>
-          <div className="login-logo" style={{ fontSize: '72px', filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))', marginBottom: '24px' }}>🥩</div>
-          <h1 style={{ fontSize: '32px', fontWeight: 950, letterSpacing: '-1px' }}>Sales Tracker</h1>
-          <p style={{ fontSize: '15px', color: '#64748b', fontWeight: 600, marginBottom: '40px' }}>Select your profile to begin</p>
-          <div className="login-buttons" style={{ gap: '16px' }}>
-            {allSales.map(s => (
-              <button 
-                key={s.id} 
-                className="login-btn tap-active shadow-sm" 
-                style={{ 
-                  padding: '18px 24px', borderRadius: '24px', border: '1px solid #f1f5f9',
-                  display: 'flex', alignItems: 'center', gap: '16px', background: '#fff'
-                }}
-                onClick={() => { setSales(s.id); setShowLogin(false); navigate('/mobile/home'); }}
-              >
-                <div className={`armada-badge arm-${s.armada.toLowerCase()}`} style={{ padding: '4px 12px', borderRadius: '10px' }}>{s.armada}</div>
-                <span className="login-name" style={{ fontWeight: 800, fontSize: '18px', color: '#111827' }}>{s.nama}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (!user) return <Navigate to="/" replace />;
 
   return (
     <div className="mobile-shell">
@@ -56,15 +28,15 @@ export default function MobileShell() {
       <main className="mobile-main">
         <Routes>
           <Route index element={<Navigate to="home" replace />} />
-          <Route path="home" element={<Homepage salesId={currentSalesId} />} />
-          <Route path="analytic" element={<DashboardTarget salesId={currentSalesId} />} />
-          <Route path="prospek" element={<ProspectingTool salesId={currentSalesId} />} />
-          <Route path="customer" element={<CustomerMaintenance salesId={currentSalesId} />} />
-          <Route path="checkin" element={<CheckInVisit salesId={currentSalesId} />} />
+          <Route path="home" element={<Homepage salesId={user.id} />} />
+          <Route path="analytic" element={<DashboardTarget salesId={user.id} />} />
+          <Route path="prospek" element={<ProspectingTool salesId={user.id} />} />
+          <Route path="customer" element={<CustomerMaintenance salesId={user.id} />} />
+          <Route path="checkin" element={<CheckInVisit salesId={user.id} />} />
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:type/:id" element={<ClientDetail />} />
 // Removed Rencana route
-          <Route path="chat" element={<SalesChat salesId={currentSalesId} />} />
+          <Route path="chat" element={<SalesChat salesId={user.id} />} />
           <Route path="rank" element={<MobileLeaderboard />} />
         </Routes>
       </main>
@@ -74,7 +46,7 @@ export default function MobileShell() {
           {[
             { to: '/mobile/home',     Icon: LayoutDashboard, label: 'Home'      },
             { to: '/mobile/analytic', Icon: BarChart2,        label: 'Analytics' },
-            { to: '/mobile/checkin',  Icon: MapPin,           label: 'Activity'  },
+            { to: '/mobile/checkin',  Icon: MapPin,           label: 'Visit'     },
             { to: '/mobile/chat',     Icon: MessageSquare,    label: 'Chat'      },
           ].map(({ to, Icon, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
@@ -83,6 +55,27 @@ export default function MobileShell() {
                   <span className="nav-icon-wrap">
                     <span className="nav-icon-bubble" />
                     <Icon size={20} className="nav-icon-svg" />
+                    {label === 'Chat' && chatUnread > 0 && (
+                      <span style={{ 
+                        position: 'absolute', 
+                        top: '-6px', 
+                        right: '-8px', 
+                        background: '#EF4444', 
+                        color: '#fff', 
+                        fontSize: '9px', 
+                        fontWeight: 950, 
+                        minWidth: '16px', 
+                        height: '16px', 
+                        borderRadius: '50%', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        border: '2px solid #fff',
+                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)'
+                      }}>
+                        {chatUnread > 9 ? '9+' : chatUnread}
+                      </span>
+                    )}
                   </span>
                   <span className="nav-label">{label}</span>
                 </>

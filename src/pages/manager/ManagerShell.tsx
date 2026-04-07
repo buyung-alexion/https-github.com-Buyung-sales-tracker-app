@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
 import ManagerProspek from './ManagerProspek';
@@ -12,6 +13,7 @@ import DataManagement from './DataManagement';
 import ManagerChat from './ManagerChat';
 
 export default function ManagerShell() {
+  const { logout, user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [shellTitle, setShellTitle] = useState('');
   const [shellSub, setShellSub] = useState('');
@@ -28,10 +30,12 @@ export default function ManagerShell() {
   const handleLogout = (e: any) => {
     e.preventDefault();
     if(window.confirm('Yakin ingin keluar?')) {
-      localStorage.removeItem('st_user');
-      window.location.href = '/';
+      logout();
     }
   };
+
+  const role = (user?.role || '').toLowerCase();
+  if (!user || (role !== 'manager' && role !== 'admin')) return <Navigate to="/" replace />;
 
   const menuCategories = [
     {
