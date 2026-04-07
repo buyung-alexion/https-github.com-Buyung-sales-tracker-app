@@ -175,17 +175,28 @@ export default function DashboardTarget({ salesId }: Props) {
       </div>
 
       <div style={{ position: 'relative', zIndex: 60, marginTop: '20px' }}>
-        {/* Donut Ring */}
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', width: '100%', padding: '0 20px' }}>
-          <div style={{ position: 'absolute', left: '15px', textAlign: 'center', color: '#111827', width: '60px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Aktual</div>
-            <div style={{ fontSize: '18px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')}</div>
+        {/* Donut Ring - Realigned for and spacing */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          width: '100%', 
+          padding: '0 24px',
+          marginTop: '10px'
+        }}>
+          {/* Aktual Column */}
+          <div style={{ textAlign: 'center', color: '#111827', flex: 1 }}>
+            <div style={{ fontSize: '10px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.7, marginBottom: '4px' }}>Aktual</div>
+            <div style={{ fontSize: '22px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalActual.toLocaleString('id-ID')}</div>
           </div>
 
+          {/* Center Donut */}
           <div style={{ 
-            position: 'relative', width: '220px', height: '220px', background: '#fff', 
+            position: 'relative', width: '210px', height: '210px', background: '#fff', 
             borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            boxShadow: '0 10px 30px rgba(0,0,0,0.1)' 
+            boxShadow: '0 12px 35px rgba(0,0,0,0.08)',
+            margin: '0 10px',
+            flexShrink: 0
           }}>
             <svg width="180" height="180" viewBox="0 0 180 180" style={{ position: 'absolute' }}>
               <defs>
@@ -194,23 +205,24 @@ export default function DashboardTarget({ salesId }: Props) {
                   <stop offset="100%" stopColor="#F59E0B" />
                 </linearGradient>
               </defs>
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth="18" />
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="url(#solidYellow)" strokeWidth="18"
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f8fafc" strokeWidth="16" />
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="url(#solidYellow)" strokeWidth="16"
                 strokeDasharray={`${dash} ${circumference}`}
                 strokeLinecap="round" transform="rotate(-90 90 90)"
-                style={{ transition: 'stroke-dasharray 1s ease' }}
+                style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
               />
             </svg>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#10B981', letterSpacing: '0.5px', marginBottom: '-2px' }}>CAPAIAN</span>
-              <span style={{ fontSize: '46px', fontWeight: 900, color: '#0f172a', letterSpacing: '-1.5px', margin: '4px 0' }}>{overallPct}%</span>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.2px', textTransform: 'uppercase' }}>Performance</span>
+              <span style={{ fontSize: '11px', fontWeight: 800, color: '#10B981', letterSpacing: '1px', marginBottom: '-2px' }}>CAPAIAN</span>
+              <span style={{ fontSize: '48px', fontWeight: 950, color: '#0f172a', letterSpacing: '-2px', margin: '2px 0' }}>{overallPct}%</span>
+              <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Performance</span>
             </div>
           </div>
 
-          <div style={{ position: 'absolute', right: '15px', textAlign: 'center', color: '#111827', width: '60px' }}>
-            <div style={{ fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.8 }}>Target</div>
-            <div style={{ fontSize: '18px', fontWeight: 900 }}>{totalTarget}</div>
+          {/* Target Column */}
+          <div style={{ textAlign: 'center', color: '#111827', flex: 1 }}>
+            <div style={{ fontSize: '10px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.7, marginBottom: '4px' }}>Target</div>
+            <div style={{ fontSize: '22px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalTarget.toLocaleString('id-ID')}</div>
           </div>
         </div>
       </div>
