@@ -1,7 +1,7 @@
 {
-  "name": "Sales Tracker 🥩",
-  "short_name": "SalesTracker",
-  "description": "Professional Sales Monitoring & Activity Tracking App",
+  "name": "IKTmobile.app",
+  "short_name": "IKTmobile",
+  "description": "Smart Monitoring System — PT. Industri Keluarga Timur",
   "start_url": "/mobile",
   "display": "standalone",
   "background_color": "#FFCC00",

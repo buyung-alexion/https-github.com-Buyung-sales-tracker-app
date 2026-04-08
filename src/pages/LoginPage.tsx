@@ -170,9 +170,14 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '11px', marginTop: '32px', fontWeight: 600 }}>
-          Sistem Keuntungan & Pelacakan Sales © 2026
-        </p>
+        <div style={{ marginTop: 'auto', paddingTop: '40px', textAlign: 'center' }}>
+          <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+            Smart Monitoring System © 2026
+          </p>
+          <div style={{ marginTop: '8px', fontSize: '10px', color: 'rgba(255, 255, 255, 0.2)', fontWeight: 600 }}>
+            Powered by IKT System
+          </div>
+        </div>
       </div>
     </div>
   );
