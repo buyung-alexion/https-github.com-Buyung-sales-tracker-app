@@ -150,23 +150,29 @@ export default function DashboardTarget({ salesId }: Props) {
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'relative', zIndex: 6 }}>
-        <div className="page-title-row" style={{ marginBottom: '12px', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="page-title-row" style={{ marginBottom: '16px', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Performance</h2>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Sales Analytics & Targets</div>
-          </div>
-          <div style={{ background: '#111827', color: 'var(--brand-yellow)', padding: '6px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: 900 }}>
-            LVL 1
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Analytics</h2>
+              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')} POIN</div>
+            </div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Performance & Targets</div>
           </div>
         </div>
 
-        {/* Date Filter Chips */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '30px', flexWrap: 'wrap' }}>
+        {/* Date Filter Chips - More Compact Integrated Style */}
+        <div style={{ display: 'flex', gap: '8px', padding: '0 20px', overflowX: 'auto', paddingBottom: '10px' }}>
           {(['today', 'week', 'month', 'all'] as const).map(opt => (
             <button 
               key={opt}
               onClick={() => setFilterType(opt)}
-              style={{ padding: '6px 16px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, border: 'none', background: filterType === opt ? '#111827' : 'rgba(255,255,255,0.3)', color: filterType === opt ? '#fff' : '#111827', cursor: 'pointer', transition: 'all 0.2s' }}>
+              style={{ 
+                padding: '8px 16px', borderRadius: '14px', fontSize: '12px', fontWeight: 800, border: 'none', 
+                background: filterType === opt ? '#111827' : 'rgba(255,255,255,0.4)', 
+                color: filterType === opt ? '#FFCC00' : '#111827', 
+                boxShadow: filterType === opt ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
+                whiteSpace: 'nowrap', transition: 'all 0.2s' 
+              }}>
               {opt === 'today' ? 'Hari Ini' : opt === 'week' ? 'Minggu Ini' : opt === 'month' ? 'Bulan Ini' : 'Semua'}
             </button>
           ))}
@@ -175,54 +181,54 @@ export default function DashboardTarget({ salesId }: Props) {
       </div>
 
       <div style={{ position: 'relative', zIndex: 60, marginTop: '20px' }}>
-        {/* Donut Ring - Realigned for and spacing */}
+        {/* Donut Ring - Optimized for maximum number clearance */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center', 
           width: '100%', 
-          padding: '0 24px',
-          marginTop: '10px'
+          padding: '0 8px',
+          marginTop: '10px',
+          gap: '4px'
         }}>
           {/* Aktual Column */}
-          <div style={{ textAlign: 'center', color: '#111827', flex: 1 }}>
-            <div style={{ fontSize: '10px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.7, marginBottom: '4px' }}>Aktual</div>
-            <div style={{ fontSize: '22px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalActual.toLocaleString('id-ID')}</div>
+          <div style={{ textAlign: 'center', color: '#111827', flex: '1', minWidth: 0 }}>
+            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Aktual</div>
+            <div style={{ fontSize: '17px', fontWeight: 950, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{totalActual.toLocaleString('id-ID')}</div>
           </div>
 
-          {/* Center Donut */}
+          {/* Center Donut - Shrunk for side space */}
           <div style={{ 
-            position: 'relative', width: '210px', height: '210px', background: '#fff', 
+            position: 'relative', width: '165px', height: '165px', background: '#fff', 
             borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            boxShadow: '0 12px 35px rgba(0,0,0,0.08)',
-            margin: '0 10px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
             flexShrink: 0
           }}>
-            <svg width="180" height="180" viewBox="0 0 180 180" style={{ position: 'absolute' }}>
+            <svg width="145" height="145" viewBox="0 0 180 180" style={{ position: 'absolute' }}>
               <defs>
                 <linearGradient id="solidYellow" x1="0" y1="0" x2="1" y2="0">
                   <stop offset="0%" stopColor="#F59E0B" />
                   <stop offset="100%" stopColor="#F59E0B" />
                 </linearGradient>
               </defs>
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f8fafc" strokeWidth="16" />
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="url(#solidYellow)" strokeWidth="16"
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f8fafc" strokeWidth="15" />
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="url(#solidYellow)" strokeWidth="15"
                 strokeDasharray={`${dash} ${circumference}`}
                 strokeLinecap="round" transform="rotate(-90 90 90)"
                 style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
               />
             </svg>
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#10B981', letterSpacing: '1px', marginBottom: '-2px' }}>CAPAIAN</span>
-              <span style={{ fontSize: '48px', fontWeight: 950, color: '#0f172a', letterSpacing: '-2px', margin: '2px 0' }}>{overallPct}%</span>
-              <span style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Performance</span>
+              <span style={{ fontSize: '9px', fontWeight: 800, color: '#10B981', letterSpacing: '1px', marginBottom: '-2px' }}>CAPAIAN</span>
+              <span style={{ fontSize: '36px', fontWeight: 950, color: '#0f172a', letterSpacing: '-2px', margin: '1px 0' }}>{overallPct}%</span>
+              <span style={{ fontSize: '8px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Performance</span>
             </div>
           </div>
 
           {/* Target Column */}
-          <div style={{ textAlign: 'center', color: '#111827', flex: 1 }}>
-            <div style={{ fontSize: '10px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.7, marginBottom: '4px' }}>Target</div>
-            <div style={{ fontSize: '22px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalTarget.toLocaleString('id-ID')}</div>
+          <div style={{ textAlign: 'center', color: '#111827', flex: '1', minWidth: 0 }}>
+            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Target</div>
+            <div style={{ fontSize: '17px', fontWeight: 950, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{totalTarget.toLocaleString('id-ID')}</div>
           </div>
         </div>
       </div>

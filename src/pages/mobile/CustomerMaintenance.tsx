@@ -29,7 +29,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const scrollTimeout = useRef<any>(null);
   const navigate = useNavigate();
 
-  const [editForm, setEditForm] = useState({ nama_toko: '', no_wa: '', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' });
+  const [editForm, setEditForm] = useState({ 
+    id: '', // added id for safety
+    nama_toko: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' 
+  });
 
   const [addModal, setAddModal] = useState(false);
 
@@ -147,9 +150,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      const { error } = await store.updateCustomer(editModal.id, {
+      const { error } = await store.updateCustomer(editForm.id, {
         nama_toko: editForm.nama_toko,
         no_wa: editForm.no_wa,
+        area: editForm.area,
         link_map: editForm.link_map,
         kategori: editForm.kategori,
         rating: editForm.rating,
@@ -157,6 +161,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       });
 
       if (error) {
+        alert('Supabase Error: ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal memperbarui data. Coba lagi.');
         return;
       }
@@ -166,6 +171,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
+        setEditForm({ id: '', nama_toko: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -184,20 +190,14 @@ export default function CustomerMaintenance({ salesId }: Props) {
         nama_pic: addForm.nama_pic || 'Bpk/Ibu',
         no_wa: addForm.no_wa,
         area: addForm.area,
-        link_map: addForm.link_map,
         sales_pic: salesId,
-        status: 'Aman',
         last_order_date: new Date().toISOString(),
         total_order_volume: 0,
-        created_at: new Date().toISOString(),
-        created_by: salesId,
-        kategori: addForm.kategori,
-        rating: addForm.rating,
-        foto_profil: addForm.foto_profil,
       };
       
       const { error } = await store.addCustomer(newCustomer);
       if (error) {
+        alert('Supabase Error: ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal menyimpan data baru.');
         return;
       }
@@ -228,8 +228,8 @@ export default function CustomerMaintenance({ salesId }: Props) {
         
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 6, marginBottom: '20px' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', letterSpacing: '-1px', margin: 0 }}>Customer</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0 }}>Customer</h2>
               <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myCustomers.length} TOKO</div>
             </div>
             <div style={{ color: '#111827', opacity: 0.6, fontSize: '11px', fontWeight: 700 }}>Management & Retention</div>
@@ -351,11 +351,8 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       style={{ width: '100%', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)' }} 
                       onClick={(e) => { 
                         e.stopPropagation(); 
-                        const vol = prompt('Estimasi volume order (kg):');
-                        if (vol) {
-                          store.logOrder(salesId, c.id, c.nama_toko, parseFloat(vol));
-                          window.open('accuratelite://', '_blank');
-                        }
+                        store.logOrder(salesId, c.id, c.nama_toko, 1);
+                        window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
                       }}
                     >
                       <ShoppingCart size={18} /> Buat Pesanan (Accurate)
@@ -396,7 +393,20 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       <button 
                         className="tap-active"
                         style={{ flex: 1, background: '#F8FAFC', color: '#64748B', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '10px 0', fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
-                        onClick={(e) => { e.stopPropagation(); setEditModal(c); setEditForm({ nama_toko: c.nama_toko, no_wa: c.no_wa, link_map: c.link_map || '', kategori: c.kategori || 'Retail', rating: c.rating || 0, foto_profil: c.foto_profil || '' }); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setEditModal(c); 
+                          setEditForm({ 
+                            id: c.id,
+                            nama_toko: c.nama_toko, 
+                            no_wa: c.no_wa, 
+                            area: c.area || 'Sepaku',
+                            link_map: c.link_map || '', 
+                            kategori: c.kategori || 'Retail', 
+                            rating: c.rating || 0, 
+                            foto_profil: c.foto_profil || '' 
+                          }); 
+                        }}
                       >
                         <Edit3 size={14} /> Edit
                       </button>
@@ -440,7 +450,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       {/* Edit Modal - Optimized Drawer Style */}
       {editModal && (
         <div className="modal-overlay" onClick={() => setEditModal(null)} style={{ alignItems: 'flex-end', padding: 0 }}>
-          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(110px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
             <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div className="modal-header">
               <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>✏️ Edit Customer</h3>
@@ -460,6 +470,22 @@ export default function CustomerMaintenance({ salesId }: Props) {
                 {editForm.foto_profil && <img src={editForm.foto_profil} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '18px', marginTop: '8px', border: '2px solid #f1f5f9', display: 'block', margin: '8px auto 0' }} />}
               </div>
               
+              <div className="form-group">
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Area</label>
+                <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.area} onChange={e => {
+                  if (e.target.value === 'ADD_NEW') {
+                    const val = prompt('Enter New Area:');
+                    if (val && val.trim()) setEditForm({ ...editForm, area: val.trim() });
+                  } else {
+                    setEditForm({ ...editForm, area: e.target.value });
+                  }
+                }}>
+                  {['Sepaku', 'ITCI', 'Semoi', 'Samboja'].map(a => <option key={a} value={a}>{a}</option>)}
+                  {!['Sepaku', 'ITCI', 'Semoi', 'Samboja'].includes(editForm.area) && <option value={editForm.area}>{editForm.area}</option>}
+                  <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ Add New Area</option>
+                </select>
+              </div>
+
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Category</label>
@@ -496,72 +522,74 @@ export default function CustomerMaintenance({ salesId }: Props) {
       {/* Add Customer Modal - Optimized Drawer Style */}
       {addModal && (
         <div className="modal-overlay" onClick={() => setAddModal(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
-          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(110px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
             <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
-            <div className="modal-header">
+            <div className="modal-header" style={{ marginBottom: '16px' }}>
               <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>🏠 Tambah Pelanggan</h3>
               <button className="tap-active" onClick={() => setAddModal(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Store Name *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.nama_toko} onChange={e => setAddForm({...addForm, nama_toko: e.target.value})} placeholder="Nama Toko" /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC Name (Owner)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.nama_pic} onChange={e => setAddForm({...addForm, nama_pic: e.target.value})} placeholder="Milik/PIC" /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>WhatsApp Number *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.no_wa} onChange={e => setAddForm({...addForm, no_wa: e.target.value})} placeholder="628..." /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Maps Link</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.link_map} onChange={e => setAddForm({...addForm, link_map: e.target.value})} placeholder="https://..." /></div>
-  
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <div className="form-group">
-                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', padding: '12px', background: addForm.foto_profil ? '#ecfdf5' : '#f8fafc', color: addForm.foto_profil ? '#059669' : '#475569', border: '1px solid #e2e8f0', borderRadius: '12px', fontWeight: 800, fontSize: '13px' }}>
-                  <Camera size={16} /> {addForm.foto_profil ? 'Photo Saved ✅' : 'Upload Profile Photo (Optional)'}
-                  <input type="file" accept="image/*" style={{ display: 'none' }} capture="environment" onChange={e => handleCaptureProfilePhoto(e, false)} />
-                </label>
-                {addForm.foto_profil && <img src={addForm.foto_profil} alt="" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '18px', marginTop: '8px', border: '2px solid #f1f5f9', display: 'block', margin: '8px auto 0' }} />}
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label>
+                <input type="text" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama Toko..." value={addForm.nama_toko} onChange={e => setAddForm({...addForm, nama_toko: e.target.value})} />
               </div>
-  
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div className="form-group">
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Operational Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.area} onChange={e => {
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC</label>
+                  <input type="text" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Milik/PIC" value={addForm.nama_pic} onChange={e => setAddForm({...addForm, nama_pic: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>No WA *</label>
+                  <input type="tel" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="628..." value={addForm.no_wa} onChange={e => setAddForm({...addForm, no_wa: e.target.value})} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className="form-group">
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Area</label>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.area} onChange={e => {
                     if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Enter New Area:');
+                      const val = prompt('Masukkan Area Baru:');
                       if (val && val.trim()) setAddForm({ ...addForm, area: val.trim() });
                     } else {
-                      setAddForm({ ...addForm, area: e.target.value });
+                      setAddForm({...addForm, area: e.target.value});
                     }
                   }}>
-                    <option value="Sepaku">Sepaku</option><option value="Gerogot">Tanah Grogot</option><option value="Kota">Kota Balikpapan</option>
-                    {!['Sepaku','Gerogot','Kota'].includes(addForm.area || '') && addForm.area && <option value={addForm.area}>{addForm.area}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Add New</option>
+                    {['Sepaku', 'ITCI', 'Semoi', 'Samboja'].map(a => <option key={a} value={a}>{a}</option>)}
+                    {!['Sepaku', 'ITCI', 'Semoi', 'Samboja'].includes(addForm.area) && <option value={addForm.area}>{addForm.area}</option>}
+                    <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ TAMBAH BARU...</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Category</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Enter New Category:');
-                      if (val && val.trim()) setAddForm({ ...addForm, kategori: val.trim() });
-                    } else {
-                      setAddForm({ ...addForm, kategori: e.target.value });
-                    }
-                  }}>
-                    <option value="Retail">Retail</option><option value="Grosir">Grosir</option><option value="Distributor">Distributor</option><option value="Horeca">Horeca</option>
-                    {!['Retail','Grosir','Distributor','Horeca'].includes(addForm.kategori || '') && addForm.kategori && <option value={addForm.kategori}>{addForm.kategori}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Add New</option>
-                  </select>
+                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
+                   <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.kategori} onChange={e => {
+                     if (e.target.value === 'ADD_NEW') {
+                       const val = prompt('Masukkan Kategori Baru:');
+                       if (val && val.trim()) setAddForm({ ...addForm, kategori: val.trim() });
+                     } else {
+                       setAddForm({...addForm, kategori: e.target.value});
+                     }
+                   }}>
+                     {['Retail', 'Grosir', 'Horeca', 'Distributor'].map(k => <option key={k} value={k}>{k}</option>)}
+                     {!['Retail', 'Grosir', 'Horeca', 'Distributor'].includes(addForm.kategori) && <option value={addForm.kategori}>{addForm.kategori}</option>}
+                     <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ TAMBAH BARU...</option>
+                   </select>
                 </div>
               </div>
+
               <div className="form-group" style={{ maxWidth: '50%' }}>
-                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Initial Rating</label>
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
                 <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.rating} onChange={e => setAddForm({...addForm, rating: parseInt(e.target.value) || 0})} />
               </div>
             </div>
-            <div className="modal-actions" style={{ marginTop: '24px', display: 'flex', gap: '12px', flexDirection: 'column' }}>
-              {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>{saveError}</div>}
-              <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
-                <button className="btn-secondary" style={{ flex: 1, height: '52px', borderRadius: '18px', fontWeight: 800 }} onClick={() => setAddModal(false)} disabled={isSubmitting}>Batal</button>
-                <button className="btn-primary" style={{ flex: 2, height: '52px', borderRadius: '18px', fontWeight: 900, background: saveSuccess ? '#10B981' : 'var(--brand-yellow)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleAddCustomer} disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}>
-                  {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : saveSuccess ? <CheckCircle size={20} /> : 'Simpan Pelanggan'}
-                </button>
-              </div>
+
+            <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', gap: '12px', width: '100%' }}>
+              <button className="btn-secondary" style={{ flex: 1, height: '48px', borderRadius: '16px', fontWeight: 800 }} onClick={() => setAddModal(false)} disabled={isSubmitting}>Batal</button>
+              <button className="btn-primary" style={{ flex: 2, height: '48px', borderRadius: '16px', fontWeight: 950, background: saveSuccess ? '#10B981' : 'var(--brand-yellow)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleAddCustomer} disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}>
+                {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : saveSuccess ? <CheckCircle size={18} /> : 'Simpan'}
+              </button>
             </div>
           </div>
         </div>
@@ -576,7 +604,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
             style={{ 
               borderTopLeftRadius: '32px', 
               borderTopRightRadius: '32px', 
-              padding: '24px 20px 40px',
+              padding: '24px 20px calc(110px + env(safe-area-inset-bottom))',
               background: '#fff',
               border: 'none',
               boxShadow: '0 -10px 40px rgba(0,0,0,0.1)'
@@ -600,25 +628,24 @@ export default function CustomerMaintenance({ salesId }: Props) {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Area Filter */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                   <MapPin size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wilayah Area</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {['All', 'Sepaku', 'Gerogot', 'Kota'].map(a => (
                     <button 
                       key={a}
                       onClick={() => setFilterArea(a)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterArea === a ? '#111827' : '#F8FAFC',
                         color: filterArea === a ? '#FFCC00' : '#64748b',
                         border: filterArea === a ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s', minWidth: '80px',
-                        boxShadow: filterArea === a ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
                       {a === 'All' ? 'Semua' : a === 'Gerogot' ? 'Grogot' : a}
@@ -633,18 +660,17 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <Users size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori Toko</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {['All', 'Retail', 'Grosir', 'Distributor', 'Horeca'].map(k => (
                     <button 
                       key={k}
                       onClick={() => setFilterKategori(k)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterKategori === k ? '#111827' : '#F8FAFC',
                         color: filterKategori === k ? '#FFCC00' : '#64748b',
                         border: filterKategori === k ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s',
-                        boxShadow: filterKategori === k ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
                       {k === 'All' ? 'Semua' : k}
@@ -659,21 +685,20 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <CheckSquare size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Status Monitoring</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '8px' }}>
                   {['All', 'Needs Contact', 'Active'].map(s => (
                     <button 
                       key={s}
                       onClick={() => setFilterStatus(s as any)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '10px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterStatus === s ? '#111827' : '#F8FAFC',
                         color: filterStatus === s ? '#FFCC00' : '#64748b',
                         border: filterStatus === s ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s',
-                        boxShadow: filterStatus === s ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s'
                       }}
                     >
-                      {s === 'All' ? 'Semua' : s === 'Needs Contact' ? '🚨 Perlu Kontak' : '✅ Aktif'}
+                      {s === 'All' ? 'Semua' : s === 'Needs Contact' ? '🚨 Perlu Kontak Segera' : '✅ Aktif'}
                     </button>
                   ))}
                 </div>

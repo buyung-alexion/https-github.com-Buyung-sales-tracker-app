@@ -35,7 +35,7 @@ export default function ManagerShell() {
   };
 
   const role = (user?.role || '').toLowerCase();
-  if (!user || (role !== 'manager' && role !== 'admin')) return <Navigate to="/" replace />;
+  if (!user) return null;
 
   const menuCategories = [
     {

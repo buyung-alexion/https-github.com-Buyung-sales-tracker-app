@@ -1,5 +1,6 @@
-import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, MapPin, BarChart2, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, MapPin, BarChart2, MessageSquare, Menu, X, LogOut, User as UserIcon, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Homepage from './Homepage';
 import DashboardTarget from './DashboardTarget';
@@ -7,27 +8,132 @@ import ProspectingTool from './ProspectingTool';
 import CustomerMaintenance from './CustomerMaintenance';
 import CheckInVisit from './CheckInVisit';
 import Profile from './Profile';
-// removed import
 import ClientDetail from './ClientDetail';
 import SalesChat from './SalesChat';
 import MobileLeaderboard from './MobileLeaderboard';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
 
 export default function MobileShell() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const chatUnread = useChatNotifications(user?.id);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const isEditingProfile = location.pathname === '/mobile/profile' && location.search.includes('edit=true');
 
-  if (!user) return <Navigate to="/" replace />;
+  if (!user) return null;
+
+  const handleLogout = () => {
+    if (window.confirm('Yakin ingin keluar dari akun?')) {
+      logout();
+      setSidebarOpen(false);
+    }
+  };
 
   return (
     <div className="mobile-shell">
+      {/* 
+          OVERLAY SIDEBAR (Premium Side Menu)
+          Added to provide stable logout and navigation access from anywhere.
+      */}
+      {sidebarOpen && (
+        <div 
+          className="animate-fade-in" 
+          onClick={() => setSidebarOpen(false)}
+          style={{ 
+            position: 'fixed', inset: 0, background: 'rgba(11, 8, 21, 0.8)', 
+            backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex' 
+          }}
+        >
+          <div 
+            className="animate-slide-right"
+            onClick={e => e.stopPropagation()}
+            style={{ 
+              width: '80%', maxWidth: '320px', background: '#fff', height: '100%', 
+              padding: '40px 24px', display: 'flex', flexDirection: 'column',
+              boxShadow: '20px 0 50px rgba(0,0,0,0.2)'
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--brand-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Shield size={22} color="#000" />
+                </div>
+                <span style={{ fontWeight: 900, fontSize: '18px', letterSpacing: '-0.5px' }}>Sales Menu</span>
+              </div>
+              <button 
+                onClick={() => setSidebarOpen(false)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '10px', padding: '8px' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ padding: '0 8px 16px', marginBottom: '16px', borderBottom: '1px solid #F1F5F9' }}>
+                <div style={{ fontWeight: 950, fontSize: '16px' }}>{user.nama}</div>
+                <div style={{ fontSize: '12px', color: '#64748B', fontWeight: 600 }}>{user.role}</div>
+              </div>
+
+              {[
+                { label: 'Profile Saya', icon: UserIcon, path: '/mobile/profile' },
+                { label: 'Ranking Sales', icon: LayoutDashboard, path: '/mobile/rank' },
+              ].map(item => (
+                <button 
+                  key={item.label}
+                  onClick={() => { navigate(item.path); setSidebarOpen(false); }}
+                  className="tap-active"
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', 
+                    borderRadius: '16px', border: 'none', background: 'transparent',
+                    fontSize: '15px', fontWeight: 800, color: '#1E293B'
+                  }}
+                >
+                  <item.icon size={20} color="#64748B" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleLogout}
+              className="tap-active"
+              style={{ 
+                marginTop: 'auto', display: 'flex', alignItems: 'center', gap: '16px', 
+                padding: '20px', borderRadius: '20px', border: 'none', background: '#FEF2F2',
+                fontSize: '15px', fontWeight: 950, color: '#EF4444'
+              }}
+            >
+              <LogOut size={22} />
+              Keluar Sekarang
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header with Menu Trigger - Integrated with Homepage via props or absolute overlay */}
+      <div style={{ 
+        position: 'fixed', top: '16px', left: '20px', zIndex: 1000,
+        display: location.pathname === '/mobile/home' ? 'block' : 'none' 
+      }}>
+        <button 
+          onClick={() => setSidebarOpen(true)}
+          className="tap-active"
+          style={{ 
+            width: '40px', height: '40px', borderRadius: '12px', 
+            background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)',
+            border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+          }}
+        >
+          <Menu size={22} color="#111827" strokeWidth={3} />
+        </button>
+      </div>
 
       <main className="mobile-main">
         <Routes>
-          <Route index element={<Navigate to="home" replace />} />
+          <Route index element={<Homepage salesId={user.id} />} />
           <Route path="home" element={<Homepage salesId={user.id} />} />
           <Route path="analytic" element={<DashboardTarget salesId={user.id} />} />
           <Route path="prospek" element={<ProspectingTool salesId={user.id} />} />
@@ -35,14 +141,13 @@ export default function MobileShell() {
           <Route path="checkin" element={<CheckInVisit salesId={user.id} />} />
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:type/:id" element={<ClientDetail />} />
-// Removed Rencana route
           <Route path="chat" element={<SalesChat salesId={user.id} />} />
           <Route path="rank" element={<MobileLeaderboard />} />
         </Routes>
       </main>
 
       {!isEditingProfile && (
-        <nav className="bottom-nav">
+        <nav className="bottom-nav shadow-premium">
           {[
             { to: '/mobile/home',     Icon: LayoutDashboard, label: 'Home'      },
             { to: '/mobile/analytic', Icon: BarChart2,        label: 'Analytics' },

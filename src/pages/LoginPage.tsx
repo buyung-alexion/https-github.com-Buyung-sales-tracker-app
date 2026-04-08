@@ -1,15 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldCheck, User, Lock, ArrowRight, Loader2 } from 'lucide-react';
+import { ShieldCheck, User, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const { login } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,20 +23,34 @@ export default function LoginPage() {
     const res = await login(username, password);
     
     if (res.success) {
-      // Re-fetch roles from storage to determine navigation
-      const savedUser = JSON.parse(localStorage.getItem('st_auth_user') || '{}');
-      const role = (savedUser.role || '').toLowerCase();
-      
-      if (role === 'manager' || role === 'admin') {
-        navigate('/manager');
-      } else {
-        navigate('/mobile');
-      }
+      setIsSuccess(true);
+      // We don't need to manually navigate. 
+      // The state change in useAuth() will cause App.tsx to re-render 
+      // and redirect automatically.
     } else {
       setError(res.message || 'Login gagal');
       setIsSubmitting(false);
     }
   };
+
+  if (isSuccess) {
+    return (
+      <div className="animate-fade-in" style={{ 
+        minHeight: '100vh', display: 'flex', flexDirection: 'column', 
+        alignItems: 'center', justifyContent: 'center', background: '#0B0815' 
+      }}>
+        <div className="animate-scale" style={{ 
+          width: '100px', height: '100px', borderRadius: '50%', background: 'var(--brand-yellow)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 0 50px rgba(255, 204, 0, 0.4)', marginBottom: '24px'
+        }}>
+          <CheckCircle2 size={60} color="#000" />
+        </div>
+        <h2 style={{ color: '#fff', fontSize: '24px', fontWeight: 800 }}>Selamat Datang!</h2>
+        <p style={{ color: 'rgba(255, 255, 255, 0.5)', marginTop: '8px' }}>Mempersiapkan dashboard Anda...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="login-page" style={{ 
@@ -46,7 +59,9 @@ export default function LoginPage() {
       alignItems: 'center', 
       justifyContent: 'center', 
       background: '#0B0815',
-      padding: '24px'
+      padding: '24px',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
       {/* Background Orbs */}
       <div style={{ position: 'absolute', top: '10%', left: '10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255, 204, 0, 0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
@@ -56,11 +71,12 @@ export default function LoginPage() {
         width: '100%', 
         maxWidth: '420px', 
         background: 'rgba(255, 255, 255, 0.03)', 
-        backdropFilter: 'blur(16px)',
+        backdropFilter: 'blur(20px)',
         border: '1px solid rgba(255, 255, 255, 0.08)',
         borderRadius: '40px',
         padding: '48px 32px',
-        textAlign: 'center'
+        textAlign: 'center',
+        zIndex: 10
       }}>
         <div style={{ 
           width: '80px', height: '80px', borderRadius: '24px', 
@@ -91,16 +107,18 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ position: 'relative' }}>
-            <User size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)' }} />
+            <User size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)', zIndex: 1 }} />
             <input 
               type="text" 
               placeholder="Username" 
               value={username}
+              autoComplete="username"
               onChange={(e) => setUsername(e.target.value)}
               style={{ 
                 width: '100%', padding: '18px 20px 18px 52px', background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '20px', color: '#fff',
-                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s'
+                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s',
+                position: 'relative', zIndex: 0
               }}
               onFocus={(e) => e.target.style.borderColor = 'var(--brand-yellow)'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
@@ -108,16 +126,18 @@ export default function LoginPage() {
           </div>
 
           <div style={{ position: 'relative' }}>
-            <Lock size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)' }} />
+            <Lock size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)', zIndex: 1 }} />
             <input 
               type="password" 
               placeholder="Password" 
               value={password}
+              autoComplete="current-password"
               onChange={(e) => setPassword(e.target.value)}
               style={{ 
                 width: '100%', padding: '18px 20px 18px 52px', background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '20px', color: '#fff',
-                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s'
+                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s',
+                position: 'relative', zIndex: 0
               }}
               onFocus={(e) => e.target.style.borderColor = 'var(--brand-yellow)'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
@@ -133,7 +153,8 @@ export default function LoginPage() {
               borderRadius: '20px', color: '#000', fontSize: '16px', fontWeight: 800,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
               marginTop: '12px', boxShadow: '0 10px 20px rgba(255, 204, 0, 0.2)',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer'
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
+              border: 'none'
             }}
           >
             {isSubmitting ? (

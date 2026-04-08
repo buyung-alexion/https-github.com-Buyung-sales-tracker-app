@@ -91,6 +91,7 @@ export default function ProspectingTool({ salesId }: Props) {
     try {
       const { error } = await store.addProspek({ ...newForm, sales_owner: salesId });
       if (error) {
+        alert('Supabase Error (Add Prospect): ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal menyimpan prospek baru.');
         return;
       }
@@ -127,6 +128,7 @@ export default function ProspectingTool({ salesId }: Props) {
       });
 
       if (error) {
+        alert('Supabase Error (Edit Prospect): ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal memperbarui prospek.');
         return;
       }
@@ -443,18 +445,34 @@ export default function ProspectingTool({ salesId }: Props) {
       {/* Add Prospek Modal - Optimized for Small Screens */}
       {addModal && (
         <div className="modal-overlay" onClick={() => setAddModal(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
-          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px 100px', background: '#fff', border: 'none' }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(110px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
             <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div className="modal-header">
               <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>➕ Tambah Prospek</h3>
               <button className="tap-active" onClick={() => setAddModal(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.nama_toko} onChange={e => setNewForm({ ...newForm, nama_toko: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama PIC</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.nama_pic} onChange={e => setNewForm({ ...newForm, nama_pic: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nomor WA *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="628xxx" value={newForm.no_wa} onChange={e => setNewForm({ ...newForm, no_wa: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={newForm.link_map || ''} onChange={e => setNewForm({ ...newForm, link_map: e.target.value })} /></div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
+              <div className="form-group">
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label>
+                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama Toko..." value={newForm.nama_toko} onChange={e => setNewForm({ ...newForm, nama_toko: e.target.value })} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div className="form-group">
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC</label>
+                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama PIC..." value={newForm.nama_pic} onChange={e => setNewForm({ ...newForm, nama_pic: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>No WA *</label>
+                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="628..." value={newForm.no_wa} onChange={e => setNewForm({ ...newForm, no_wa: e.target.value })} />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label>
+                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps..." value={newForm.link_map || ''} onChange={e => setNewForm({ ...newForm, link_map: e.target.value })} />
+              </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b' }}>Foto Toko / Profil</label>
@@ -488,10 +506,10 @@ export default function ProspectingTool({ salesId }: Props) {
                 )}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                 <div className="form-group">
-                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => {
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
                     if (e.target.value === 'ADD_NEW') {
                       const val = prompt('Masukkan Kategori Baru:');
                       if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
@@ -500,13 +518,11 @@ export default function ProspectingTool({ salesId }: Props) {
                     }
                   }}>
                     <option value="Retail">Retail</option><option value="Grosir">Grosir</option><option value="Distributor">Distributor</option><option value="Horeca">Horeca</option>
-                    {!['Retail','Grosir','Distributor','Horeca'].includes(newForm.kategori || '') && newForm.kategori && <option value={newForm.kategori}>{newForm.kategori}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah</option>
                   </select>
                 </div>
                 <div className="form-group">
-                  <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Rating Awal (0-5)</label>
-                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.rating} onChange={e => setNewForm({ ...newForm, rating: parseInt(e.target.value) || 0 })} />
+                  <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
+                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.rating} onChange={e => setNewForm({ ...newForm, rating: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
 
@@ -579,7 +595,7 @@ export default function ProspectingTool({ salesId }: Props) {
       {/* Edit Prospek Modal - Optimized */}
       {editModal && (
         <div className="modal-overlay" onClick={() => setEditModal(null)} style={{ alignItems: 'flex-end', padding: 0 }}>
-          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px 100px', background: '#fff', border: 'none' }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', padding: '24px 20px calc(110px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' }}>
             <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div className="modal-header">
               <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#111827' }}>✏️ Edit Prospek</h3>
@@ -721,7 +737,7 @@ export default function ProspectingTool({ salesId }: Props) {
             style={{ 
               borderTopLeftRadius: '32px', 
               borderTopRightRadius: '32px', 
-              padding: '24px 20px 40px',
+              padding: '24px 20px calc(110px + env(safe-area-inset-bottom))',
               background: '#fff',
               border: 'none',
               boxShadow: '0 -10px 40px rgba(0,0,0,0.1)'
@@ -745,25 +761,24 @@ export default function ProspectingTool({ salesId }: Props) {
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {/* Area Filter */}
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                   <MapPin size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wilayah Area</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {['All', 'Sepaku', 'Gerogot', 'Kota'].map(a => (
                     <button 
                       key={a}
                       onClick={() => setFilterArea(a)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterArea === a ? '#111827' : '#F8FAFC',
                         color: filterArea === a ? '#FFCC00' : '#64748b',
                         border: filterArea === a ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s', minWidth: '80px',
-                        boxShadow: filterArea === a ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
                       {a === 'All' ? 'Semua' : a === 'Gerogot' ? 'Grogot' : a}
@@ -778,18 +793,17 @@ export default function ProspectingTool({ salesId }: Props) {
                   <Users size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori Toko</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {['All', 'Retail', 'Grosir', 'Distributor', 'Horeca'].map(k => (
                     <button 
                       key={k}
                       onClick={() => setFilterKategori(k)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterKategori === k ? '#111827' : '#F8FAFC',
                         color: filterKategori === k ? '#FFCC00' : '#64748b',
                         border: filterKategori === k ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s',
-                        boxShadow: filterKategori === k ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
                       {k === 'All' ? 'Semua' : k}
@@ -804,18 +818,17 @@ export default function ProspectingTool({ salesId }: Props) {
                   <Activity size={16} color="#94a3b8" />
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Level Prospek (Suhu)</label>
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
                   {['All', 'Hot', 'Warm', 'Cold'].map(s => (
                     <button 
                       key={s}
                       onClick={() => setFilterStatus(s as any)}
                       style={{ 
-                        padding: '12px 20px', borderRadius: '16px', fontSize: '14px', fontWeight: 800,
+                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
                         background: filterStatus === s ? '#111827' : '#F8FAFC',
                         color: filterStatus === s ? '#FFCC00' : '#64748b',
                         border: filterStatus === s ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s',
-                        boxShadow: filterStatus === s ? '0 8px 16px rgba(0,0,0,0.1)' : 'none'
+                        transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
                       {s === 'All' ? 'Semua' : s === 'Hot' ? '🔥 Hot' : s === 'Warm' ? '☀️ Warm' : '❄️ Cold'}

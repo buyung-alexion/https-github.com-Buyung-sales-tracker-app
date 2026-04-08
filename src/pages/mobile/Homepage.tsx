@@ -2,16 +2,24 @@ import { useState } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle } from 'lucide-react';
+import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 
 interface Props { salesId: string; }
 
 export default function Homepage({ salesId }: Props) {
-  const { activities = [], prospek = [], customers = [], systemTargets = null } = useSalesData() || {};
+  const { activities = [], prospek = [], customers = [], sales = [], systemTargets = null } = useSalesData() || {};
+  const currentSales = sales.find(s => s.id === salesId);
+  const salesDisplayName = currentSales?.nama?.split(' ')[0] || 'Sales';
   const navigate = useNavigate();
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [selectedCust, setSelectedCust] = useState<any>(null); // To be replaced by Customer after import check
+  const [orderSearch, setOrderSearch] = useState('');
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(false);
 
   // Monthly filter for reset logic
   const now = new Date();
@@ -38,7 +46,7 @@ export default function Homepage({ salesId }: Props) {
 
   // Prospek & Customer (Lifetime / Unreset)
   const totalProspek = prospek.filter(p => p.sales_owner === salesId).length;
-  // totalCustomer filtered here for component use below if needed, but we use customers.filter(c => c.sales_pic === salesId).length directly usually.
+  const totalCustomer = customers.filter(c => c.sales_pic === salesId).length;
   const overdueCustomers = customers.filter(c => c.sales_pic === salesId && (new Date().getTime() - new Date(c.last_order_date).getTime()) / 86400000 > 14).length;
   const overdueProspek = prospek.filter(p => p.sales_owner === salesId && (new Date().getTime() - new Date(p.created_at).getTime()) / 86400000 > 14).length;
 
@@ -86,6 +94,34 @@ export default function Homepage({ salesId }: Props) {
 
   const maxCount = Math.max(...chartData.map(d => d.count), 5);
 
+  const handleQuickOrder = async () => {
+    if (!selectedCust) return;
+    setIsSubmittingOrder(true);
+    try {
+      await store.logOrder(salesId, selectedCust.id, selectedCust.nama_toko, 1);
+      setOrderSuccess(true);
+      
+      // Pure Direct Launcher Intent
+      window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
+
+      setTimeout(() => {
+        setOrderModalOpen(false);
+        setOrderSuccess(false);
+        setSelectedCust(null);
+        setOrderSearch('');
+      }, 1500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
+
+  const myCustomers = customers.filter(c => c.sales_pic === salesId);
+  const filteredCustomers = myCustomers.filter(c => 
+    c.nama_toko.toLowerCase().includes(orderSearch.toLowerCase())
+  );
+
 
   return (
     <div className="page-content" style={{ paddingBottom: '100px', background: '#F8FAFC', paddingTop: 0 }}>
@@ -106,21 +142,10 @@ export default function Homepage({ salesId }: Props) {
         <div style={{ position: 'relative', zIndex: 5, paddingBottom: '16px' }}>
           {/* Top Bar - Identity & Icons - Compact Premium */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-              <div 
-                className="tap-active"
-                onClick={() => navigate('/mobile/profile')}
-                style={{ 
-                  width: '40px', height: '40px', borderRadius: '12px', 
-                  background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  fontSize: '18px', boxShadow: '0 6px 12px rgba(0,0,0,0.06)', border: '2px solid rgba(255,255,255,0.8)'
-                }}
-              >
-                👤
-              </div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginLeft: '52px' }}>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.3px' }}>
-                  Halo Sales 👋
+                <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.3px', textTransform: 'uppercase' }}>
+                  Hallo {salesDisplayName} 👋
                 </h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                    <span style={{ fontSize: '9px', color: '#047857', fontWeight: 900 }}>• ONLINE</span>
@@ -185,7 +210,13 @@ export default function Homepage({ salesId }: Props) {
             ].map((item) => (
               <div key={item.label} 
                 className="tap-active" 
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  if (item.label === 'Order') {
+                    setOrderModalOpen(true);
+                  } else {
+                    navigate(item.path);
+                  }
+                }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
               >
                 <div style={{ 
@@ -210,20 +241,77 @@ export default function Homepage({ salesId }: Props) {
           </div>
         </div>
 
-        {/* Dynamic Stats Row */}
-        <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-          <div className="shadow-premium" style={{ flex: 1, background: '#111827', borderRadius: '24px', padding: '20px', color: '#fff' }}>
-             <span style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(255,255,255,0.4)', letterSpacing: '0.1em' }}>TOTAL ORDERS</span>
-             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 950, color: 'var(--brand-yellow)' }}>{totalSO}</span>
-                <span style={{ fontSize: '12px', fontWeight: 800 }}>Items</span>
+        {/* Dynamic Stats Grid - 2x2 (Premium Business Metrics with Vibrancy) */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '24px' }}>
+          {/* Total Orders (Monthly Reset) - Royal Gold */}
+          <div className="shadow-premium tap-active" 
+            style={{ 
+              background: 'linear-gradient(135deg, #FFD700 0%, #F59E0B 100%)', 
+              borderRadius: '24px', padding: '18px 16px', color: '#111827',
+              boxShadow: '0 10px 25px rgba(245, 158, 11, 0.25)',
+              border: '1px solid rgba(255,255,255,0.3)'
+            }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <ShoppingCart size={14} color="#111827" strokeWidth={3} />
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#111827', opacity: 0.7, letterSpacing: '0.1em' }}>ORDERS (MO)</span>
+             </div>
+             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalSO}</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8 }}>Items</span>
              </div>
           </div>
-          <div className="shadow-premium" style={{ flex: 1, background: '#fff', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9' }}>
-             <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.1em' }}>TOTAL VISITS</span>
-             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginTop: '4px' }}>
-                <span style={{ fontSize: '28px', fontWeight: 950, color: '#111827' }}>{totalVisit}</span>
-                <span style={{ fontSize: '12px', fontWeight: 800, color: '#94a3b8' }}>Sites</span>
+
+          {/* Total Visits (Monthly Reset) - Emerald Glow */}
+          <div className="shadow-premium tap-active" 
+            style={{ 
+              background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', 
+              borderRadius: '24px', padding: '18px 16px', color: '#fff',
+              boxShadow: '0 10px 25px rgba(16, 185, 129, 0.25)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <MapPin size={14} color="#fff" strokeWidth={3} />
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#fff', opacity: 0.8, letterSpacing: '0.1em' }}>VISITS (MO)</span>
+             </div>
+             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalVisit}</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8 }}>Sites</span>
+             </div>
+          </div>
+
+          {/* Total Customers (Lifetime) - Indigo Nebula */}
+          <div className="shadow-premium tap-active" 
+            style={{ 
+              background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', 
+              borderRadius: '24px', padding: '18px 16px', color: '#fff',
+              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.25)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Users size={14} color="#fff" strokeWidth={3} />
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#fff', opacity: 0.8, letterSpacing: '0.1em' }}>CUSTOMER</span>
+             </div>
+             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalCustomer}</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8 }}>Stall</span>
+             </div>
+          </div>
+
+          {/* Total Prospects (Lifetime) - Vibrant Sunset */}
+          <div className="shadow-premium tap-active" 
+            style={{ 
+              background: 'linear-gradient(135deg, #F43F5E 0%, #E11D48 100%)', 
+              borderRadius: '24px', padding: '18px 16px', color: '#fff',
+              boxShadow: '0 10px 25px rgba(244, 63, 94, 0.25)',
+              border: '1px solid rgba(255,255,255,0.2)'
+            }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                <Target size={14} color="#fff" strokeWidth={3} />
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#fff', opacity: 0.8, letterSpacing: '0.1em' }}>PROSPEK</span>
+             </div>
+             <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                <span style={{ fontSize: '26px', fontWeight: 950, letterSpacing: '-0.5px' }}>{totalProspek}</span>
+                <span style={{ fontSize: '11px', fontWeight: 800, opacity: 0.8 }}>Leads</span>
              </div>
           </div>
         </div>
@@ -315,16 +403,103 @@ export default function Homepage({ salesId }: Props) {
       {/* Notifications Drawer (Simplified) */}
       {notificationsModalOpen && (
         <div className="modal-overlay" onClick={() => setNotificationsModalOpen(false)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()} style={{ borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0 }}>Notifikasi</h3>
-              <X size={24} color="#64748b" onClick={() => setNotificationsModalOpen(false)} />
+              <h3 style={{ margin: 0, fontWeight: 900 }}>🔔 Notifikasi</h3>
+              <button className="tap-active" onClick={() => setNotificationsModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
                   <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 800 }}>Update Sistem</h4>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Fitur GrabFood aesthetic baru telah diaktifkan!</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Fitur Quick Order kini tersedia langsung di Beranda!</p>
                </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Order Drawer - Ergonomic 110px Padding */}
+      {orderModalOpen && (
+        <div className="modal-overlay" onClick={() => setOrderModalOpen(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
+            maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
+            padding: '24px 20px calc(110px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' 
+          }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: '#FEE2E2', color: '#EF4444', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingCart size={20} strokeWidth={3} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px' }}>Quick Order</h3>
+              </div>
+              <button className="tap-active" onClick={() => setOrderModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {/* Customer Search Section */}
+              <div style={{ position: 'relative' }}>
+                <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                  <Search size={18} />
+                </div>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="Cari Nama Customer..." 
+                  style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px 14px 14px 48px', fontWeight: 700, fontSize: '15px' }}
+                  value={orderSearch}
+                  onChange={e => setOrderSearch(e.target.value)}
+                />
+              </div>
+
+              {/* Customer List Selection */}
+              <div style={{ maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px' }}>
+                {filteredCustomers.length > 0 ? (
+                  filteredCustomers.map(c => (
+                    <div 
+                      key={c.id} 
+                      className="tap-active"
+                      onClick={() => setSelectedCust(c)}
+                      style={{ 
+                        padding: '14px 16px', borderRadius: '18px', border: '2px solid',
+                        borderColor: selectedCust?.id === c.id ? 'var(--brand-yellow)' : '#f8fafc',
+                        background: selectedCust?.id === c.id ? '#FFFBEB' : '#F8FAFC',
+                        display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s'
+                      }}
+                    >
+                      <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>🏢</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#111827' }}>{c.nama_toko}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{c.area} • {c.kategori}</div>
+                      </div>
+                      {selectedCust?.id === c.id && <CheckCircle size={20} color="#059669" />}
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
+                    <Users size={32} style={{ opacity: 0.3, marginBottom: '8px' }} />
+                    <div style={{ fontSize: '12px', fontWeight: 800 }}>Customer Tidak Ditemukan</div>
+                  </div>
+                )}
+                    {/* Submit Action */}
+              <div style={{ marginTop: '20px' }}>
+                <button 
+                  className="tap-active" 
+                  disabled={!selectedCust || isSubmittingOrder}
+                  onClick={handleQuickOrder}
+                  style={{ 
+                    width: '100%', height: '62px', borderRadius: '18px', fontSize: '16px', fontWeight: 950,
+                    background: isSubmittingOrder ? '#e2e8f0' : orderSuccess ? '#10b981' : 'var(--brand-yellow)',
+                    color: orderSuccess ? '#fff' : '#111827', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                    boxShadow: '0 12px 24px rgba(255, 204, 0, 0.3)', transition: 'all 0.3s'
+                  }}
+                >
+                  {isSubmittingOrder ? <Loader2 className="animate-spin" size={24} /> : orderSuccess ? <><CheckCircle size={24} /> Order Berhasil!</> : 'Konfirmasi & Kirim Order'}
+                </button>
+              </div>
+         </div>
             </div>
           </div>
         </div>

@@ -49,21 +49,8 @@ export default function ClientDetail() {
 
   const handleOrder = async () => {
     if (type !== 'customer') return;
-    const vol = prompt('Masukkan volume order (kg):');
-    if (!vol) return;
-    const numVol = parseFloat(vol);
-    if (isNaN(numVol)) {
-      alert('Masukkan angka yang valid.');
-      return;
-    }
-    
-    if (!currentSalesId) {
-      alert('Sesi habis. Silakan login kembali.');
-      return;
-    }
-
-    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, numVol);
-    alert('Order berhasil dicatat!');
+    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, 1);
+    window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
   };
 
   const handleNote = async () => {

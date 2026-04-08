@@ -26,53 +26,58 @@ export default function PerformanceAnalytics() {
   const [now] = useState(new Date());
   
   // Filtering Engine
-  const { activities, prospek, customers } = useMemo(() => {
+  const { activities, prospek, customers, newCustomers } = useMemo(() => {
     let a = [...realActivities];
     let p = [...realProspek];
     let c = [...realCustomers];
 
-    // 1. Filter by Date Period
+    // 1. Filter by Date Period (Activities and Prospek only)
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     const startOfWeek = new Date(now.getTime() - 7 * 86400000).getTime();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
+    let filteredA = [...a];
+    let filteredP = [...p];
+    let filteredNewC = [...c];
+
     if (selectedPeriod === 'today') {
-      a = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfToday);
-      p = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfToday);
-      c = c.filter(x => new Date(x.created_at || 0).getTime() >= startOfToday);
+      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfToday);
+      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfToday);
+      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfToday);
     } else if (selectedPeriod === 'week') {
-      a = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfWeek);
-      p = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfWeek);
-      c = c.filter(x => new Date(x.created_at || 0).getTime() >= startOfWeek);
+      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfWeek);
+      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfWeek);
+      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfWeek);
     } else if (selectedPeriod === 'month') {
-      a = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfMonth);
-      p = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfMonth);
-      c = c.filter(x => new Date(x.created_at || 0).getTime() >= startOfMonth);
+      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfMonth);
+      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfMonth);
+      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfMonth);
     }
 
-    // 2. Filter by Salesman
+    // 2. Filter by Salesman (Applies to ALL)
     if (selectedSales !== 'all') {
-      a = a.filter(x => x.id_sales === selectedSales);
-      p = p.filter(x => x.sales_owner === selectedSales);
-      // Customers filter by owner (if available in schema)
+      filteredA = filteredA.filter(x => x.id_sales === selectedSales);
+      filteredP = filteredP.filter(x => x.sales_owner === selectedSales);
       c = c.filter(x => x.sales_pic === selectedSales);
+      filteredNewC = filteredNewC.filter(x => x.sales_pic === selectedSales);
     }
 
-    // 3. Filter by Area
+    // 3. Filter by Area (Applies to ALL)
     if (selectedArea !== 'all') {
-      a = a.filter(x => x.geotagging?.area === selectedArea);
-      p = p.filter(x => x.area === selectedArea);
+      filteredA = filteredA.filter(x => (x as any).geotagging?.area === selectedArea);
+      filteredP = filteredP.filter(x => x.area === selectedArea);
       c = c.filter(x => x.area === selectedArea);
+      filteredNewC = filteredNewC.filter(x => x.area === selectedArea);
     }
 
-    // 4. Filter by Category
+    // 4. Filter by Category (Activities only)
     if (selectedCategory !== 'all') {
-      if (selectedCategory === 'Visit') a = a.filter(x => x.tipe_aksi === 'Visit');
-      else if (selectedCategory === 'Closing') a = a.filter(x => x.catatan_hasil.toLowerCase().includes('closing'));
-      else if (selectedCategory === 'Order') a = a.filter(x => x.tipe_aksi === 'Order');
+      if (selectedCategory === 'Visit') filteredA = filteredA.filter(x => x.tipe_aksi === 'Visit');
+      else if (selectedCategory === 'Closing') filteredA = filteredA.filter(x => x.catatan_hasil.toLowerCase().includes('closing'));
+      else if (selectedCategory === 'Order') filteredA = filteredA.filter(x => x.tipe_aksi === 'Order');
     }
 
-    return { activities: a, prospek: p, customers: c };
+    return { activities: filteredA, prospek: filteredP, customers: c, newCustomers: filteredNewC };
   }, [realActivities, realProspek, realCustomers, selectedPeriod, selectedSales, selectedArea, selectedCategory]);
 
   const areas = useMemo(() => {
@@ -133,8 +138,8 @@ export default function PerformanceAnalytics() {
     }).sort((a,b) => b.points - a.points);
   }, [sales, activities, startDate, systemTargets, prospek]);
 
-  const totalProspekCount = prospek.length;
-  const totalCustomer = customers.length;
+  const totalProspekCount = realProspek.length;
+  const totalCustomer = realCustomers.length;
   const totalUniqueClosing = useMemo(() => 
     new Set(activities.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).map(a => a.target_id)).size, 
   [activities]);
@@ -201,16 +206,16 @@ export default function PerformanceAnalytics() {
         const date = new Date(dateStr);
         return date.getFullYear() === year && date.getMonth() === month;
       };
-      const mProspek = prospek.filter(p => filterByMonth(p.created_at)).length;
-      const mCustomer = customers.filter(c => filterByMonth(c.created_at)).length;
-      const mActivities = activities.filter(a => filterByMonth(a.timestamp));
+      const mProspek = realProspek.filter(p => filterByMonth(p.created_at)).length;
+      const mCustomer = realCustomers.filter(c => filterByMonth(c.tanggal_join || c.created_at)).length;
+      const mActivities = realActivities.filter(a => filterByMonth(a.timestamp));
       const mVisit = mActivities.filter(a => a.tipe_aksi === 'Visit').length;
       const mFollowup = mActivities.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
       const mOrder = mActivities.filter(a => a.tipe_aksi === 'Order').length;
       const total = mProspek + mCustomer + mOrder;
       return { label, mProspek, mCustomer, mVisit, mFollowup, mOrder, total };
     });
-  }, [now, activities, customers, prospek]);
+  }, [now, realActivities, realCustomers, realProspek]);
 
 
 
@@ -218,7 +223,7 @@ export default function PerformanceAnalytics() {
   const pointTrendsData = useMemo(() => {
     const days = [];
     let cumulativePoints = 0;
-    const sortedActs = [...activities].sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    const sortedActs = [...realActivities].sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now);
       d.setDate(d.getDate() - i);
@@ -240,12 +245,12 @@ export default function PerformanceAnalytics() {
       });
     }
     return days;
-  }, [activities, now, systemTargets]);
+  }, [realActivities, now, systemTargets]);
 
   const retentionAnalysis = useMemo(() => {
     const last30Days = 30 * 24 * 60 * 60 * 1000;
     const lastActMap: Record<string, number> = {};
-    activities.filter(a => a.target_type === 'customer').forEach(a => {
+    realActivities.filter(a => a.target_type === 'customer').forEach(a => {
       const ts = new Date(a.timestamp).getTime();
       if (!lastActMap[a.target_id] || ts > lastActMap[a.target_id]) {
         lastActMap[a.target_id] = ts;
@@ -263,7 +268,7 @@ export default function PerformanceAnalytics() {
     const activeDaysCount = pointTrendsData.filter(d => d.dayPoints > 0).length;
     const consistencyScore = Math.round((activeDaysCount / 30) * 100);
     return { healthData, activeCount, dormantCount, consistencyScore };
-  }, [activities, customers, now, pointTrendsData]);
+  }, [realActivities, customers, now, pointTrendsData]);
 
 
 
@@ -835,7 +840,7 @@ export default function PerformanceAnalytics() {
                 </ResponsiveContainer>
                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
                   {(() => {
-                    const rate = Math.round((fClosedNum / fTotal) * 100);
+                    const rate = fTotal > 0 ? Math.round((fClosedNum / fTotal) * 100) : 0;
                     const color = rate >= 10 ? '#10b981' : rate >= 5 ? '#f59e0b' : '#3b82f6';
                     return (
                       <>
@@ -1034,7 +1039,10 @@ export default function PerformanceAnalytics() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie 
-                    data={[{ value: Math.round((retentionAnalysis.activeCount/customers.length)*100) }, { value: 100 - Math.round((retentionAnalysis.activeCount/customers.length)*100) }]} 
+                    data={[
+                      { value: customers.length > 0 ? Math.round((retentionAnalysis.activeCount/customers.length)*100) : 0 }, 
+                      { value: customers.length > 0 ? 100 - Math.round((retentionAnalysis.activeCount/customers.length)*100) : 100 }
+                    ]} 
                     cx="50%" 
                     cy="50%" 
                     innerRadius={38} 
@@ -1056,7 +1064,7 @@ export default function PerformanceAnalytics() {
             </div>
 
             <div style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b', marginBottom: '12px', letterSpacing: '-1px', textShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-              {Math.round((retentionAnalysis.activeCount/customers.length)*100)}%
+              {customers.length > 0 ? Math.round((retentionAnalysis.activeCount/customers.length)*100) : 0}%
             </div>
 
             <div style={{ 
@@ -1098,8 +1106,8 @@ export default function PerformanceAnalytics() {
                 justifyContent: 'center',
                 gap: '8px'
               }}>
-               <span>{Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
-               <span style={{ fontSize: '16px' }}>{Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
+               <span>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
+               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
             </button>
           </div>
         </div>
@@ -1437,23 +1445,23 @@ export default function PerformanceAnalytics() {
           const cutThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           const cutLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-          const thisMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutThisMonth).length || 135;
-          const lastMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 110;
+          const thisMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutThisMonth).length || 0;
+          const lastMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 0;
 
           const thisMonthActs = activities.filter(a => new Date(a.timestamp) >= cutThisMonth);
           const lastMonthActs = activities.filter(a => new Date(a.timestamp) >= cutLastMonth && new Date(a.timestamp) < cutThisMonth);
 
-          const thisMonthClosing = thisMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 28;
-          const lastMonthClosing = lastMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 22;
+          const thisMonthClosing = thisMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
+          const lastMonthClosing = lastMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
 
-          const thisMonthSO = thisMonthActs.filter(a => a.tipe_aksi === 'Order').length || 18;
-          const lastMonthSO = lastMonthActs.filter(a => a.tipe_aksi === 'Order').length || 15;
+          const thisMonthSO = thisMonthActs.filter(a => a.tipe_aksi === 'Order').length || 0;
+          const lastMonthSO = lastMonthActs.filter(a => a.tipe_aksi === 'Order').length || 0;
 
-          const thisMonthVisit = thisMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 85;
-          const lastMonthVisit = lastMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 72;
+          const thisMonthVisit = thisMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 0;
+          const lastMonthVisit = lastMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 0;
 
-          const thisMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutThisMonth).length || 45;
-          const lastMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutLastMonth && new Date(c.created_at || now.toISOString()) < cutThisMonth).length || 38;
+          const thisMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutThisMonth).length || 0;
+          const lastMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutLastMonth && new Date(c.created_at || now.toISOString()) < cutThisMonth).length || 0;
 
           const metrics = [
             { label: 'Prospek Baru', thisMonth: thisMonthProspek, lastMonth: lastMonthProspek, color: '#6366f1' },
@@ -1595,14 +1603,7 @@ export default function PerformanceAnalytics() {
           });
 
           // 2. Define Base Anchors (Key Cities)
-          const BASE_CITIES = [
-            { x: 8,  y: 3, city: 'Jakarta',  keywords: ['jakarta', 'jabodetabek', 'bekasi', 'depok', 'tangerang', 'bogor'], color: '#3b82f6', icon: '🏢' },
-            { x: 26, y: 3, city: 'Bandung',  keywords: ['bandung', 'cimahi'],              color: '#10b981', icon: '🌲' },
-            { x: 44, y: 4, city: 'Surabaya', keywords: ['surabaya', 'sidoarjo', 'gresik'], color: '#a855f7', icon: '🏭' },
-            { x: 12, y: 8, city: 'Medan',    keywords: ['medan', 'sumut', 'sumatra utara'],color: '#f59e0b', icon: '🚢' },
-            { x: 26, y: 7, city: 'Semarang', keywords: ['semarang', 'jateng', 'jawa tengah'], color: '#e11d48', icon: '🏪' },
-            { x: 48, y: 9, city: 'Makassar', keywords: ['makassar', 'sulsel', 'sulawesi'], color: '#0ea5e9', icon: '🏛️' },
-          ];
+          const BASE_CITIES: any[] = [];
 
           // 3. Extract Unique Areas from Customers
           const areaCounts: Record<string, number> = {};
@@ -1665,7 +1666,7 @@ export default function PerformanceAnalytics() {
                   {mapDataPois.slice(0, 8).map((p) => {
                     const left = `${((p.x * 10 + 20) / 540) * 100}%`;
                     const top = `${((p.y * 11 + 20) / 160) * 100}%`;
-                    if (p.value === 0 && p.city !== 'Jakarta') return null; // Only show active or base city
+                    if (p.value === 0) return null; // Only show active areas
                     
                     return (
                       <div key={p.city} style={{ 

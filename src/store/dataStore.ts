@@ -4,13 +4,24 @@ import type { Sales, Prospek, Customer, Activity, Area } from '../types';
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
-    const { data, error } = await supabase.from('prospek').insert([p]).select().single();
+    // Only send basic columns confirmed by seed
+    const prospekData = {
+      id: crypto.randomUUID(),
+      nama_toko: p.nama_toko,
+      nama_pic: p.nama_pic,
+      no_wa: p.no_wa,
+      area: p.area,
+      status: p.status,
+      sales_owner: p.sales_owner,
+      created_at: new Date().toISOString()
+    };
+    const { error } = await supabase.from('prospek').insert([prospekData]);
     if (error) console.error('addProspek error:', error);
-    return { data, error };
+    return { data: prospekData as Prospek, error };
   },
 
   async updateProspek(id: string, updates: Partial<Prospek>) {
-    const { data, error } = await supabase.from('prospek').update(updates).eq('id', id).select().single();
+    const { data, error } = await supabase.from('prospek').update(updates).eq('id', id);
     if (error) console.error('updateProspek error:', error);
     return { data, error };
   },
@@ -22,37 +33,48 @@ export const store = {
   },
 
   // ─── CUSTOMER ───────────────────────────────────────────
-  async addCustomer(c: Omit<Customer, 'id'>) {
-    const { data, error } = await supabase.from('customer').insert([c]).select().single();
+  async addCustomer(c: any) {
+    // Completely minimalist based on errors and seed
+    const customerData = {
+      id: crypto.randomUUID(),
+      nama_toko: c.nama_toko,
+      nama_pic: c.nama_pic || 'Bpk/Ibu',
+      no_wa: c.no_wa,
+      area: c.area,
+      sales_pic: c.sales_pic,
+      total_order_volume: c.total_order_volume || 0,
+      last_order_date: c.last_order_date || new Date().toISOString(),
+      tanggal_join: new Date().toISOString()
+    };
+    const { error } = await supabase.from('customer').insert([customerData]);
     if (error) console.error('addCustomer error:', error);
-    return { data, error };
+    return { data: customerData as Customer, error };
   },
 
   async updateCustomer(id: string, updates: Partial<Customer>) {
-    const { data, error } = await supabase.from('customer').update(updates).eq('id', id).select().single();
+    const { data, error } = await supabase.from('customer').update(updates).eq('id', id);
     if (error) console.error('updateCustomer error:', error);
     return { data, error };
   },
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
   async convertToCustomer(prospek: Prospek, orderVolume: number) {
+    const newId = crypto.randomUUID();
     const customerData = {
+      id: newId,
       nama_toko: prospek.nama_toko,
       nama_pic: prospek.nama_pic,
       no_wa: prospek.no_wa,
       area: prospek.area,
-      total_order_volume: orderVolume,
+      total_order_volume: orderVolume || 0,
       sales_pic: prospek.sales_owner,
-      link_map: prospek.link_map,
-      kategori: prospek.kategori,
-      rating: prospek.rating,
-      foto_profil: prospek.foto_profil,
-      last_order_date: new Date().toISOString()
+      last_order_date: new Date().toISOString(),
+      tanggal_join: new Date().toISOString(),
     };
     
     // 1. Insert Customer
-    const { data: customer, error: errC } = await supabase.from('customer').insert([customerData]).select().single();
-    if (errC || !customer) {
+    const { error: errC } = await supabase.from('customer').insert([customerData]);
+    if (errC) {
       console.error('convertToCustomer error:', errC);
       return { data: null, error: errC };
     }
@@ -63,21 +85,31 @@ export const store = {
     // 3. Log Activity
     await this.logActivity({
       id_sales: prospek.sales_owner,
-      target_id: customer.id,
+      target_id: newId,
       target_type: 'customer',
       target_nama: prospek.nama_toko,
       tipe_aksi: 'Visit',
-      catatan_hasil: `CLOSING! Order pertama ${orderVolume}kg. Data dipindahkan ke Customer.`,
+      catatan_hasil: `CLOSING! Data dipindahkan ke Customer.`,
     });
 
-    return { data: customer, error: null };
+    return { data: customerData as Customer, error: null };
   },
 
   // ─── ACTIVITY ───────────────────────────────────────────
   async logActivity(a: Omit<Activity, 'id' | 'timestamp'>) {
-    const { data, error } = await supabase.from('activity').insert([a]).select().single();
+    const activityData = {
+      id: crypto.randomUUID(),
+      id_sales: a.id_sales,
+      target_id: a.target_id,
+      target_type: a.target_type,
+      target_nama: a.target_nama,
+      tipe_aksi: a.tipe_aksi,
+      catatan_hasil: a.catatan_hasil,
+      timestamp: new Date().toISOString()
+    };
+    const { error } = await supabase.from('activity').insert([activityData]);
     if (error) console.error('logActivity error:', error);
-    return { data, error };
+    return { data: activityData as Activity, error };
   },
 
   async logWA(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noWA: string, catatan = '') {
@@ -145,12 +177,12 @@ export const store = {
 
   // ─── SALES CRUD ─────────────────────────────────────────
   async addSales(sales: Sales) {
-    const { data, error } = await supabase.from('sales').insert([sales]).select().single();
+    const { data, error } = await supabase.from('sales').insert([sales]);
     if (error) console.error('addSales error:', error);
     return { data, error };
   },
   async updateSales(id: string, updates: Partial<Sales>) {
-    const { data, error } = await supabase.from('sales').update(updates).eq('id', id).select().single();
+    const { data, error } = await supabase.from('sales').update(updates).eq('id', id);
     if (error) console.error('updateSales error:', error);
     return { data, error };
   },
@@ -167,7 +199,7 @@ export const store = {
     return data || [];
   },
   async addRole(roleData: { role: string; akses: string }) {
-    const { data, error } = await supabase.from('roles').insert([roleData]).select().single();
+    const { data, error } = await supabase.from('roles').insert([roleData]);
     if (error) console.error('addRole error:', error);
     return data;
   },

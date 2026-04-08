@@ -1,13 +1,26 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import MobileShell from './pages/mobile/MobileShell';
 import ManagerShell from './pages/manager/ManagerShell';
 import LoginPage from './pages/LoginPage';
 
+// Custom guard to manage the Root ('/') path behavior cleanly
+function RootRedirector() {
+  const { isLoggedIn, role } = useAuth();
+  const normalizedRole = (role || '').toLowerCase();
+
+  if (!isLoggedIn) return <LoginPage />;
+
+  const isManager = (normalizedRole.includes('manager') || normalizedRole === 'admin') && !normalizedRole.includes('sales');
+  
+  return <Navigate to={isManager ? "/manager/activity" : "/mobile/home"} replace />;
+}
+
 export default function App() {
   const { isLoggedIn, role, loading } = useAuth();
   const normalizedRole = (role || '').toLowerCase();
 
+  // Show a premium global loader during initial auth check
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0815', color: '#fff' }}>
@@ -17,29 +30,34 @@ export default function App() {
   }
 
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Main Entry Point Logic */}
-        <Route path="/" element={
-          !isLoggedIn ? <LoginPage /> : 
-          (normalizedRole === 'manager' || normalizedRole === 'admin') ? <Navigate to="/manager" replace /> : 
-          normalizedRole === 'sales' ? <Navigate to="/mobile" replace /> :
-          <LoginPage /> // Fallback for unknown roles to prevent loops
-        } />
+    <Routes>
+      {/* 
+          CLEAN ROOT HANDLING:
+          The RootRedirector decides whether to show the Login page or 
+          to "push" the user to their respective dashboard.
+      */}
+      <Route path="/" element={<RootRedirector />} />
+      
+      {/* 
+          Prevent authenticated users from accidentally accessing the login page 
+          without going through the root evaluation logic.
+      */}
+      <Route path="/login" element={<Navigate to="/" replace />} />
 
-        {/* Protected Manager Routes */}
-        <Route path="/manager/*" element={
-          isLoggedIn && (normalizedRole === 'manager' || normalizedRole === 'admin') ? <ManagerShell /> : <Navigate to="/" replace />
-        } />
+      {/* 
+          DAHSBOARD ROUTES:
+          Protected by simple auth checks.
+      */}
+      <Route path="/manager/*" element={
+        (isLoggedIn && (normalizedRole.includes('manager') || normalizedRole === 'admin')) ? <ManagerShell /> : <Navigate to="/" replace />
+      } />
 
-        {/* Protected Mobile/Sales Routes */}
-        <Route path="/mobile/*" element={
-          isLoggedIn && normalizedRole === 'sales' ? <MobileShell /> : <Navigate to="/" replace />
-        } />
+      <Route path="/mobile/*" element={
+        isLoggedIn ? <MobileShell /> : <Navigate to="/" replace />
+      } />
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+      {/* Catch-all sends you back to the evaluation logic */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }

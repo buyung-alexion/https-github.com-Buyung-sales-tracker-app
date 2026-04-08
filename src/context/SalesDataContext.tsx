@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useAuth';
 import type { SystemTargets, Prospek, Customer, Activity, Sales } from '../types';
 
 interface SalesDataContextType {
@@ -15,6 +16,7 @@ interface SalesDataContextType {
 const SalesDataContext = createContext<SalesDataContextType | undefined>(undefined);
 
 export function SalesDataProvider({ children }: { children: React.ReactNode }) {
+  const { isLoggedIn } = useAuth();
   const [sales, setSales] = useState<Sales[]>([]);
   const [prospek, setProspek] = useState<Prospek[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -33,23 +35,15 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         supabase.from('system_targets').select('*').eq('id', 1).single()
       ]);
 
-      // Filter only users with 'sales' role (more inclusive)
       const filteredSales = (resSales.data || []).filter(s => {
         const r = (s.role || '').toLowerCase();
         return r.includes('sales') || r.includes('salesman') || r.includes('marketing');
       });
-      const salesIds = new Set(filteredSales.map(s => s.id));
       
-      console.log(`[DataCenter] Found ${filteredSales.length} sales members:`, filteredSales.map(s => s.nama));
-      
-      const filteredActivities = (resActivity.data || []).filter(a => salesIds.has(a.id_sales));
-      const filteredProspek = (resProspek.data || []).filter(p => !p.sales_owner || salesIds.has(p.sales_owner));
-      const filteredCustomers = (resCustomer.data || []).filter(c => !c.sales_pic || salesIds.has(c.sales_pic));
-
       setSales(filteredSales);
-      setProspek(filteredProspek);
-      setCustomers(filteredCustomers);
-      setActivities(filteredActivities);
+      setProspek(resProspek.data || []);
+      setCustomers(resCustomer.data || []);
+      setActivities(resActivity.data || []);
       if (resTargets.data) setSystemTargets(resTargets.data);
     } catch (err) {
       console.error('Error fetching data central:', err);
@@ -62,13 +56,17 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
     if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
     fetchTimeoutRef.current = setTimeout(() => {
       fetchData();
-    }, 1500); // 1.5s debounce for UI stability
+    }, 1500);
   }, [fetchData]);
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+
     fetchData();
 
-    // Singleton subscription
     const channel = supabase.channel('st_global_realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'prospek' }, () => debouncedFetch())
@@ -81,7 +79,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
       supabase.removeChannel(channel);
     };
-  }, [fetchData, debouncedFetch]);
+  }, [isLoggedIn, fetchData, debouncedFetch]);
 
   const value = {
     sales,
