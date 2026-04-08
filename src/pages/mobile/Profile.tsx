@@ -50,11 +50,29 @@ export default function Profile() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const { error } = await store.updateSales(user.id, { ...formData, foto_profil: profilePhoto } as any);
+      // Create a clean payload for the update to avoid wiping credentials
+      const updatePayload: any = {
+        nama: formData.nama,
+        no_wa: formData.no_wa,
+        foto_profil: profilePhoto
+      };
+
+      // Only include password if user explicitly filled it
+      if (formData.password && formData.password !== '••••••••' && formData.password !== '') {
+        updatePayload.password = formData.password;
+      }
+      
+      // Only include username if explicitly changed
+      if (formData.username && formData.username !== '') {
+        updatePayload.username = formData.username;
+      }
+
+      const { error } = await store.updateSales(user.id, updatePayload);
       if (error) {
         alert('Gagal menyimpan ke Database: ' + error.message);
         return;
       }
+      
       updateUser({ ...formData, foto_profil: profilePhoto } as any);
       setIsEditing(false);
       alert('Profil berhasil diperbarui!');
