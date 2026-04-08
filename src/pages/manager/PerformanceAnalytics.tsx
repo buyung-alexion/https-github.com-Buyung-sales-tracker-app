@@ -26,7 +26,7 @@ export default function PerformanceAnalytics() {
   const [now] = useState(new Date());
   
   // Filtering Engine
-  const { activities, prospek, customers, newCustomers } = useMemo(() => {
+  const { activities, prospek, customers } = useMemo(() => {
     let a = [...realActivities];
     let p = [...realProspek];
     let c = [...realCustomers];
@@ -77,7 +77,7 @@ export default function PerformanceAnalytics() {
       else if (selectedCategory === 'Order') filteredA = filteredA.filter(x => x.tipe_aksi === 'Order');
     }
 
-    return { activities: filteredA, prospek: filteredP, customers: c, newCustomers: filteredNewC };
+    return { activities: filteredA, prospek: filteredP, customers: c };
   }, [realActivities, realProspek, realCustomers, selectedPeriod, selectedSales, selectedArea, selectedCategory]);
 
   const areas = useMemo(() => {

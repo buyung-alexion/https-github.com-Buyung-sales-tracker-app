@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { Routes, Route, NavLink } from 'react-router-dom';
 import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
@@ -34,7 +34,6 @@ export default function ManagerShell() {
     }
   };
 
-  const role = (user?.role || '').toLowerCase();
   if (!user) return null;
 
   const menuCategories = [
