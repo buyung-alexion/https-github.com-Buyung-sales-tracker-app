@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
+import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle } from 'lucide-react';
@@ -10,9 +11,10 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 interface Props { salesId: string; }
 
 export default function Homepage({ salesId }: Props) {
+  const { user } = useAuth();
   const { activities = [], prospek = [], customers = [], sales = [], systemTargets = null } = useSalesData() || {};
-  const currentSales = sales.find(s => s.id === salesId);
-  const salesDisplayName = currentSales?.nama?.split(' ')[0] || 'Sales';
+  const currentSales = sales.find(s => s.id === salesId) || (user as any);
+  const salesDisplayName = (user?.nama || currentSales?.nama)?.split(' ')[0] || 'Sales';
   const navigate = useNavigate();
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -142,10 +144,26 @@ export default function Homepage({ salesId }: Props) {
         <div style={{ position: 'relative', zIndex: 5, paddingBottom: '16px' }}>
           {/* Top Bar - Identity & Icons - Compact Premium */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginLeft: '52px' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginLeft: '56px' }}>
+              <div 
+                className="tap-active"
+                onClick={() => navigate('/mobile/profile')}
+                style={{ 
+                  width: '46px', height: '46px', borderRadius: '14px', 
+                  background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: '2.5px solid rgba(255,255,255,0.8)',
+                  overflow: 'hidden'
+                }}
+              >
+                <img 
+                  src={(user as any)?.foto_profil || currentSales?.foto_profil || `https://ui-avatars.com/api/?name=${user?.nama || 'Sales'}&background=f1f5f9&color=64748b&bold=true`} 
+                  alt="Profile" 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-0.3px', textTransform: 'uppercase' }}>
-                  Hallo {salesDisplayName} 👋
+                <h2 style={{ fontSize: '18px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.7px', textTransform: 'uppercase' }}>
+                  HALLO {salesDisplayName} 👋
                 </h2>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                    <span style={{ fontSize: '9px', color: '#047857', fontWeight: 900 }}>• ONLINE</span>

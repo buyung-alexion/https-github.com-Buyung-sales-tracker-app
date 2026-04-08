@@ -182,7 +182,7 @@ export const store = {
     return { data, error };
   },
   async updateSales(id: string, updates: Partial<Sales>) {
-    const { data, error } = await supabase.from('sales').update(updates).eq('id', id);
+    const { data, error } = await supabase.from('sales').update(updates).eq('id', id).select();
     if (error) console.error('updateSales error:', error);
     return { data, error };
   },

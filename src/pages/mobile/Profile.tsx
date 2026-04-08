@@ -50,10 +50,16 @@ export default function Profile() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      await store.updateSales(user.id, { ...formData, foto_profil: profilePhoto } as any);
+      const { error } = await store.updateSales(user.id, { ...formData, foto_profil: profilePhoto } as any);
+      if (error) {
+        alert('Gagal menyimpan ke Database: ' + error.message);
+        return;
+      }
       updateUser({ ...formData, foto_profil: profilePhoto } as any);
       setIsEditing(false);
       alert('Profil berhasil diperbarui!');
+    } catch (err: any) {
+      alert('Terjadi kesalahan: ' + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -67,15 +73,43 @@ export default function Profile() {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const scale = img.width > 400 ? 400 / img.width : 1;
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const base64 = canvas.toDataURL('image/jpeg', 0.75);
+        const MAX_SIZE = 256;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+        
+        const base64 = canvas.toDataURL('image/jpeg', 0.5); // 50% Quality, very small payload
         setProfilePhoto(base64);
+        
         // Auto-save photo immediately or let handleSave do it
         if (!isEditing) {
-          store.updateSales(user.id, { foto_profil: base64 } as any);
+          store.updateSales(user.id, { foto_profil: base64 } as any).then(({ error }) => {
+            if (error) {
+              alert('Gagal update foto: ' + error.message);
+            } else {
+              updateUser({ ...user, foto_profil: base64 } as any);
+            }
+          });
         }
       };
       if (ev.target?.result) img.src = ev.target.result as string;
