@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MapPin, BarChart2, MessageSquare, Menu, X, LogOut, User as UserIcon, Shield } from 'lucide-react';
+import { LayoutDashboard, MapPin, BarChart2, MessageSquare, Menu, X, LogOut, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Homepage from './Homepage';
 import DashboardTarget from './DashboardTarget';
@@ -57,10 +57,12 @@ export default function MobileShell() {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--brand-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Shield size={22} color="#000" />
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fff', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                  <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
-                <span style={{ fontWeight: 900, fontSize: '18px', letterSpacing: '-0.5px' }}>Sales Menu</span>
+                <div>
+                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#1e293b', lineHeight: 1.2 }}>Industri <br/> Keluarga Timur</div>
+                </div>
               </div>
               <button 
                 onClick={() => setSidebarOpen(false)}

@@ -69,9 +69,11 @@ export default function ManagerShell() {
       {/* Sidebar */}
       <aside className={`manager-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
-          <span className="logo-icon">🥩</span>
-          <div>
-            <div className="logo-title">Sales Tracker</div>
+          <div style={{ width: '40px', height: '40px', background: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+            <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Industri Keluarga Timur</div>
             <div className="logo-sub">Manager Dashboard</div>
           </div>
         </div>

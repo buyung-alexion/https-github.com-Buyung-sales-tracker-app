@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { ShieldCheck, User, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { User, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -79,16 +79,18 @@ export default function LoginPage() {
         zIndex: 10
       }}>
         <div style={{ 
-          width: '80px', height: '80px', borderRadius: '24px', 
-          background: 'var(--brand-yellow)', margin: '0 auto 24px',
+          width: '120px', height: '120px', borderRadius: '32px', 
+          background: '#fff', margin: '0 auto 24px',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 10px 30px rgba(255, 204, 0, 0.3)'
+          boxShadow: '0 15px 45px rgba(0, 0, 0, 0.4)',
+          overflow: 'hidden',
+          padding: '10px'
         }}>
-          <ShieldCheck size={40} color="#000" />
+          <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
         </div>
 
-        <h1 style={{ color: '#fff', fontSize: '32px', fontWeight: 950, letterSpacing: '-1px', marginBottom: '8px' }}>
-          Sales Tracker
+        <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: 950, letterSpacing: '-0.8px', marginBottom: '8px', lineHeight: 1.2 }}>
+          PT. Industri Keluarga Timur
         </h1>
         <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '15px', fontWeight: 500, marginBottom: '40px' }}>
           Silakan masuk untuk melanjutkan
