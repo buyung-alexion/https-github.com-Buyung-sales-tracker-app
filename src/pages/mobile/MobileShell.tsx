@@ -61,7 +61,7 @@ export default function MobileShell() {
                   <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#1e293b', lineHeight: 1.2 }}>Industri <br/> Keluarga Timur</div>
+                  <div style={{ fontSize: '16px', fontWeight: 900, color: '#1e293b', lineHeight: 1.2 }}>PT. Industri <br/> Keluarga Timur</div>
                 </div>
               </div>
               <button 
