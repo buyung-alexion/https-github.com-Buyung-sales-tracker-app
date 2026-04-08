@@ -32,11 +32,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // If we found a user in localStorage, we can start with loading: false
   const [loading, setLoading] = useState(false);
 
-  // Sync with Supabase session if needed in the background
+  // Sync with Supabase session in the background on load
   useEffect(() => {
-    // Initial check is done, but we could add a token validation here if needed
-    setLoading(false);
-  }, []);
+    const syncUser = async () => {
+      if (!user?.id) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('sales')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        
+        if (data && !error) {
+          setUser(data);
+          localStorage.setItem('st_auth_user', JSON.stringify(data));
+        }
+      } catch (err) {
+        console.error('Failed to sync user data:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    syncUser();
+  }, [user?.id]);
 
   const login = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {
