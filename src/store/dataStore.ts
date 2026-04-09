@@ -44,7 +44,8 @@ export const store = {
       sales_pic: c.sales_pic,
       total_order_volume: c.total_order_volume || 0,
       last_order_date: c.last_order_date || new Date().toISOString(),
-      tanggal_join: new Date().toISOString()
+      tanggal_join: new Date().toISOString(),
+      is_from_prospek: false
     };
     const { error } = await supabase.from('customer').insert([customerData]);
     if (error) console.error('addCustomer error:', error);
@@ -70,6 +71,7 @@ export const store = {
       sales_pic: prospek.sales_owner,
       last_order_date: new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
+      is_from_prospek: true
     };
     
     // 1. Insert Customer

@@ -552,7 +552,12 @@ export default function ManagerCustomer() {
                           <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', width: '16px', height: '16px', borderRadius: '50%', background: '#10b981', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{c.nama_toko}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{c.nama_toko}</div>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', background: '#f8fafc', padding: '2px 6px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
+                              #{c.id.substring(0, 8)}
+                            </span>
+                          </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{c.nama_pic}</div>
                             <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }} />
@@ -661,31 +666,36 @@ export default function ManagerCustomer() {
         </div>
 
         {/* VIEW ALL TOGGLE (BOTTOM RIGHT) */}
-        {filteredCustomers.length > 3 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '32px' }}>
+        {filteredCustomers.length > 20 && (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            padding: '20px 24px', 
+            background: '#fcfcfc', 
+            borderTop: '1px solid #f1f5f9', 
+            borderRadius: '0 0 32px 32px' 
+          }}>
             <button
               onClick={() => setViewAll(!viewAll)}
               style={{
-                padding: '12px 32px',
-                borderRadius: '100px',
-                border: 'none',
-                background: viewAll ? '#f1f5f9' : 'linear-gradient(135deg, #1e293b, #334155)',
-                color: viewAll ? '#475569' : '#fff',
-                fontSize: '13px',
+                padding: '10px 24px',
+                borderRadius: '14px',
+                border: '1.5px solid #f1f5f9',
+                background: viewAll ? '#f1f5f9' : '#fff',
+                color: '#1e293b',
+                fontSize: '12px',
                 fontWeight: 900,
                 cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                boxShadow: viewAll ? 'none' : '0 10px 20px rgba(30, 41, 59, 0.15)',
+                transition: 'all 0.2s ease',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '8px',
-                letterSpacing: '0.5px'
+                gap: '8px'
               }}
             >
               {viewAll ? (
-                <>TAMPILKAN LEBIH SEDIKIT</>
+                <>TUTUP VIEW ALL</>
               ) : (
-                <>LIHAT SEMUA ({filteredCustomers.length})</>
+                <>VIEW ALL ({filteredCustomers.length})</>
               )}
             </button>
           </div>

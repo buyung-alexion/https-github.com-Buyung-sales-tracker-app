@@ -1,10 +1,20 @@
-const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
+import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
 
 async function verify() {
   const env = fs.readFileSync('.env.local', 'utf8');
-  const url = env.match(/VITE_SUPABASE_URL="(.*)"/)[1];
-  const key = env.match(/VITE_SUPABASE_ANON_KEY="(.*)"/)[1];
+  const findEnv = (key) => {
+    const match = env.match(new RegExp(`${key}=(.*)`));
+    return match ? match[1].replace(/["']/g, '').trim() : null;
+  };
+  
+  const url = findEnv('VITE_SUPABASE_URL');
+  const key = findEnv('VITE_SUPABASE_ANON_KEY');
+  
+  if (!url || !key) {
+    console.error('Missing Supabase credentials in .env.local');
+    return;
+  }
   
   const supabase = createClient(url, key);
   

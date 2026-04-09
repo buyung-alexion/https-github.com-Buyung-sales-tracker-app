@@ -329,19 +329,20 @@ export default function PerformanceAnalytics() {
       
       {/* MASTER FILTER BAR */}
       <div style={{ 
-        background: 'rgba(255,255,255,0.8)', 
+        background: 'rgba(255, 255, 255, 0.8)', 
         backdropFilter: 'blur(10px)', 
-        padding: '16px 24px', 
+        padding: '12px 20px', 
         borderRadius: '20px', 
+        border: '1px solid #e2e8f0', 
         marginBottom: '24px', 
-        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '20px',
-        border: '1px solid rgba(255,255,255,0.5)',
+        display: 'flex', 
+        alignItems: 'center', 
+        gap: '20px', 
+        flexWrap: 'wrap',
         position: 'sticky',
         top: '10px',
-        zIndex: 100
+        zIndex: 100,
+        boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '18px' }}>📅</span>
@@ -444,16 +445,16 @@ export default function PerformanceAnalytics() {
         ].map((item: any, i) => (
           <div key={i} style={{ 
             background: `linear-gradient(135deg, ${item.from}, ${item.to})`, 
-            borderRadius: '28px', 
-            padding: '24px 28px', 
+            borderRadius: '24px', 
+            padding: '24px', 
             display: 'flex', 
             alignItems: 'center', 
-            gap: '24px',
-            boxShadow: `0 15px 35px -5px ${item.shadow}`,
+            gap: '20px',
+            boxShadow: `0 10px 25px ${item.shadow}`,
             position: 'relative',
             overflow: 'hidden',
-            transition: 'transform 0.3s ease',
-            cursor: 'default'
+            cursor: 'default',
+            minHeight: '120px'
           }}>
             {/* Glossy Overlay */}
             <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%)', pointerEvents: 'none' }} />
@@ -534,7 +535,15 @@ export default function PerformanceAnalytics() {
         
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 2fr', gap: '24px' }}>
 
-          <div style={{ background: '#fff', borderRadius: '24px', padding: '24px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ 
+            background: '#fff', 
+            borderRadius: '24px', 
+            padding: '32px', 
+            boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+            border: '1px solid #f1f5f9', 
+            display: 'flex', 
+            flexDirection: 'column' 
+          }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
               <div>
                 <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Trend Pertumbuhan</div>
@@ -624,7 +633,7 @@ export default function PerformanceAnalytics() {
                       {/* Segment: Customer */}
                       <div style={{ 
                         height: `${(d.mCustomer/maxTotal)*100}%`, 
-                        background: 'linear-gradient(to top, #3b82f6, #60a5fa)', 
+                        background: 'linear-gradient(to top, #3b82f6, #2563eb)', 
                         width: '100%', 
                         transition: 'height 0.8s ease',
                         display: 'flex',
@@ -634,13 +643,13 @@ export default function PerformanceAnalytics() {
                         fontWeight: 900,
                         color: '#fff'
                       }}>
-                        {(d.mCustomer/d.total) > 0.15 && d.total > 0 && `${Math.round((d.mCustomer/d.total)*100)}%`}
+                        {(d.mCustomer/d.total) > 0.1 && d.total > 0 && `${Math.round((d.mCustomer/d.total)*100)}%`}
                       </div>
 
                       {/* Segment: Order */}
                       <div style={{ 
                         height: `${(d.mOrder/maxTotal)*100}%`, 
-                        background: 'linear-gradient(to top, #ef4444, #f87171)', 
+                        background: 'linear-gradient(to top, #ef4444, #dc2626)', 
                         width: '100%', 
                         transition: 'height 0.8s ease',
                         display: 'flex',
@@ -650,7 +659,7 @@ export default function PerformanceAnalytics() {
                         fontWeight: 900,
                         color: '#fff'
                       }}>
-                        {(d.mOrder/d.total) > 0.15 && d.total > 0 && `${Math.round((d.mOrder/d.total)*100)}%`}
+                        {(d.mOrder/d.total) > 0.1 && d.total > 0 && `${Math.round((d.mOrder/d.total)*100)}%`}
                       </div>
                     </div>
                   </div>
@@ -675,7 +684,15 @@ export default function PerformanceAnalytics() {
             </div>
           </div>
 
-          <div style={{ background: '#fff', borderRadius: '24px', padding: '24px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ 
+            background: '#fff', 
+            borderRadius: '24px', 
+            padding: '32px', 
+            boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+            border: '1px solid #f1f5f9', 
+            display: 'flex', 
+            flexDirection: 'column' 
+          }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Sales Leaderboard</div>
@@ -683,10 +700,10 @@ export default function PerformanceAnalytics() {
             </div>
 
             {/* Column Headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr', gap: '8px', paddingBottom: '10px', borderBottom: '1px solid #f1f5f9', marginBottom: '4px' }}>
-              <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Salesman</div>
-              {['Prospek','Closing','SO','Visit','Followup','Poin','Progress'].map(h => (
-                <div key={h} style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center' }}>{h}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr', gap: '8px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', marginBottom: '8px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Salesman</div>
+              {['Prospek','Closing','SO','Visit','F.up','Poin','Progress'].map(h => (
+                <div key={h} style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>{h}</div>
               ))}
             </div>
 
@@ -696,14 +713,19 @@ export default function PerformanceAnalytics() {
                 const followup = s.waCount + s.callCount;
 
                 return (
-                  <div key={s.id} style={{
-                    display: 'grid',
-                    gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
-                    gap: '8px',
-                    alignItems: 'center',
-                    padding: '10px 0',
-                    borderBottom: '1px solid #f8fafc',
-                  }}>
+                  <div key={s.id} 
+                    className="act-row"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr',
+                      gap: '8px',
+                      alignItems: 'center',
+                      padding: '12px 10px',
+                      borderBottom: '1px solid #f8fafc',
+                      borderRadius: '12px',
+                      transition: 'all 0.2s',
+                    }}
+                  >
                     {/* Identity: avatar-badge + name */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {/* Avatar with absolute rank badge */}
@@ -770,9 +792,10 @@ export default function PerformanceAnalytics() {
                       <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: '2px',
                         background: idx === 0 ? 'linear-gradient(135deg,#f59e0b,#fbbf24)' : '#f8fafc',
-                        color: idx === 0 ? '#1e293b' : '#475569',
-                        padding: '2px 8px', borderRadius: '20px',
-                        fontSize: '11px', fontWeight: 900,
+                        color: idx === 0 ? '#1e293b' : '#334155',
+                        padding: '4px 10px', borderRadius: '20px',
+                        fontSize: '13px', fontWeight: 950,
+                        boxShadow: idx === 0 ? '0 4px 12px rgba(245, 158, 11, 0.2)' : 'none'
                       }}>
                         {s.points}
                       </div>

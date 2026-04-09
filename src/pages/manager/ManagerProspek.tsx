@@ -148,6 +148,7 @@ export default function ManagerProspek() {
 
     const filteredC = customers
       .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
+      .filter(c => c.is_from_prospek !== false) // Include converted prospects (true) and legacy data (null), exclude direct inputs (false)
       .filter(c => {
         if (filterDate === 'all') return true;
         const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
@@ -374,7 +375,12 @@ export default function ManagerProspek() {
                           <div style={{ position: 'absolute', bottom: '-4px', right: '-4px', width: '16px', height: '16px', borderRadius: '50%', background: '#10b981', border: '2px solid #fff', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
                         </div>
                         <div>
-                          <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{p.nama_toko}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{p.nama_toko}</div>
+                            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', background: '#f8fafc', padding: '2px 6px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
+                              #{p.id.substring(0, 8)}
+                            </span>
+                          </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{p.nama_pic}</div>
                             <div style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }} />

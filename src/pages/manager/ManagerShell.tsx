@@ -120,14 +120,14 @@ export default function ManagerShell() {
                       display: 'flex', 
                       alignItems: 'center', 
                       gap: '5px', 
-                      background: 'rgba(239, 68, 68, 0.08)', 
+                      background: 'rgba(16, 185, 129, 0.08)', 
                       padding: '2px 10px', 
                       borderRadius: '100px',
-                      border: '1px solid rgba(239, 68, 68, 0.15)',
+                      border: '1px solid rgba(16, 185, 129, 0.15)',
                       height: '24px'
                     }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 6px #ef4444' }} className="pulse" />
-                      <span style={{ fontSize: '9px', fontWeight: 900, color: '#ef4444', letterSpacing: '0.5px' }}>LIVE</span>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} className="pulse" />
+                      <span style={{ fontSize: '9px', fontWeight: 900, color: '#10b981', letterSpacing: '0.5px' }}>LIVE</span>
                     </div>
                   )}
                   <h1 className="mgr-title" style={{ fontSize: '22px', fontWeight: 950, margin: 0, padding: 0, lineHeight: 1, letterSpacing: '-0.5px', color: '#1e293b' }}>{shellTitle}</h1>
@@ -146,9 +146,7 @@ export default function ManagerShell() {
               </NavLink>
             ))}
           </nav>
-          <div className="topbar-right">
-            <span className="live-dot" /> <span className="live-label">Live</span>
-          </div>
+          <div className="topbar-right" />
         </header>
 
         <main className="manager-content">

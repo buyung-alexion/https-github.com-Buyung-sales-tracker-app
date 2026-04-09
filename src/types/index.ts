@@ -37,6 +37,7 @@ export interface Customer {
   kategori?: string;
   rating?: number;
   foto_profil?: string;
+  is_from_prospek?: boolean;
 }
 
 export interface Activity {
