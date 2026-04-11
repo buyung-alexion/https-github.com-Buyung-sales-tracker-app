@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
+import { AREAS, CATEGORIES } from '../../constants';
 import { Search, Image as ImageIcon, MapPin, Briefcase, Phone, UserCheck, Tag, ShoppingCart, User, ShieldAlert } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
@@ -252,18 +253,6 @@ export default function ManagerCustomer() {
     };
   }, []);
 
-  const areas = useMemo(() => {
-    const set = new Set<string>();
-    rawCustomers.forEach(c => { if (c.area) set.add(c.area); });
-    return Array.from(set).sort();
-  }, [rawCustomers]);
-
-  const categories = useMemo(() => {
-    const set = new Set<string>();
-    rawCustomers.forEach(c => { if (c.kategori) set.add(c.kategori); });
-    return Array.from(set).sort();
-  }, [rawCustomers]);
-
   const filteredCustomers = useMemo(() => {
     return rawCustomers.filter(c => {
       const matchSearch = c.nama_toko.toLowerCase().includes(search.toLowerCase()) || 
@@ -387,7 +376,7 @@ export default function ManagerCustomer() {
               }}
             >
               <option value="All">Semua Wilayah</option>
-              {areas.map(a => <option key={a} value={a}>{a}</option>)}
+              {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
         </div>
@@ -416,7 +405,7 @@ export default function ManagerCustomer() {
               }}
             >
               <option value="All">Semua Kategori</option>
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         </div>

@@ -2,17 +2,21 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MapPin, CheckCircle, Camera, AlertTriangle, Crosshair, Loader2, Users } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
-import type { Area } from '../../types';
+import { AREAS } from '../../constants';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
 interface Props { salesId: string; }
 
-const AREA_CONFIG: { area: Area; emoji: string; desc: string; color: string; center: [number, number] }[] = [
-  { area: 'Sepaku', emoji: '🏘️', desc: 'Sepaku area & surroundings', color: '#6366f1', center: [-0.920, 116.75] },
-  { area: 'Gerogot', emoji: '🌿', desc: 'Gerogot area', color: '#10b981', center: [-1.890, 116.18] },
-  { area: 'Kota', emoji: '🏙️', desc: 'Balikpapan City', color: '#f59e0b', center: [-1.265, 116.83] },
+const AREA_CONFIG: { area: string; emoji: string; desc: string; color: string; center: [number, number] }[] = [
+  { area: 'SMD', emoji: '🏙️', desc: 'Samarinda', color: '#6366f1', center: [-0.4948, 117.1436] },
+  { area: 'BPN', emoji: '🏢', desc: 'Balikpapan', color: '#10b981', center: [-1.2654, 116.8312] },
+  { area: 'PJM', emoji: '🏘️', desc: 'Penajam', color: '#f59e0b', center: [-1.2427, 116.7118] },
+  { area: 'SPK', emoji: '🏗️', desc: 'Sepaku (IKN)', color: '#ef4444', center: [-0.920, 116.75] },
+  { area: 'TNG', emoji: '🌿', desc: 'Tanah Grogot', color: '#8b5cf6', center: [-1.9056, 116.1914] },
+  { area: 'BTG', emoji: '🏭', desc: 'Bontang', color: '#06b6d4', center: [0.1333, 117.5] },
+  { area: 'BK', emoji: '⚓', desc: 'Berau', color: '#ec4899', center: [2.15, 117.48] },
 ];
 
 function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -38,7 +42,7 @@ const iconBlue = createIcon('#3b82f6');
 
 export default function CheckInVisit({ salesId }: Props) {
   const { activities, customers, prospek, refresh } = useSalesData();
-  const [selectedArea, setSelectedArea] = useState<Area | null>(null);
+  const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [catatan, setCatatan] = useState('');
   const [success, setSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -281,11 +285,7 @@ export default function CheckInVisit({ salesId }: Props) {
             }}
           >
              <option value="">-- Deteksi Area Otomatis --</option>
-             {AREA_CONFIG.map(a => <option key={a.area} value={a.area}>{a.area}</option>)}
-             {selectedArea && !AREA_CONFIG.find(a => a.area === selectedArea) && (
-                <option value={selectedArea}>{selectedArea}</option>
-             )}
-             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah Area Baru</option>
+             {AREAS.map(a => <option key={a.id} value={a.id}>{a.id} - {a.name}</option>)}
           </select>
         </div>
 

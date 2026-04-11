@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
+import { AREAS } from '../../constants';
 import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -86,6 +87,7 @@ export default function ManagerProspek() {
   const [filterType, setFilterType] = useState<'all' | 'nocontact' | 'old30'>('all');
   const [filterSales, setFilterSales] = useState<string>('All');
   const [filterDate, setFilterDate] = useState<string>('all');
+  const [filterArea, setFilterArea] = useState<string>('All');
 
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
@@ -144,10 +146,13 @@ export default function ManagerProspek() {
         if (filterDate === 'month') return t >= monthMs;
         return true;
       })
-      .filter(p => p.nama_toko.toLowerCase().includes(search.toLowerCase()) || p.salesName.toLowerCase().includes(search.toLowerCase()));
+      .filter(p => filterArea === 'All' || p.area === filterArea)
+      .filter(p => !search || p.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === p.sales_owner)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
 
+    // Filtered Customers (Converted from Prospek only)
     const filteredC = customers
       .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
+      .filter(c => filterArea === 'All' || c.area === filterArea)
       .filter(c => c.is_from_prospek !== false) // Include converted prospects (true) and legacy data (null), exclude direct inputs (false)
       .filter(c => {
         if (filterDate === 'all') return true;
@@ -157,13 +162,13 @@ export default function ManagerProspek() {
         if (filterDate === 'month') return t >= monthMs;
         return true;
       })
-      .filter(c => c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === c.sales_pic)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
+      .filter(c => !search || c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === c.sales_pic)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
 
     return {
       filteredP: filteredP.sort((a, b) => b.created_at.localeCompare(a.created_at)),
       filteredC
     };
-  }, [prospekWithStats, customers, search, filterSales, filterDate, filterType, todayMs, weekMs, monthMs, thirtyDaysMs, sales]);
+  }, [prospekWithStats, customers, search, filterSales, filterArea, filterDate, filterType, todayMs, weekMs, monthMs, thirtyDaysMs, sales]);
 
   const { filteredP, filteredC } = filteredData;
 
@@ -218,6 +223,20 @@ export default function ManagerProspek() {
               <option value="today">Hari Ini</option>
               <option value="week">Minggu Ini</option>
               <option value="month">Bulan Ini</option>
+            </select>
+          </div>
+
+          <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
+            <span style={{ fontSize: '18px' }}>📍</span>
+            <select
+              value={filterArea}
+              onChange={e => { setFilterArea(e.target.value); }}
+              style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
+            >
+              <option value="All">Semua Wilayah</option>
+              {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 

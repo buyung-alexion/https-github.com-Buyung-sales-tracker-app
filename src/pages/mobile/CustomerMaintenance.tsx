@@ -4,6 +4,7 @@ import { MessageCircle, Phone, Search, MapPin, Edit3, X, Plus, Camera, Filter, U
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Customer } from '../../types';
+import { AREAS, CATEGORIES } from '../../constants';
 
 interface Props { salesId: string; }
 
@@ -29,9 +30,9 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
-  const [editForm, setEditForm] = useState({ 
-    id: '', // added id for safety
-    nama_toko: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' 
+  const [editForm, setEditForm] = useState({
+    id: '',
+    nama_toko: '', no_wa: '', area: AREAS[0].id as string, link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: '' 
   });
 
   const [addModal, setAddModal] = useState(false);
@@ -39,7 +40,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const [addForm, setAddForm] = useState<{
     nama_toko: string; nama_pic: string; no_wa: string; area: string; link_map: string; kategori: string; rating: number; foto_profil: string;
   }>({ 
-    nama_toko: '', nama_pic: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: ''
+    nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id as string, link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: ''
   });
 
   useEffect(() => {
@@ -136,12 +137,12 @@ export default function CustomerMaintenance({ salesId }: Props) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getAccentColor = (kategori: string = 'Retail') => {
+  const getAccentColor = (kategori: string = 'K001') => {
     switch (kategori) {
-      case 'Retail': return '#3B82F6';
-      case 'Grosir': return '#10B981';
-      case 'Distributor': return '#F59E0B';
-      case 'Horeca': return '#8B5CF6';
+      case 'K001': return '#3B82F6';
+      case 'K002': return '#10B981';
+      case 'K003': return '#F59E0B';
+      case 'K004': return '#8B5CF6';
       default: return '#94A3B8';
     }
   };
@@ -173,7 +174,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setEditForm({ id: '', nama_toko: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' });
+        setEditForm({ id: '', nama_toko: '', no_wa: '', area: AREAS[0].id, link_map: '', kategori: CATEGORIES[0].id, rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -402,9 +403,9 @@ export default function CustomerMaintenance({ salesId }: Props) {
                             id: c.id,
                             nama_toko: c.nama_toko, 
                             no_wa: c.no_wa, 
-                            area: c.area || 'Sepaku',
+                            area: c.area || AREAS[0].id,
                             link_map: c.link_map || '', 
-                            kategori: c.kategori || 'Retail', 
+                            kategori: c.kategori || CATEGORIES[0].id, 
                             rating: c.rating || 0, 
                             foto_profil: c.foto_profil || '' 
                           }); 
@@ -482,9 +483,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     setEditForm({ ...editForm, area: e.target.value });
                   }
                 }}>
-                  {['Sepaku', 'ITCI', 'Semoi', 'Samboja'].map(a => <option key={a} value={a}>{a}</option>)}
-                  {!['Sepaku', 'ITCI', 'Semoi', 'Samboja'].includes(editForm.area) && <option value={editForm.area}>{editForm.area}</option>}
-                  <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ Add New Area</option>
+                  {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
 
@@ -499,9 +498,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       setEditForm({ ...editForm, kategori: e.target.value });
                     }
                   }}>
-                    <option value="Retail">Retail</option><option value="Grosir">Grosir</option><option value="Distributor">Distributor</option><option value="Horeca">Horeca</option>
-                    {!['Retail','Grosir','Distributor','Horeca'].includes(editForm.kategori || '') && editForm.kategori && <option value={editForm.kategori}>{editForm.kategori}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#059669' }}>+ Add New</option>
+                    {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -559,9 +556,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       setAddForm({...addForm, area: e.target.value});
                     }
                   }}>
-                    {['Sepaku', 'ITCI', 'Semoi', 'Samboja'].map(a => <option key={a} value={a}>{a}</option>)}
-                    {!['Sepaku', 'ITCI', 'Semoi', 'Samboja'].includes(addForm.area) && <option value={addForm.area}>{addForm.area}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ TAMBAH BARU...</option>
+                    {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -574,9 +569,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                        setAddForm({...addForm, kategori: e.target.value});
                      }
                    }}>
-                     {['Retail', 'Grosir', 'Horeca', 'Distributor'].map(k => <option key={k} value={k}>{k}</option>)}
-                     {!['Retail', 'Grosir', 'Horeca', 'Distributor'].includes(addForm.kategori) && <option value={addForm.kategori}>{addForm.kategori}</option>}
-                     <option value="ADD_NEW" style={{ fontWeight: 800, color: '#059669' }}>+ TAMBAH BARU...</option>
+                     {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                    </select>
                 </div>
               </div>
