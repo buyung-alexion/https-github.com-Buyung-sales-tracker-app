@@ -1,12 +1,35 @@
 import { supabase } from '../lib/supabase';
 import type { Sales, Prospek, Customer, Activity, Area } from '../types';
+import { AREAS } from '../constants';
+
+// Internal helper for Area-based ID generation (e.g., BPN001)
+async function generateNextAreaId(table: 'prospek' | 'customer', areaId: string) {
+  const prefix = AREAS.find(a => a.id === areaId)?.name || 'UNK';
+  const { data } = await supabase
+    .from(table)
+    .select('id')
+    .like('id', `${prefix}%`);
+
+  const existingIds = (data || [])
+    .map(row => row.id)
+    .filter(id => id.startsWith(prefix))
+    .map(id => {
+      const numPart = id.substring(prefix.length);
+      return parseInt(numPart);
+    })
+    .filter(num => !isNaN(num))
+    .sort((a, b) => b - a);
+
+  const nextNum = existingIds.length > 0 ? existingIds[0] + 1 : 1;
+  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
+}
 
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
-    // Only send basic columns confirmed by seed
+    const nextId = await generateNextAreaId('prospek', p.area);
     const prospekData = {
-      id: crypto.randomUUID(),
+      id: nextId,
       nama_toko: p.nama_toko,
       nama_pic: p.nama_pic,
       no_wa: p.no_wa,
@@ -34,9 +57,9 @@ export const store = {
 
   // ─── CUSTOMER ───────────────────────────────────────────
   async addCustomer(c: any) {
-    // Completely minimalist based on errors and seed
+    const nextId = await generateNextAreaId('customer', c.area);
     const customerData = {
-      id: crypto.randomUUID(),
+      id: nextId,
       nama_toko: c.nama_toko,
       nama_pic: c.nama_pic || 'Bpk/Ibu',
       no_wa: c.no_wa,
@@ -60,7 +83,7 @@ export const store = {
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
   async convertToCustomer(prospek: Prospek, orderVolume: number) {
-    const newId = crypto.randomUUID();
+    const newId = await generateNextAreaId('customer', prospek.area);
     const customerData = {
       id: newId,
       nama_toko: prospek.nama_toko,
@@ -178,8 +201,21 @@ export const store = {
 
 
   // ─── SALES CRUD ─────────────────────────────────────────
-  async addSales(sales: Sales) {
-    const { data, error } = await supabase.from('sales').insert([sales]);
+  async generateNextSalesId() {
+    const { data } = await supabase.from('sales').select('id');
+    const existingIds = (data || [])
+      .map(s => s.id)
+      .filter(id => id.startsWith('S'))
+      .map(id => parseInt(id.substring(1)))
+      .sort((a, b) => b - a);
+    
+    const nextNum = existingIds.length > 0 ? existingIds[0] + 1 : 1;
+    return `S${nextNum.toString().padStart(3, '0')}`;
+  },
+
+  async addSales(sales: Omit<Sales, 'id'>) {
+    const nextId = await this.generateNextSalesId();
+    const { data, error } = await supabase.from('sales').insert([{ ...sales, id: nextId }]).select();
     if (error) console.error('addSales error:', error);
     return { data, error };
   },

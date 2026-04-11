@@ -1,4 +1,4 @@
-export type Area = string; // Changed to string for dynamic inputs
+export type Area = string; // Stores AreaId (e.g., 'A001')
 export type StatusProspek = 'Cold' | 'Warm' | 'Hot';
 export type TipeAksi = 'WA' | 'Visit' | 'Call' | 'Order' | 'Note';
 export type Armada = 'A' | 'B' | 'C';
@@ -57,10 +57,7 @@ export interface Sales {
   nama: string;
   no_wa?: string;
   armada: Armada;
-  target_prospek_baru: number;
-  target_closing_baru: number;
-  target_maintenance: number; // visits/month
-  target_visit: number; // total visits targets
+  target_maintenance?: number; // kept as optional just in case, but unused
   username?: string;
   password?: string;
   role?: string;
@@ -75,10 +72,10 @@ export interface RoleDef {
 
 export interface SystemTargets {
   id: number;
-  global_omset: string;
-  ind_omset: string;
-  global_prospek: number;
-  global_closing: number;
+  global_omset?: string;
+  ind_omset?: string;
+  global_prospek?: number;
+  global_closing?: number;
   ind_poin: number;
   b_visit: number;
   b_prospek: number;

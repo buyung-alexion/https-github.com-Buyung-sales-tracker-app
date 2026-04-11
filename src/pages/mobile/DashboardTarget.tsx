@@ -158,7 +158,7 @@ export default function DashboardTarget({ salesId }: Props) {
               <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Analytics</h2>
               <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')} POIN</div>
             </div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Performance & Targets</div>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Performance & Goals</div>
           </div>
         </div>
 
@@ -229,7 +229,7 @@ export default function DashboardTarget({ salesId }: Props) {
 
           {/* Target Column */}
           <div style={{ textAlign: 'center', color: '#111827', flex: '1', minWidth: 0 }}>
-            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Target</div>
+            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Poin Minimal</div>
             <div style={{ fontSize: '17px', fontWeight: 950, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{totalTarget.toLocaleString('id-ID')}</div>
           </div>
         </div>

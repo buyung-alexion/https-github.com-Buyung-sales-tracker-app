@@ -6,13 +6,13 @@ import { id } from 'date-fns/locale';
 
 
 const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: string, value: number, icon: React.ReactNode, gradient: string, change?: string }) => (
-  <div style={{ 
-    background: gradient, 
-    borderRadius: '24px', 
-    padding: '24px', 
-    color: 'white', 
-    display: 'flex', 
-    alignItems: 'center', 
+  <div style={{
+    background: gradient,
+    borderRadius: '24px',
+    padding: '24px',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
     gap: '20px',
     position: 'relative',
     overflow: 'hidden',
@@ -20,25 +20,25 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
     minHeight: '120px'
   }}>
     {/* Subtle Decorative Circle */}
-    <div style={{ 
-      position: 'absolute', 
-      right: '-20px', 
-      top: '-20px', 
-      width: '100px', 
-      height: '100px', 
-      borderRadius: '50%', 
+    <div style={{
+      position: 'absolute',
+      right: '-20px',
+      top: '-20px',
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
       background: 'rgba(255,255,255,0.1)',
       pointerEvents: 'none'
     }} />
-    
-    <div style={{ 
-      width: '56px', 
-      height: '56px', 
-      borderRadius: '16px', 
-      background: 'rgba(255,255,255,0.2)', 
+
+    <div style={{
+      width: '56px',
+      height: '56px',
+      borderRadius: '16px',
+      background: 'rgba(255,255,255,0.2)',
       backdropFilter: 'blur(4px)',
-      display: 'flex', 
-      alignItems: 'center', 
+      display: 'flex',
+      alignItems: 'center',
       justifyContent: 'center',
       boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
       flexShrink: 0
@@ -49,11 +49,11 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span style={{ fontSize: '32px', fontWeight: 950, lineHeight: 1 }}>{value}</span>
-        <div style={{ 
-          background: 'rgba(255,255,255,0.2)', 
-          padding: '2px 8px', 
-          borderRadius: '100px', 
-          fontSize: '10px', 
+        <div style={{
+          background: 'rgba(255,255,255,0.2)',
+          padding: '2px 8px',
+          borderRadius: '100px',
+          fontSize: '10px',
           fontWeight: 900,
           border: '1px solid rgba(255,255,255,0.3)',
           letterSpacing: '0.5px'
@@ -73,11 +73,11 @@ export default function ManagerProspek() {
 
   useEffect(() => {
     // Standardize title management
-    window.dispatchEvent(new CustomEvent('setMgrTitle', { 
-      detail: { 
-        title: 'Database Prospek', 
-        sub: 'Direktori seluruh data prospek beserta aktivitas followup dan kategorinya' 
-      } 
+    window.dispatchEvent(new CustomEvent('setMgrTitle', {
+      detail: {
+        title: 'Database Prospek',
+        sub: 'Direktori seluruh data prospek beserta aktivitas followup dan kategorinya'
+      }
     }));
     return () => {
       window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: '', sub: '' } }));
@@ -85,8 +85,8 @@ export default function ManagerProspek() {
   }, []);
   const [filterType, setFilterType] = useState<'all' | 'nocontact' | 'old30'>('all');
   const [filterSales, setFilterSales] = useState<string>('All');
-  const [filterDate, setFilterDate] = useState<string>('month');
-  
+  const [filterDate, setFilterDate] = useState<string>('all');
+
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
 
@@ -99,7 +99,7 @@ export default function ManagerProspek() {
     return prospek.map(p => {
       const prospectActs = activities.filter(a => a.target_id === p.id);
       prospectActs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-      
+
       const lastActivity = prospectActs.length > 0 ? prospectActs[0] : null;
       const ageMs = nowMs - new Date(p.created_at).getTime();
 
@@ -117,7 +117,7 @@ export default function ManagerProspek() {
     const nocontactCount = prospekWithStats.filter(p => p.contactCount === 0).length;
     const old30Count = prospekWithStats.filter(p => p.ageMs > thirtyDaysMs).length;
 
-    const todayMs = new Date(new Date().setHours(0,0,0,0)).getTime();
+    const todayMs = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
     const weekMs = todayMs - (7 * 86400000);
     const monthMs = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
 
@@ -159,9 +159,9 @@ export default function ManagerProspek() {
       })
       .filter(c => c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === c.sales_pic)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
 
-    return { 
-      filteredP: filteredP.sort((a, b) => b.created_at.localeCompare(a.created_at)), 
-      filteredC 
+    return {
+      filteredP: filteredP.sort((a, b) => b.created_at.localeCompare(a.created_at)),
+      filteredC
     };
   }, [prospekWithStats, customers, search, filterSales, filterDate, filterType, todayMs, weekMs, monthMs, thirtyDaysMs, sales]);
 
@@ -170,7 +170,7 @@ export default function ManagerProspek() {
   // 2. CALCULATE KPIs FROM FILTERED DATA
   const syncClosingCount = filteredC.length;
   const syncActiveCount = filteredP.length;
-  const syncTotalCount = filteredP.length; // OPTION A: Strictly show only active prospects (currently 3 in screenshot)
+  const syncTotalCount = syncClosingCount + syncActiveCount;
   const syncOverdueCount = filteredP.filter(p => p.ageMs > thirtyDaysMs).length;
 
   const sortedFiltered = filteredP;
@@ -181,11 +181,11 @@ export default function ManagerProspek() {
 
   return (
     <div className="mgr-page">
-          
+
       {/* A. MASTER FILTER BAR (TOP POSITION) */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
         justifyContent: 'space-between',
         background: 'rgba(255, 255, 255, 0.8)',
         backdropFilter: 'blur(10px)',
@@ -198,20 +198,20 @@ export default function ManagerProspek() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px', gap: '12px', flex: 1, minWidth: '250px' }}>
           <Search size={16} color="#94a3b8" />
-          <input 
-            placeholder="Cari toko atau sales..." 
-            value={search} 
-            onChange={e => {setSearch(e.target.value);}} 
-            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px' }} 
+          <input
+            placeholder="Cari toko atau sales..."
+            value={search}
+            onChange={e => { setSearch(e.target.value); }}
+            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px' }}
           />
         </div>
 
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
             <span style={{ fontSize: '18px' }}>📅</span>
-            <select 
-              value={filterDate} 
-              onChange={e => {setFilterDate(e.target.value);}}
+            <select
+              value={filterDate}
+              onChange={e => { setFilterDate(e.target.value); }}
               style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="all">Semua Waktu</option>
@@ -225,9 +225,9 @@ export default function ManagerProspek() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
             <span style={{ fontSize: '18px' }}>👤</span>
-            <select 
-              value={filterSales} 
-              onChange={e => {setFilterSales(e.target.value);}}
+            <select
+              value={filterSales}
+              onChange={e => { setFilterSales(e.target.value); }}
               style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="All">Semua Sales</option>
@@ -238,40 +238,40 @@ export default function ManagerProspek() {
       </div>
 
       {/* B. KPI GRID (SYNCHRONIZED) */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(4, 1fr)', 
-        gap: '24px', 
-        marginBottom: '32px' 
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '24px',
+        marginBottom: '32px'
       }}>
-        <StatCard 
-          label="Total Prospek" 
-          value={syncTotalCount} 
-          gradient="linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)" 
-          icon={<ShieldAlert size={26} color="white" />} 
+        <StatCard
+          label="Total Prospek"
+          value={syncTotalCount}
+          gradient="linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)"
+          icon={<ShieldAlert size={26} color="white" />}
         />
-        <StatCard 
-          label="Prospek Overdue" 
-          value={syncOverdueCount} 
-          gradient="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)" 
-          icon={<Filter size={26} color="white" />} 
+        <StatCard
+          label="Prospek Overdue"
+          value={syncOverdueCount}
+          gradient="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
+          icon={<Filter size={26} color="white" />}
         />
-        <StatCard 
-          label="Belum Closing" 
-          value={syncActiveCount} 
-          gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" 
-          icon={<User size={26} color="white" />} 
+        <StatCard
+          label="Belum Closing"
+          value={syncActiveCount}
+          gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+          icon={<User size={26} color="white" />}
         />
-        <StatCard 
-          label="Total Closing" 
-          value={syncClosingCount} 
-          gradient="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)" 
-          icon={<CheckCircle2 size={26} color="white" />} 
+        <StatCard
+          label="Total Closing"
+          value={syncClosingCount}
+          gradient="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
+          icon={<CheckCircle2 size={26} color="white" />}
         />
       </div>
 
       <div className="chart-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', boxShadow: '0 15px 45px -10px rgba(0,0,0,0.1)' }}>
-        
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', padding: '24px 24px 12px 24px' }}>
           <div>
             <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Database Prospek</h2>
@@ -286,44 +286,44 @@ export default function ManagerProspek() {
           </div>
 
           <div style={{ display: 'flex', gap: '8px', overflowX: 'auto' }}>
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterType === 'all' ? '#facc15' : '#f1f5f9', 
-                 color: filterType === 'all' ? '#000' : '#64748b',
-                 fontWeight: 800,
-                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s'
-               }}
-               onClick={() => {setFilterType('all');}}
+            <button
+              style={{
+                padding: '10px 18px', borderRadius: '12px', border: 'none',
+                background: filterType === 'all' ? '#facc15' : '#f1f5f9',
+                color: filterType === 'all' ? '#000' : '#64748b',
+                fontWeight: 800,
+                fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => { setFilterType('all'); }}
             >
               SEMUA <span style={{ background: filterType === 'all' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'all' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{syncTotalCount}</span>
             </button>
-            
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterType === 'nocontact' ? '#facc15' : '#f1f5f9', 
-                 color: filterType === 'nocontact' ? '#000' : '#64748b',
-                 fontWeight: 800,
-                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s'
-               }}
-               onClick={() => {setFilterType('nocontact');}}
+
+            <button
+              style={{
+                padding: '10px 18px', borderRadius: '12px', border: 'none',
+                background: filterType === 'nocontact' ? '#facc15' : '#f1f5f9',
+                color: filterType === 'nocontact' ? '#000' : '#64748b',
+                fontWeight: 800,
+                fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => { setFilterType('nocontact'); }}
             >
               BELUM DIKONTAK <span style={{ background: filterType === 'nocontact' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'nocontact' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{nocontactCount}</span>
             </button>
 
-            <button 
-               style={{ 
-                 padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterType === 'old30' ? '#facc15' : '#f1f5f9', 
-                 color: filterType === 'old30' ? '#000' : '#64748b',
-                 fontWeight: 800,
-                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                 transition: 'all 0.2s'
-               }}
-               onClick={() => {setFilterType('old30');}}
+            <button
+              style={{
+                padding: '10px 18px', borderRadius: '12px', border: 'none',
+                background: filterType === 'old30' ? '#facc15' : '#f1f5f9',
+                color: filterType === 'old30' ? '#000' : '#64748b',
+                fontWeight: 800,
+                fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                transition: 'all 0.2s'
+              }}
+              onClick={() => { setFilterType('old30'); }}
             >
               LEWAT 30 HARI <span style={{ background: filterType === 'old30' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'old30' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{old30Count}</span>
             </button>
@@ -331,7 +331,7 @@ export default function ManagerProspek() {
         </div>
 
         <div style={{ display: 'none' }}>
-           {/* Legacy Filter Bar Removed */}
+          {/* Legacy Filter Bar Removed */}
         </div>
 
         <div className="custom-table-container" style={{ padding: '0 24px 24px 24px', overflowX: 'auto' }}>
@@ -352,7 +352,7 @@ export default function ManagerProspek() {
               {pagedProspek.map((p: any) => {
                 const isLate = p.ageMs > thirtyDaysMs;
                 const ageDays = Math.floor(p.ageMs / (1000 * 60 * 60 * 24));
-                
+
                 let followupText = 'Belum di-followup';
                 let followupTime = '';
                 if (p.lastActivity) {
@@ -407,7 +407,7 @@ export default function ManagerProspek() {
                       {p.lastActivity ? (
                         <div>
                           <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                             {followupText}
+                            {followupText}
                           </div>
                           <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600, marginTop: '2px' }}>{followupTime}</div>
                         </div>
@@ -416,12 +416,12 @@ export default function ManagerProspek() {
                       )}
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
-                      <div style={{ 
-                        display: 'inline-flex', 
-                        alignItems: 'center', 
-                        padding: '6px 12px', 
-                        borderRadius: '10px', 
-                        fontSize: '11px', 
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        padding: '6px 12px',
+                        borderRadius: '10px',
+                        fontSize: '11px',
                         fontWeight: 900,
                         background: p.status === 'Hot' ? '#fef2f2' : p.status === 'Warm' ? '#fffbeb' : '#f0f9ff',
                         color: p.status === 'Hot' ? '#ef4444' : p.status === 'Warm' ? '#f59e0b' : '#0ea5e9',
@@ -438,22 +438,22 @@ export default function ManagerProspek() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       {isLate ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#b45309', background: '#fffbeb', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 800, border: '1px solid #fef3c7' }}>
-                          <ShieldAlert size={12}/> LAMA ({ageDays}d)
+                          <ShieldAlert size={12} /> LAMA ({ageDays}d)
                         </div>
                       ) : p.contactCount === 0 ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#ef4444', background: '#fef2f2', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 800, border: '1px solid #fee2e2' }}>
-                          <ShieldAlert size={12}/> NO CONTACT
+                          <ShieldAlert size={12} /> NO CONTACT
                         </div>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981', background: '#ecfdf5', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 800, border: '1px solid #d1fae5' }}>
-                          <CheckCircle2 size={12}/> AKTIF
+                          <CheckCircle2 size={12} /> AKTIF
                         </div>
                       )}
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '0 24px 24px 0', border: '1px solid #f1f5f9', borderLeft: 'none', textAlign: 'center' }}>
                       {p.lastActivity?.geotagging?.photo ? (
-                        <div 
-                          style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} 
+                        <div
+                          style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}
                           onClick={() => window.open(p.lastActivity!.geotagging!.photo, '_blank')}
                         >
                           <img src={p.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -473,7 +473,7 @@ export default function ManagerProspek() {
             </tbody>
           </table>
         </div>
-        
+
         {/* VIEW ALL TOGGLE (BOTTOM RIGHT) */}
         {sortedFiltered.length > 20 && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 24px 24px 24px' }}>

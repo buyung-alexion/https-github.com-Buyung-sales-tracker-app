@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { getAreaName, AREAS } from '../../constants';
 
 
 export default function PerformanceAnalytics() {
@@ -81,11 +82,8 @@ export default function PerformanceAnalytics() {
   }, [realActivities, realProspek, realCustomers, selectedPeriod, selectedSales, selectedArea, selectedCategory]);
 
   const areas = useMemo(() => {
-    const set = new Set<string>();
-    realActivities.forEach(a => { if (a.geotagging?.area) set.add(a.geotagging.area); });
-    realProspek.forEach(p => { if (p.area) set.add(p.area); });
-    return Array.from(set).sort();
-  }, [realActivities, realProspek]);
+    return AREAS;
+  }, []);
 
   // Points-Based Targets
 
@@ -134,7 +132,8 @@ export default function PerformanceAnalytics() {
         visitCount, waCount, callCount, soCount, totalActs,
         closingCount: sClosingCount, revenueReal, closingRate, activeFollowups,
         maintainCount, points, prospekBaru: activeProspekCount,
-        foto_profil: s.foto_profil
+        foto_profil: s.foto_profil,
+        pointProgressPct: Math.min(100, Math.round((points / (systemTargets?.ind_poin || 150)) * 100))
       };
     }).sort((a,b) => b.points - a.points);
   }, [sales, activities, startDate, systemTargets, prospek, customers]);
@@ -387,7 +386,7 @@ export default function PerformanceAnalytics() {
             style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
           >
             <option value="all">Semua Wilayah</option>
-            {areas.map(a => <option key={a} value={a}>{a}</option>)}
+            {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
 
@@ -810,15 +809,15 @@ export default function PerformanceAnalytics() {
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                       <div style={{
                         fontSize: '10px', fontWeight: 950,
-                        color: s.closingRate >= 20 ? '#10b981' : s.closingRate >= 10 ? '#f59e0b' : '#f43f5e',
+                        color: s.pointProgressPct >= 100 ? '#10b981' : s.pointProgressPct >= 50 ? '#f59e0b' : '#f43f5e',
                       }}>
-                        {s.closingRate}%
+                        {s.pointProgressPct}%
                       </div>
                       <div style={{ width: '60px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
                         <div style={{ 
-                          width: `${Math.min(s.closingRate, 100)}%`, 
+                          width: `${s.pointProgressPct}%`, 
                           height: '100%', 
-                          background: s.closingRate >= 20 ? '#10b981' : s.closingRate >= 10 ? '#f59e0b' : '#f43f5e',
+                          background: s.pointProgressPct >= 100 ? '#10b981' : s.pointProgressPct >= 50 ? '#f59e0b' : '#f43f5e',
                           borderRadius: '10px' 
                         }} />
                       </div>
@@ -1663,7 +1662,7 @@ export default function PerformanceAnalytics() {
                 : landDots[Math.abs(areaName.split('').reduce((a,b)=>a+b.charCodeAt(0),0)) % landDots.length];
 
               finalPois.push({
-                city: areaName,
+                city: getAreaName(areaName),
                 x: targetDot.x,
                 y: targetDot.y,
                 value: count,

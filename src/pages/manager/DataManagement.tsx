@@ -16,10 +16,6 @@ export default function DataManagement() {
       let targets = await store.fetchSystemTargets();
       if (!targets) {
         targets = { 
-          global_omset: 'Rp 1.000.000.000', 
-          ind_omset: 'Rp 200.000.000', 
-          global_prospek: 200, 
-          global_closing: 50, 
           ind_poin: 150, 
           b_visit: 5, 
           b_prospek: 5, 
@@ -42,10 +38,6 @@ export default function DataManagement() {
           target_visit: s.target_visit
         })),
         targets: {
-          globalOmset: targets.global_omset || 'Rp 1.000.000.000',
-          indOmset: targets.ind_omset || 'Rp 200.000.000',
-          globalProspek: targets.global_prospek || 200,
-          globalClosing: targets.global_closing || 50,
           indPoin: targets.ind_poin || 150,
           bVisit: targets.b_visit || 5,
           bProspek: targets.b_prospek || 5,
@@ -82,8 +74,7 @@ export default function DataManagement() {
     pass: '', 
     role: '', 
     foto_profil: '', 
-    no_wa: '', 
-    target_visit: 20 
+    no_wa: ''
   });
 
   // --- ROLE ACTIONS ---
@@ -117,12 +108,21 @@ export default function DataManagement() {
   };
 
   // --- TEAM ACTIONS ---
-  const openTeamModal = (existingData?: any) => {
+  const openTeamModal = async (existingData?: any) => {
     if (existingData) {
-      setTeamForm(existingData);
+      setTeamForm({
+        id: existingData.id,
+        nama: existingData.nama,
+        username: existingData.username,
+        pass: existingData.pass,
+        role: existingData.role,
+        foto_profil: existingData.foto_profil,
+        no_wa: existingData.no_wa
+      });
       setTeamModal({ isOpen: true, data: existingData });
     } else {
-      setTeamForm({ id: '', nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '', target_visit: 20 });
+      const nextId = await store.generateNextSalesId();
+      setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '' });
       setTeamModal({ isOpen: true, data: null });
     }
   };
@@ -136,8 +136,7 @@ export default function DataManagement() {
          password: teamForm.pass,
          role: teamForm.role,
          foto_profil: teamForm.foto_profil,
-         no_wa: teamForm.no_wa,
-         target_visit: teamForm.target_visit
+         no_wa: teamForm.no_wa
        });
     } else {
        if(data.teams.some((t:any) => t.id === teamForm.id)) {
@@ -148,10 +147,6 @@ export default function DataManagement() {
          id: teamForm.id,
          nama: teamForm.nama,
          armada: 'A',
-         target_prospek_baru: 0,
-         target_closing_baru: 0,
-         target_maintenance: 0,
-         target_visit: teamForm.target_visit || 20,
          username: teamForm.username,
          password: teamForm.pass,
          role: teamForm.role,
@@ -168,8 +163,7 @@ export default function DataManagement() {
       pass: s.password, 
       role: s.role,
       foto_profil: s.foto_profil,
-      no_wa: s.no_wa,
-      target_visit: s.target_visit
+      no_wa: s.no_wa
     }))}));
   };
 
@@ -184,10 +178,6 @@ export default function DataManagement() {
     setIsLoading(true);
     try {
       await store.updateSystemTargets({
-        global_omset: data.targets.globalOmset,
-        ind_omset: data.targets.indOmset,
-        global_prospek: data.targets.globalProspek,
-        global_closing: data.targets.globalClosing,
         ind_poin: data.targets.indPoin,
         b_visit: data.targets.bVisit,
         b_prospek: data.targets.bProspek,
@@ -666,8 +656,6 @@ export default function DataManagement() {
               <label style={labelStyle}>Nomor WhatsApp</label>
               <input style={inputStyle} value={teamForm.no_wa || ''} onChange={e => setTeamForm({...teamForm, no_wa: e.target.value})} placeholder="Contoh: 62812345678" />
 
-              <label style={labelStyle}>Target Visit Bulanan</label>
-              <input type="number" style={inputStyle} value={teamForm.target_visit} onChange={e => setTeamForm({...teamForm, target_visit: +e.target.value})} />
 
               <label style={labelStyle}>URL Foto Profil (Optional)</label>
               <div style={{ display: 'flex', gap: '8px' }}>

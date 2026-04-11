@@ -4,6 +4,7 @@ import { MessageCircle, CheckCheck, Search, Filter, Plus, X, MapPin, Edit3, Phon
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Prospek, StatusProspek } from '../../types';
+import { AREAS, CATEGORIES, getAreaName } from '../../constants';
 
 interface Props { salesId: string; }
 
@@ -29,7 +30,18 @@ export default function ProspectingTool({ salesId }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const [newForm, setNewForm] = useState({ nama_toko: '', nama_pic: '', no_wa: '', area: 'Kota', status: 'Cold' as StatusProspek, link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
+  const [newForm, setNewForm] = useState({ 
+    nama_toko: '', 
+    nama_pic: '', 
+    no_wa: '', 
+    area: AREAS[0].id as string, 
+    status: 'Cold' as StatusProspek, 
+    link_map: '', 
+    kategori: CATEGORIES[0].id as string, 
+    rating: 0, 
+    foto_profil: '', 
+    channel: 'Canvasing' 
+  });
 
   useEffect(() => {
     if (window.location.hash === '#new') {
@@ -100,7 +112,7 @@ export default function ProspectingTool({ salesId }: Props) {
       setTimeout(() => {
         setAddModal(false);
         setSaveSuccess(false);
-        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'Kota', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
+        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id as string, status: 'Cold', link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: '', channel: 'Canvasing' });
       }, 1500);
     } catch (err) {
       setSaveError('Kesalahan sistem.');
@@ -138,7 +150,18 @@ export default function ProspectingTool({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'Kota', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
+        setNewForm({ 
+          nama_toko: '', 
+          nama_pic: '', 
+          no_wa: '', 
+          area: AREAS[0].id as string, 
+          status: 'Cold', 
+          link_map: '', 
+          kategori: CATEGORIES[0].id as string, 
+          rating: 0, 
+          foto_profil: '', 
+          channel: 'Canvasing' 
+        });
       }, 1500);
     } catch (err) {
       setSaveError('Kesalahan sistem.');
@@ -307,7 +330,7 @@ export default function ProspectingTool({ salesId }: Props) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
                       <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{p.no_wa}</span>
                       <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>📍 {p.area}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>📍 {getAreaName(p.area)}</span>
                     </div>
                   </div>
                 </div>
@@ -370,7 +393,22 @@ export default function ProspectingTool({ salesId }: Props) {
                       <button 
                         className="tap-active"
                         style={{ flex: 1, background: '#F8FAFC', color: '#64748B', border: '1.5px solid #E2E8F0', borderRadius: '12px', padding: '10px 0', fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
-                        onClick={(e) => { e.stopPropagation(); setEditModal(p); setNewForm({ nama_toko: p.nama_toko, nama_pic: p.nama_pic, no_wa: p.no_wa, area: p.area, status: p.status, link_map: p.link_map || '', kategori: p.kategori || 'Retail', rating: p.rating || 0, foto_profil: p.foto_profil || '', channel: p.channel || 'Canvasing' }); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          setEditModal(p); 
+                          setNewForm({ 
+                            nama_toko: p.nama_toko, 
+                            nama_pic: p.nama_pic, 
+                            no_wa: p.no_wa, 
+                            area: p.area as string, 
+                            status: p.status, 
+                            link_map: p.link_map || '', 
+                            kategori: (p.kategori || CATEGORIES[0].id) as string, 
+                            rating: p.rating || 0, 
+                            foto_profil: p.foto_profil || '', 
+                            channel: p.channel || 'Canvasing' 
+                          }); 
+                        }}
                       >
                         <Edit3 size={14} /> Edit
                       </button>
@@ -511,15 +549,10 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Kategori Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, kategori: e.target.value });
-                    }
-                  }}>
-                    <option value="Retail">Retail</option><option value="Grosir">Grosir</option><option value="Distributor">Distributor</option><option value="Horeca">Horeca</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => setNewForm({ ...newForm, kategori: e.target.value as string })}>
+                    {CATEGORIES.map(k => (
+                      <option key={k.id} value={k.id}>{k.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
@@ -531,17 +564,10 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Area Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, area: e.target.value });
-                    }
-                  }}>
-                    <option value="Sepaku">Sepaku</option><option value="Gerogot">Tanah Grogot</option><option value="Kota">Kota Balikpapan</option>
-                    {!['Sepaku','Gerogot','Kota'].includes(newForm.area || '') && newForm.area && <option value={newForm.area}>{newForm.area}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value as string })}>
+                    {AREAS.map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
@@ -645,17 +671,10 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Kategori Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, kategori: e.target.value });
-                    }
-                  }}>
-                    <option value="Retail">Retail</option><option value="Grosir">Grosir</option><option value="Distributor">Distributor</option><option value="Horeca">Horeca</option>
-                    {!['Retail','Grosir','Distributor','Horeca'].includes(newForm.kategori || '') && newForm.kategori && <option value={newForm.kategori}>{newForm.kategori}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => setNewForm({ ...newForm, kategori: e.target.value as string })}>
+                    {CATEGORIES.map(k => (
+                      <option key={k.id} value={k.id}>{k.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
@@ -667,17 +686,10 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Area Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, area: e.target.value });
-                    }
-                  }}>
-                    <option value="Sepaku">Sepaku</option><option value="Gerogot">Tanah Grogot</option><option value="Kota">Kota Balikpapan</option>
-                    {!['Sepaku','Gerogot','Kota'].includes(newForm.area || '') && newForm.area && <option value={newForm.area}>{newForm.area}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value as string })}>
+                    {AREAS.map(a => (
+                      <option key={a.id} value={a.id}>{a.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="form-group">
@@ -771,19 +783,31 @@ export default function ProspectingTool({ salesId }: Props) {
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wilayah Area</label>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['All', 'Sepaku', 'Gerogot', 'Kota'].map(a => (
+                  <button 
+                    onClick={() => setFilterArea('All')}
+                    style={{ 
+                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                      background: filterArea === 'All' ? '#111827' : '#F8FAFC',
+                      color: filterArea === 'All' ? '#FFCC00' : '#64748b',
+                      border: filterArea === 'All' ? 'none' : '1px solid #f1f5f9',
+                      transition: 'all 0.2s', textAlign: 'center'
+                    }}
+                  >
+                    Semua
+                  </button>
+                  {AREAS.map(a => (
                     <button 
-                      key={a}
-                      onClick={() => setFilterArea(a)}
+                      key={a.id}
+                      onClick={() => setFilterArea(a.id)}
                       style={{ 
                         padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                        background: filterArea === a ? '#111827' : '#F8FAFC',
-                        color: filterArea === a ? '#FFCC00' : '#64748b',
-                        border: filterArea === a ? 'none' : '1px solid #f1f5f9',
+                        background: filterArea === a.id ? '#111827' : '#F8FAFC',
+                        color: filterArea === a.id ? '#FFCC00' : '#64748b',
+                        border: filterArea === a.id ? 'none' : '1px solid #f1f5f9',
                         transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
-                      {a === 'All' ? 'Semua' : a === 'Gerogot' ? 'Grogot' : a}
+                      {a.name}
                     </button>
                   ))}
                 </div>
@@ -796,19 +820,31 @@ export default function ProspectingTool({ salesId }: Props) {
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori Toko</label>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['All', 'Retail', 'Grosir', 'Distributor', 'Horeca'].map(k => (
+                  <button 
+                    onClick={() => setFilterKategori('All')}
+                    style={{ 
+                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                      background: filterKategori === 'All' ? '#111827' : '#F8FAFC',
+                      color: filterKategori === 'All' ? '#FFCC00' : '#64748b',
+                      border: filterKategori === 'All' ? 'none' : '1px solid #f1f5f9',
+                      transition: 'all 0.2s', textAlign: 'center'
+                    }}
+                  >
+                    Semua
+                  </button>
+                  {CATEGORIES.map(k => (
                     <button 
-                      key={k}
-                      onClick={() => setFilterKategori(k)}
+                      key={k.id}
+                      onClick={() => setFilterKategori(k.id)}
                       style={{ 
                         padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                        background: filterKategori === k ? '#111827' : '#F8FAFC',
-                        color: filterKategori === k ? '#FFCC00' : '#64748b',
-                        border: filterKategori === k ? 'none' : '1px solid #f1f5f9',
+                        background: filterKategori === k.id ? '#111827' : '#F8FAFC',
+                        color: filterKategori === k.id ? '#FFCC00' : '#64748b',
+                        border: filterKategori === k.id ? 'none' : '1px solid #f1f5f9',
                         transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
-                      {k === 'All' ? 'Semua' : k}
+                      {k.name}
                     </button>
                   ))}
                 </div>
