@@ -26,7 +26,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const [editModal, setEditModal] = useState<Customer | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showFab, setShowFab] = useState(true);
-  const scrollTimeout = useRef<any>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
   const [editForm, setEditForm] = useState({ 
@@ -98,6 +98,8 @@ export default function CustomerMaintenance({ salesId }: Props) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
+      const result = ev.target?.result;
+      if (typeof result !== 'string') return;
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -111,7 +113,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
            setAddForm(prev => ({ ...prev, foto_profil: base64 }));
         }
       };
-      if (ev.target?.result) img.src = ev.target.result as string;
+      img.src = result;
     };
     reader.readAsDataURL(file);
   };

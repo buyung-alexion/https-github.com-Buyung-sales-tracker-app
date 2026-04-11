@@ -43,15 +43,15 @@ export default function PerformanceAnalytics() {
     if (selectedPeriod === 'today') {
       filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfToday);
       filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfToday);
-      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfToday);
+      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfToday && x.is_from_prospek !== false);
     } else if (selectedPeriod === 'week') {
       filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfWeek);
       filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfWeek);
-      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfWeek);
+      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfWeek && x.is_from_prospek !== false);
     } else if (selectedPeriod === 'month') {
       filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfMonth);
       filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfMonth);
-      filteredNewC = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfMonth);
+      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfMonth && x.is_from_prospek !== false);
     }
 
     // 2. Filter by Salesman (Applies to ALL)
@@ -103,8 +103,6 @@ export default function PerformanceAnalytics() {
       // Logic for stats based on filtered period or selection
       const sActs = activities.filter(a => a.id_sales === s.id);
       
-      const closingActs = sActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing'));
-      const closingCount = closingActs.length;
       
       const visitCount = sActs.filter(a => a.tipe_aksi === 'Visit').length;
       const waCount = sActs.filter(a => a.tipe_aksi === 'WA').length;
@@ -113,36 +111,42 @@ export default function PerformanceAnalytics() {
       const totalActs = visitCount + waCount + callCount + soCount;
       
       const maintainCount = sActs.filter(a => a.target_type === 'customer').length;
-      const prospekBaru = prospek.filter(p => p.sales_owner === s.id).length;
+      const activeProspekCount = prospek.filter(p => p.sales_owner === s.id).length;
+      
+      // Closing Count refined for Leaderboard: Customers belonging to this sales originating from prospects
+      const sClosingCount = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false).length;
       
       // KPI points formula (Synchronized): 
       const points = 
-        (closingCount * (systemTargets?.b_closing ?? 20)) +
+        (sClosingCount * (systemTargets?.b_closing ?? 20)) +
         (soCount * (systemTargets?.b_order ?? 5)) +
         (visitCount * (systemTargets?.b_visit ?? 5)) +
         (maintainCount * (systemTargets?.b_maint ?? 5)) +
-        (prospekBaru * (systemTargets?.b_prospek ?? 5)) +
+        (activeProspekCount * (systemTargets?.b_prospek ?? 5)) +
         (waCount + callCount) * (systemTargets?.b_chat ?? 1);
       
-      const revenueReal = closingCount * 3500000; // Multiplier fixed for now as per user preference
-      const closingRate = totalActs > 0 ? Math.round((closingCount / totalActs) * 100) : 0;
+      const revenueReal = sClosingCount * 3500000; // Multiplier fixed for now as per user preference
+      const closingRate = totalActs > 0 ? Math.round((sClosingCount / totalActs) * 100) : 0;
       const activeFollowups = sActs.filter(a => a.target_type === 'prospek').length;
       
       return {
         id: s.id, nama: s.nama,
         visitCount, waCount, callCount, soCount, totalActs,
-        closingCount, revenueReal, closingRate, activeFollowups,
-        maintainCount, points, prospekBaru,
+        closingCount: sClosingCount, revenueReal, closingRate, activeFollowups,
+        maintainCount, points, prospekBaru: activeProspekCount,
         foto_profil: s.foto_profil
       };
     }).sort((a,b) => b.points - a.points);
-  }, [sales, activities, startDate, systemTargets, prospek]);
+  }, [sales, activities, startDate, systemTargets, prospek, customers]);
 
-  const totalProspekCount = realProspek.length;
-  const totalCustomer = realCustomers.length;
-  const totalUniqueClosing = useMemo(() => 
-    new Set(activities.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).map(a => a.target_id)).size, 
-  [activities]);
+  // Master Aggregation for KPI Cards (Filtered by period, salesman, area)
+  const totalProspekCount = prospek.length; // Choice A: Active only
+  const totalCustomer = customers.length;
+  
+  // Refined Closing Logic: Count customers who match filters AND came from prospects (is_from_prospek !== false)
+  // Note: 'customers' is already filtered by sales/area in the useMemo above.
+  const totalUniqueClosing = customers.filter(c => c.is_from_prospek !== false).length; 
+  
   const totalSO = activities.filter(a => a.tipe_aksi === 'Order').length;
   const totalActivityCount = activities.length;
 
@@ -169,8 +173,8 @@ export default function PerformanceAnalytics() {
     prospek: calculateTrend(getCountInPeriod(prospek, 'created_at', sevenDaysAgo, now), getCountInPeriod(prospek, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
     customer: calculateTrend(getCountInPeriod(customers, 'created_at', sevenDaysAgo, now), getCountInPeriod(customers, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
     closing: calculateTrend(
-      activities.filter(a => a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp) >= sevenDaysAgo).length,
-      activities.filter(a => a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
+      customers.filter(c => c.is_from_prospek !== false && new Date(c.tanggal_join || c.created_at || now.toISOString()) >= sevenDaysAgo).length,
+      customers.filter(c => c.is_from_prospek !== false && new Date(c.tanggal_join || c.created_at || now.toISOString()) >= fourteenDaysAgo && new Date(c.tanggal_join || c.created_at || now.toISOString()) < sevenDaysAgo).length
     ),
     so: calculateTrend(
       activities.filter(a => a.tipe_aksi === 'Order' && new Date(a.timestamp) >= sevenDaysAgo).length,
@@ -183,7 +187,8 @@ export default function PerformanceAnalytics() {
   };
 
   // Pie Data for Status Distribution Gauge
-  const fTotal = prospek.length || 1;
+  // Pie Data for Status Distribution Gauge
+  const fTotal = (prospek.length + totalUniqueClosing) || 1; // Base pool for proportions
   const fStatusColdNum = prospek.filter(p => p.status?.toLowerCase() === 'cold').length;
   const fStatusHotNum = prospek.filter(p => p.status?.toLowerCase() === 'hot').length;
   const fClosedNum = totalUniqueClosing;
@@ -1827,8 +1832,18 @@ export default function PerformanceAnalytics() {
                      // Group activity orders by area
                      const areaSoCounts: Record<string, number> = {};
                      activities.filter(a => a.tipe_aksi === 'Order').forEach(a => {
-                       const area = a.geotagging?.area || 'Lainnya';
-                       areaSoCounts[area] = (areaSoCounts[area] || 0) + 1;
+                        // Priority: 1. Activity Geotag, 2. Target Area (Customer/Prospek)
+                        let area = (a as any).geotagging?.area;
+                        
+                        if (!area) {
+                          // Fallback to customer/prospek data
+                          const target = realCustomers.find(c => c.id === a.target_id) || 
+                                         realProspek.find(p => p.id === a.target_id);
+                          area = target?.area;
+                        }
+                        
+                        const finalArea = area || 'Lainnya';
+                        areaSoCounts[finalArea] = (areaSoCounts[finalArea] || 0) + 1;
                      });
                      
                      const soAreasUnsorted = Object.entries(areaSoCounts).map(([city, val]) => {

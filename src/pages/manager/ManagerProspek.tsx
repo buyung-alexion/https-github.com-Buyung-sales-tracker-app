@@ -85,7 +85,7 @@ export default function ManagerProspek() {
   }, []);
   const [filterType, setFilterType] = useState<'all' | 'nocontact' | 'old30'>('all');
   const [filterSales, setFilterSales] = useState<string>('All');
-  const [filterDate, setFilterDate] = useState<string>('all');
+  const [filterDate, setFilterDate] = useState<string>('month');
   
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
@@ -170,7 +170,7 @@ export default function ManagerProspek() {
   // 2. CALCULATE KPIs FROM FILTERED DATA
   const syncClosingCount = filteredC.length;
   const syncActiveCount = filteredP.length;
-  const syncTotalCount = syncClosingCount + syncActiveCount;
+  const syncTotalCount = filteredP.length; // OPTION A: Strictly show only active prospects (currently 3 in screenshot)
   const syncOverdueCount = filteredP.filter(p => p.ageMs > thirtyDaysMs).length;
 
   const sortedFiltered = filteredP;

@@ -30,7 +30,8 @@ export default function DashboardTarget({ salesId }: Props) {
   // ─── KPI Indicators (5 resmi) ──────────────────────────────────
   const followupCount = acts.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
   const soCount = acts.filter(a => a.tipe_aksi === 'Order').length;
-  const visitCount = acts.filter(a => a.tipe_aksi === 'Visit').length;
+  const visitCount = acts.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
+  const maintCount = acts.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
   const closingCount = acts.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
 
   const prospekFiltered = useMemo(() => {
@@ -53,10 +54,11 @@ export default function DashboardTarget({ salesId }: Props) {
 
   // ─── Total Actual Points ──────────────────────────────────────
   const totalActual =
-    (followupCount * (systemTargets?.b_chat ?? 5)) +
-    (soCount * (systemTargets?.b_order ?? 20)) +
+    (followupCount * (systemTargets?.b_chat ?? 1)) +
+    (soCount * (systemTargets?.b_order ?? 5)) +
     (visitCount * (systemTargets?.b_visit ?? 5)) +
-    (closingCount * (systemTargets?.b_closing ?? 15)) +
+    (maintCount * (systemTargets?.b_maint ?? 5)) +
+    (closingCount * (systemTargets?.b_closing ?? 20)) +
     (prospekCount * (systemTargets?.b_prospek ?? 5));
 
   const totalTarget = systemTargets?.ind_poin ?? 150;
@@ -406,10 +408,10 @@ export default function DashboardTarget({ salesId }: Props) {
           <ResponsiveContainer width="100%" height={230}>
             <BarChart
               data={[
-                { name: 'Followup', poin: followupCount * (systemTargets?.b_chat ?? 5), color: '#EC4899' },
-                { name: 'SO', poin: soCount * (systemTargets?.b_order ?? 20), color: '#8B5CF6' },
-                { name: 'Visit', poin: visitCount * (systemTargets?.b_visit ?? 5), color: '#F59E0B' },
-                { name: 'Closing', poin: closingCount * (systemTargets?.b_closing ?? 15), color: '#10B981' },
+                { name: 'Followup', poin: followupCount * (systemTargets?.b_chat ?? 1), color: '#EC4899' },
+                { name: 'SO', poin: soCount * (systemTargets?.b_order ?? 5), color: '#8B5CF6' },
+                { name: 'Visit', poin: (visitCount + maintCount) * (systemTargets?.b_visit ?? 5), color: '#F59E0B' },
+                { name: 'Closing', poin: closingCount * (systemTargets?.b_closing ?? 20), color: '#10B981' },
                 { name: 'Prospek', poin: prospekCount * (systemTargets?.b_prospek ?? 5), color: '#3B82F6' },
               ]}
               margin={{ top: 20, right: 8, left: -24, bottom: 0 }}

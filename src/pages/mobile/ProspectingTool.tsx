@@ -22,7 +22,7 @@ export default function ProspectingTool({ salesId }: Props) {
   const [editModal, setEditModal] = useState<Prospek | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showFab, setShowFab] = useState(true);
-  const scrollTimeout = useRef<any>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -152,6 +152,8 @@ export default function ProspectingTool({ salesId }: Props) {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
+      const result = ev.target?.result;
+      if (typeof result !== 'string') return;
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -160,7 +162,7 @@ export default function ProspectingTool({ salesId }: Props) {
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
         setNewForm(prev => ({ ...prev, foto_profil: canvas.toDataURL('image/jpeg', 0.6) }));
       };
-      if (ev.target?.result) img.src = ev.target.result as string;
+      img.src = result;
     };
     reader.readAsDataURL(file);
   };

@@ -3,9 +3,9 @@ import { Award, TrendingUp, Filter } from 'lucide-react';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function Leaderboard() {
-  const { sales, activities, prospek, systemTargets } = useSalesData();
+  const { sales, activities, prospek, customers, systemTargets } = useSalesData();
 
-  const [filterDate, setFilterDate] = useState<string>('all');
+  const [filterDate, setFilterDate] = useState<string>('month');
   const [filterSales, setFilterSales] = useState<string>('All');
 
   useEffect(() => {
@@ -73,31 +73,47 @@ export default function Leaderboard() {
         prevProspekArr = sProspek.filter(p => { const t = new Date(p.created_at).getTime(); return t >= prevStart && t <= prevEnd; });
       }
 
-      const closingCount = currentActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-      const totalVisit = currentActs.filter(a => a.tipe_aksi === 'Visit').length;
+      const currentCustomers = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false);
+      const currentP = currentCustomers.filter(c => {
+        const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
+        return t >= thresholdStart && t <= thresholdEnd;
+      });
+      const closingCount = currentP.length;
+
+      const prevCustomers = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false);
+      const prevPArr = prevCustomers.filter(c => {
+        const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
+        return t >= prevStart && t <= prevEnd;
+      });
+      const prevClosing = prevPArr.length;
+
+      const totalVisit = currentActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
+      const totalMaint = currentActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
       const totalProspek = currentProspek.length;
       const totalSO = currentActs.filter(a => a.tipe_aksi === 'Order').length;
-      // Followup mencakup WA + Call (maint sudah digabung)
+      // Followup mencakup WA + Call
       const totalFollowup = currentActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
 
-      const prevClosing = prevActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-      const prevVisit = prevActs.filter(a => a.tipe_aksi === 'Visit').length;
+      const actualPoints =
+        (totalVisit * (systemTargets?.b_visit ?? 5)) +
+        (totalMaint * (systemTargets?.b_maint ?? 5)) +
+        (closingCount * (systemTargets?.b_closing ?? 20)) +
+        (totalProspek * (systemTargets?.b_prospek ?? 5)) +
+        (totalSO * (systemTargets?.b_order ?? 5)) +
+        (totalFollowup * (systemTargets?.b_chat ?? 1));
+
+      const prevVisit = prevActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
+      const prevMaint = prevActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
       const prevProspekCount = prevProspekArr.length;
       const prevSO = prevActs.filter(a => a.tipe_aksi === 'Order').length;
       const prevFollowup = prevActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
 
-      const actualPoints =
-        (totalVisit * (systemTargets?.b_visit ?? 1)) +
-        (closingCount * (systemTargets?.b_closing ?? 20)) +
-        (totalProspek * (systemTargets?.b_prospek ?? 5)) +
-        (totalSO * (systemTargets?.b_order ?? 1)) +
-        (totalFollowup * (systemTargets?.b_chat ?? 1));
-
       const prevPoints =
-        (prevVisit * (systemTargets?.b_visit ?? 1)) +
+        (prevVisit * (systemTargets?.b_visit ?? 5)) +
+        (prevMaint * (systemTargets?.b_maint ?? 5)) +
         (prevClosing * (systemTargets?.b_closing ?? 20)) +
         (prevProspekCount * (systemTargets?.b_prospek ?? 5)) +
-        (prevSO * (systemTargets?.b_order ?? 1)) +
+        (prevSO * (systemTargets?.b_order ?? 5)) +
         (prevFollowup * (systemTargets?.b_chat ?? 1));
 
       // Progress bisa melebihi 100% (overperformance)
@@ -110,6 +126,7 @@ export default function Leaderboard() {
         percent, prevPercent,
         closingCount, prevClosing,
         totalVisit, prevVisit,
+        totalMaint, prevMaint,
         totalProspek, prevProspekCount,
         totalSO, prevSO,
         totalFollowup, prevFollowup
