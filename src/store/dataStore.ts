@@ -16,7 +16,6 @@ export const store = {
       area: p.area,
       status: p.status,
       sales_owner: p.sales_owner,
-      channel: p.channel,
       link_map: p.link_map,
       kategori: p.kategori,
       rating: p.rating,
@@ -29,7 +28,12 @@ export const store = {
   },
 
   async updateProspek(id: string, updates: Partial<Prospek>) {
-    const { data, error } = await supabase.from('prospek').update(updates).eq('id', id);
+    const allowedUpdates: any = {};
+    const keys = ['nama_toko', 'nama_pic', 'no_wa', 'area', 'status', 'sales_owner', 'link_map', 'kategori', 'rating', 'foto_profil'];
+    keys.forEach(k => {
+      if ((updates as any)[k] !== undefined) allowedUpdates[k] = (updates as any)[k];
+    });
+    const { data, error } = await supabase.from('prospek').update(allowedUpdates).eq('id', id);
     if (error) console.error('updateProspek error:', error);
     return { data, error };
   },

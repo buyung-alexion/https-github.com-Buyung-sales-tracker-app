@@ -134,7 +134,6 @@ export default function ProspectingTool({ salesId }: Props) {
         kategori: newForm.kategori,
         rating: newForm.rating,
         foto_profil: newForm.foto_profil,
-        channel: newForm.channel,
       });
 
       if (error) {
