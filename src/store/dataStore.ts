@@ -16,6 +16,7 @@ export const store = {
       area: p.area,
       status: p.status,
       sales_owner: p.sales_owner,
+      channel: p.channel,
       link_map: p.link_map,
       kategori: p.kategori,
       rating: p.rating,
@@ -29,7 +30,7 @@ export const store = {
 
   async updateProspek(id: string, updates: Partial<Prospek>) {
     const allowedUpdates: any = {};
-    const keys = ['nama_toko', 'nama_pic', 'no_wa', 'area', 'status', 'sales_owner', 'link_map', 'kategori', 'rating', 'foto_profil'];
+    const keys = ['nama_toko', 'nama_pic', 'no_wa', 'area', 'status', 'sales_owner', 'link_map', 'kategori', 'rating', 'foto_profil', 'channel'];
     keys.forEach(k => {
       if ((updates as any)[k] !== undefined) allowedUpdates[k] = (updates as any)[k];
     });
@@ -59,8 +60,8 @@ export const store = {
       link_map: c.link_map,
       kategori: c.kategori,
       rating: c.rating,
-      foto_profil: c.foto_profil
-      // is_from_prospek is removed temporarily because the column doesn't exist in Supabase
+      foto_profil: c.foto_profil,
+      is_from_prospek: false
     };
     const { error } = await supabase.from('customer').insert([customerData]);
     if (error) console.error('addCustomer error:', error);
@@ -88,8 +89,8 @@ export const store = {
       link_map: prospek.link_map,
       kategori: prospek.kategori,
       rating: prospek.rating,
-      foto_profil: prospek.foto_profil
-      // is_from_prospek is removed temporarily because the column doesn't exist in Supabase
+      foto_profil: prospek.foto_profil,
+      is_from_prospek: true
     };
     
     // 1. Insert Customer
