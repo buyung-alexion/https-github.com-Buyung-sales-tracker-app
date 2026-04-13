@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase';
 import type { Sales, Prospek, Customer, Activity, Area } from '../types';
-import { AREAS } from '../constants';
 
 // Internal helper for Area-based ID generation (e.g., BPN001) is removed 
 // because Supabase expects UUIDs for 'id' primary keys, not strings like "BPN001".
@@ -122,6 +121,7 @@ export const store = {
       target_nama: a.target_nama,
       tipe_aksi: a.tipe_aksi,
       catatan_hasil: a.catatan_hasil,
+      geotagging: (a as any).geotagging,
       timestamp: new Date().toISOString()
     };
     const { error } = await supabase.from('activity').insert([activityData]);
@@ -254,4 +254,3 @@ export const store = {
     if (error) console.error('updateSystemTargets error:', error);
   },
 };
-
