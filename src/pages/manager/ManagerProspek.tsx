@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { AREAS } from '../../constants';
-import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, Plus, X, ChevronRight } from 'lucide-react';
+import { CATEGORIES, getAreaName, getCategoryName } from '../../constants';
+import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -69,7 +71,7 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
 
 
 export default function ManagerProspek() {
-  const { prospek, customers, sales, activities } = useSalesData();
+  const { prospek, customers, sales, activities, refresh } = useSalesData();
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -88,6 +90,25 @@ export default function ManagerProspek() {
   const [filterSales, setFilterSales] = useState<string>('All');
   const [filterDate, setFilterDate] = useState<string>('all');
   const [filterArea, setFilterArea] = useState<string>('All');
+
+  // Modal States
+  const [addModal, setAddModal] = useState(false);
+  const [editModal, setEditModal] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const [form, setForm] = useState({
+    nama_toko: '',
+    nama_pic: '',
+    no_wa: '',
+    area: AREAS[0].id as string,
+    kategori: CATEGORIES[0].id as string,
+    status: 'Cold' as const,
+    link_map: '',
+    rating: 3,
+    foto_profil: ''
+  });
 
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
@@ -184,6 +205,75 @@ export default function ManagerProspek() {
     return sortedFiltered.slice(0, 20);
   }, [sortedFiltered, viewAll]);
 
+  const handleOpenAdd = () => {
+    setForm({
+      nama_toko: '',
+      nama_pic: '',
+      no_wa: '',
+      area: AREAS[0].id as string,
+      kategori: CATEGORIES[0].id as string,
+      status: 'Cold',
+      link_map: '',
+      rating: 3,
+      foto_profil: ''
+    });
+    setSaveError(null);
+    setSaveSuccess(false);
+    setAddModal(true);
+  };
+
+  const handleOpenEdit = (p: any) => {
+    setForm({
+      nama_toko: p.nama_toko || '',
+      nama_pic: p.nama_pic || '',
+      no_wa: p.no_wa || '',
+      area: p.area || AREAS[0].id,
+      kategori: p.kategori || CATEGORIES[0].id,
+      status: p.status || 'Cold',
+      link_map: p.link_map || '',
+      rating: p.rating || 3,
+      foto_profil: p.foto_profil || ''
+    });
+    setSaveError(null);
+    setSaveSuccess(false);
+    setEditModal(p);
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSaveError(null);
+
+    try {
+      let error;
+      if (editModal) {
+        const { error: err } = await store.updateProspek(editModal.id, form);
+        error = err;
+      } else {
+        const { error: err } = await store.addProspek({ 
+          ...form, 
+          sales_owner: filterSales === 'All' ? 'm001' : filterSales
+        });
+        error = err;
+      }
+
+      if (error) throw error;
+
+      setSaveSuccess(true);
+      await refresh();
+      setTimeout(() => {
+        setAddModal(false);
+        setEditModal(null);
+        setSaveSuccess(false);
+      }, 1000);
+    } catch (err: any) {
+      setSaveError(err.message || 'Gagal menyimpan data');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="mgr-page">
 
@@ -254,6 +344,35 @@ export default function ManagerProspek() {
             </select>
           </div>
         </div>
+
+        <div style={{ width: '1px', height: '40px', background: '#e2e8f0' }} />
+
+        {/* Action Button */}
+        <button 
+          onClick={handleOpenAdd}
+          style={{ 
+            height: '48px', 
+            padding: '0 24px', 
+            borderRadius: '16px', 
+            background: '#1e293b', 
+            color: '#fff', 
+            border: 'none', 
+            fontWeight: 900, 
+            fontSize: '13px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '10px', 
+            cursor: 'pointer',
+            boxShadow: '0 10px 20px rgba(30, 41, 59, 0.15)',
+            transition: 'all 0.2s ease',
+            marginLeft: 'auto'
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(30, 41, 59, 0.2)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(30, 41, 59, 0.15)'; }}
+        >
+          <Plus size={18} color="#facc15" /> 
+          TAMBAH PROSPEK
+        </button>
       </div>
 
       {/* B. KPI GRID (SYNCHRONIZED) */}
@@ -413,8 +532,24 @@ export default function ManagerProspek() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {p.area}
+                        {getAreaName(p.area)}
                       </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                       <div style={{ 
+                         display: 'inline-flex', 
+                         alignItems: 'center', 
+                         padding: '4px 10px', 
+                         borderRadius: '8px', 
+                         fontSize: '11px', 
+                         fontWeight: 900,
+                         background: '#f8fafc',
+                         color: '#64748b',
+                         border: '1px solid #e2e8f0',
+                         textTransform: 'uppercase'
+                       }}>
+                         {getCategoryName(p.kategori)}
+                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
@@ -470,18 +605,26 @@ export default function ManagerProspek() {
                       )}
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '0 24px 24px 0', border: '1px solid #f1f5f9', borderLeft: 'none', textAlign: 'center' }}>
-                      {p.lastActivity?.geotagging?.photo ? (
-                        <div
-                          style={{ width: '40px', height: '40px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', margin: '0 auto', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}
-                          onClick={() => window.open(p.lastActivity!.geotagging!.photo, '_blank')}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+                        {p.lastActivity?.geotagging?.photo ? (
+                          <div 
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} 
+                            onClick={() => window.open(p.lastActivity!.geotagging!.photo, '_blank')}
+                          >
+                            <img src={p.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ) : (
+                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
+                            <ImageIcon size={16} />
+                          </div>
+                        )}
+                        <button 
+                          onClick={() => handleOpenEdit(p)}
+                          style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f1f5f9', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#64748b' }}
                         >
-                          <img src={p.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        </div>
-                      ) : (
-                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto' }}>
-                          <ImageIcon size={18} />
-                        </div>
-                      )}
+                          <ChevronRight size={16} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -493,34 +636,170 @@ export default function ManagerProspek() {
           </table>
         </div>
 
-        {/* VIEW ALL TOGGLE (BOTTOM RIGHT) */}
-        {sortedFiltered.length > 20 && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0 24px 24px 24px' }}>
-            <button
-              onClick={() => { setViewAll(!viewAll); }}
-              style={{
-                padding: '10px 24px',
-                borderRadius: '14px',
-                border: '1.5px solid #f1f5f9',
-                background: viewAll ? '#f1f5f9' : '#fff',
-                color: '#1e293b',
-                fontSize: '12px',
-                fontWeight: 900,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+          <button 
+            onClick={() => setViewAll(!viewAll)}
+            style={{ padding: '10px 24px', borderRadius: '14px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '12px', fontWeight: 800, color: '#64748b', cursor: 'pointer' }}
+          >
+            {viewAll ? 'LIHAT LEBIH SEDIKIT' : 'TAMPILKAN SEMUA'}
+          </button>
+        </div>
+      </div>
+
+      <ProspectModal 
+        isOpen={addModal || !!editModal}
+        onClose={() => { setAddModal(false); setEditModal(null); }}
+        prospect={editModal}
+        form={form}
+        setForm={setForm}
+        onSave={handleSave}
+        isSubmitting={isSubmitting}
+        saveError={saveError}
+        saveSuccess={saveSuccess}
+      />
+    </div>
+  );
+}
+
+// Add/Edit Prospect Modal
+function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSubmitting, saveError, saveSuccess }: any) {
+  if (!isOpen) return null;
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '24px' }}>
+      <div style={{ background: '#fff', borderRadius: '32px', width: '100%', maxWidth: '500px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #f1f5f9', position: 'relative' }}>
+        <button onClick={onClose} style={{ position: 'absolute', top: '24px', right: '24px', background: '#f8fafc', border: 'none', borderRadius: '12px', padding: '8px', cursor: 'pointer', color: '#64748b' }}>
+          <X size={20} />
+        </button>
+
+        <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
+          {prospect ? 'Edit Prospek' : 'Tambah Prospek'}
+        </h3>
+        <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 32px 0', fontWeight: 600 }}>
+          {prospect ? 'Perbarui informasi data prospek lapangan' : 'Input data prospek baru hasil canvasing'}
+        </p>
+
+        <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Nama Toko Prospek *</label>
+            <input 
+              required
+              value={form.nama_toko}
+              onChange={e => setForm({...form, nama_toko: e.target.value})}
+              placeholder="Masukkan calon nama toko..."
+              style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+            />
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>PIC Prospek</label>
+              <input 
+                value={form.nama_pic}
+                onChange={e => setForm({...form, nama_pic: e.target.value})}
+                placeholder="Calon pemilik..."
+                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+              />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>No WA Aktif *</label>
+              <input 
+                required
+                value={form.no_wa}
+                onChange={e => setForm({...form, no_wa: e.target.value})}
+                placeholder="62812..."
+                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Area</label>
+              <select 
+                value={form.area}
+                onChange={e => {
+                  if (e.target.value === 'ADD_NEW') {
+                    const val = prompt('Masukkan Area Baru:');
+                    if (val && val.trim()) setForm({ ...form, area: val.trim() });
+                  } else {
+                    setForm({ ...form, area: e.target.value });
+                  }
+                }}
+                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
+              >
+                {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Channel</label>
+              <select 
+                value={form.kategori}
+                onChange={e => {
+                  if (e.target.value === 'ADD_NEW') {
+                    const val = prompt('Masukkan Kategori Baru:');
+                    if (val && val.trim()) setForm({ ...form, kategori: val.trim() });
+                  } else {
+                    setForm({ ...form, kategori: e.target.value });
+                  }
+                }}
+                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
+              >
+                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+              </select>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Status Prospek</label>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {['Cold', 'Warm', 'Hot'].map(s => (
+                <button 
+                  key={s}
+                  type="button"
+                  onClick={() => setForm({...form, status: s as any})}
+                  style={{ 
+                    flex: 1, padding: '10px', borderRadius: '12px', 
+                    border: form.status === s ? '2px solid #1e293b' : '2px solid #f1f5f9',
+                    background: form.status === s ? '#f1f5f9' : '#fff',
+                    fontSize: '12px', fontWeight: 800, color: form.status === s ? '#1e293b' : '#94a3b8',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {s.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 800, textAlign: 'center' }}>{saveError}</div>}
+
+          <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+            <button 
+              type="button" 
+              onClick={onClose}
+              style={{ flex: 1, height: '52px', borderRadius: '16px', border: '2px solid #f1f5f9', background: '#fff', fontSize: '14px', fontWeight: 900, color: '#64748b', cursor: 'pointer' }}
+            >
+              Batal
+            </button>
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              style={{ 
+                flex: 2, height: '52px', borderRadius: '16px', border: 'none', 
+                background: saveSuccess ? '#10b981' : '#1e293b', 
+                color: '#fff', fontSize: '14px', fontWeight: 950, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
               }}
             >
-              {viewAll ? (
-                <>TUTUP VIEW ALL</>
-              ) : (
-                <>VIEW ALL ({sortedFiltered.length})</>
-              )}
+              {isSubmitting ? <div className="animate-spin" style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%' }} /> : 
+               saveSuccess ? <><UserCheck size={18} /> Tersimpan!</> : 
+               prospect ? 'Update Prospek' : 'Simpan Prospek'}
             </button>
           </div>
-        )}
+        </form>
       </div>
     </div>
   );

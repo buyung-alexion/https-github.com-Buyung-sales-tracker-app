@@ -22,8 +22,6 @@ export default function ProspectingTool({ salesId }: Props) {
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState<Prospek | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showFab, setShowFab] = useState(true);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
@@ -190,21 +188,9 @@ export default function ProspectingTool({ salesId }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const handleScroll = () => {
-    if (showFab) setShowFab(false);
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => setShowFab(true), 800);
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { capture: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll, { capture: true });
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, [showFab]);
 
   const getInitials = (name: string) => {
+    if (!name) return '??';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
@@ -440,10 +426,10 @@ export default function ProspectingTool({ salesId }: Props) {
           boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)',
           border: 'none',
           zIndex: 99,
-          opacity: showFab ? 1 : 0,
-          transform: showFab ? 'scale(1) translateY(0)' : 'scale(0.5) translateY(40px)',
+          opacity: 1,
+          transform: 'scale(1) translateY(0)',
           transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          pointerEvents: showFab ? 'auto' : 'none'
+          pointerEvents: 'auto'
         }}
       >
         <Plus size={30} strokeWidth={3} />
@@ -549,10 +535,18 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => setNewForm({ ...newForm, kategori: e.target.value as string })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
+                    if (e.target.value === 'ADD_NEW') {
+                      const val = prompt('Masukkan Kategori Baru:');
+                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
+                    } else {
+                      setNewForm({ ...newForm, kategori: e.target.value as string });
+                    }
+                  }}>
                     {CATEGORIES.map(k => (
                       <option key={k.id} value={k.id}>{k.name}</option>
                     ))}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -564,10 +558,18 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value as string })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
+                    if (e.target.value === 'ADD_NEW') {
+                      const val = prompt('Masukkan Area Baru:');
+                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
+                    } else {
+                      setNewForm({ ...newForm, area: e.target.value as string });
+                    }
+                  }}>
                     {AREAS.map(a => (
                       <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -671,10 +673,18 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => setNewForm({ ...newForm, kategori: e.target.value as string })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => {
+                    if (e.target.value === 'ADD_NEW') {
+                      const val = prompt('Masukkan Kategori Baru:');
+                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
+                    } else {
+                      setNewForm({ ...newForm, kategori: e.target.value as string });
+                    }
+                  }}>
                     {CATEGORIES.map(k => (
                       <option key={k.id} value={k.id}>{k.name}</option>
                     ))}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -686,10 +696,18 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value as string })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
+                    if (e.target.value === 'ADD_NEW') {
+                      const val = prompt('Masukkan Area Baru:');
+                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
+                    } else {
+                      setNewForm({ ...newForm, area: e.target.value as string });
+                    }
+                  }}>
                     {AREAS.map(a => (
                       <option key={a.id} value={a.id}>{a.name}</option>
                     ))}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
                   </select>
                 </div>
                 <div className="form-group">

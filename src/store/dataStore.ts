@@ -2,40 +2,26 @@ import { supabase } from '../lib/supabase';
 import type { Sales, Prospek, Customer, Activity, Area } from '../types';
 import { AREAS } from '../constants';
 
-// Internal helper for Area-based ID generation (e.g., BPN001)
-async function generateNextAreaId(table: 'prospek' | 'customer', areaId: string) {
-  const prefix = AREAS.find(a => a.id === areaId)?.name || 'UNK';
-  const { data } = await supabase
-    .from(table)
-    .select('id')
-    .like('id', `${prefix}%`);
-
-  const existingIds = (data || [])
-    .map(row => row.id)
-    .filter(id => id.startsWith(prefix))
-    .map(id => {
-      const numPart = id.substring(prefix.length);
-      return parseInt(numPart);
-    })
-    .filter(num => !isNaN(num))
-    .sort((a, b) => b - a);
-
-  const nextNum = existingIds.length > 0 ? existingIds[0] + 1 : 1;
-  return `${prefix}${nextNum.toString().padStart(3, '0')}`;
-}
+// Internal helper for Area-based ID generation (e.g., BPN001) is removed 
+// because Supabase expects UUIDs for 'id' primary keys, not strings like "BPN001".
+// We will use crypto.randomUUID() instead.
 
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
-    const nextId = await generateNextAreaId('prospek', p.area);
     const prospekData = {
-      id: nextId,
+      id: crypto.randomUUID(),
       nama_toko: p.nama_toko,
       nama_pic: p.nama_pic,
       no_wa: p.no_wa,
       area: p.area,
       status: p.status,
       sales_owner: p.sales_owner,
+      channel: p.channel,
+      link_map: p.link_map,
+      kategori: p.kategori,
+      rating: p.rating,
+      foto_profil: p.foto_profil,
       created_at: new Date().toISOString()
     };
     const { error } = await supabase.from('prospek').insert([prospekData]);
@@ -57,9 +43,8 @@ export const store = {
 
   // ─── CUSTOMER ───────────────────────────────────────────
   async addCustomer(c: any) {
-    const nextId = await generateNextAreaId('customer', c.area);
     const customerData = {
-      id: nextId,
+      id: crypto.randomUUID(),
       nama_toko: c.nama_toko,
       nama_pic: c.nama_pic || 'Bpk/Ibu',
       no_wa: c.no_wa,
@@ -68,7 +53,11 @@ export const store = {
       total_order_volume: c.total_order_volume || 0,
       last_order_date: c.last_order_date || new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
-      is_from_prospek: false
+      link_map: c.link_map,
+      kategori: c.kategori,
+      rating: c.rating,
+      foto_profil: c.foto_profil
+      // is_from_prospek is removed temporarily because the column doesn't exist in Supabase
     };
     const { error } = await supabase.from('customer').insert([customerData]);
     if (error) console.error('addCustomer error:', error);
@@ -83,9 +72,8 @@ export const store = {
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
   async convertToCustomer(prospek: Prospek, orderVolume: number) {
-    const newId = await generateNextAreaId('customer', prospek.area);
     const customerData = {
-      id: newId,
+      id: crypto.randomUUID(),
       nama_toko: prospek.nama_toko,
       nama_pic: prospek.nama_pic,
       no_wa: prospek.no_wa,
@@ -94,7 +82,11 @@ export const store = {
       sales_pic: prospek.sales_owner,
       last_order_date: new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
-      is_from_prospek: true
+      link_map: prospek.link_map,
+      kategori: prospek.kategori,
+      rating: prospek.rating,
+      foto_profil: prospek.foto_profil
+      // is_from_prospek is removed temporarily because the column doesn't exist in Supabase
     };
     
     // 1. Insert Customer
@@ -110,7 +102,7 @@ export const store = {
     // 3. Log Activity
     await this.logActivity({
       id_sales: prospek.sales_owner,
-      target_id: newId,
+      target_id: customerData.id,
       target_type: 'customer',
       target_nama: prospek.nama_toko,
       tipe_aksi: 'Visit',

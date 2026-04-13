@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Phone, Search, MapPin, Edit3, X, Plus, Camera, Filter, Users, CheckSquare, FileText, Loader2, CheckCircle, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
@@ -26,8 +26,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [editModal, setEditModal] = useState<Customer | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [showFab, setShowFab] = useState(true);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const navigate = useNavigate();
 
   const [editForm, setEditForm] = useState({
@@ -119,23 +117,13 @@ export default function CustomerMaintenance({ salesId }: Props) {
     reader.readAsDataURL(file);
   };
 
-  const handleScroll = () => {
-    if (showFab) setShowFab(false);
-    if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => setShowFab(true), 800);
-  };
-
-  useEffect(() => {
-    window.addEventListener('scroll', handleScroll, { capture: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll, { capture: true });
-      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
-    };
-  }, [showFab]);
 
   const getInitials = (name: string) => {
+    if (!name) return '??';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
+
+  const getAreaName = (id: string) => AREAS.find(a => a.id === id || a.name === id)?.name || id;
 
   const getAccentColor = (kategori: string = 'K001') => {
     switch (kategori) {
@@ -196,6 +184,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
         sales_pic: salesId,
         last_order_date: new Date().toISOString(),
         total_order_volume: 0,
+        link_map: addForm.link_map,
+        kategori: addForm.kategori,
+        rating: addForm.rating,
+        foto_profil: addForm.foto_profil,
       };
       
       const { error } = await store.addCustomer(newCustomer);
@@ -210,7 +202,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setAddModal(false);
         setSaveSuccess(false);
-        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'Sepaku', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' });
+        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id, link_map: '', kategori: CATEGORIES[0].id, rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -330,7 +322,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{c.no_wa}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <MapPin size={10} color="#64748b" />
+                            <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>{getAreaName(c.area)}</div>
+                          </div>
                       <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
                       <span style={{ fontSize: '11px', fontWeight: 800, color: overdue ? '#ef4444' : '#10b981' }}>
                         {overdue ? `🚨 Overdue ${days}d` : '✅ Active'}
@@ -441,10 +436,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
           boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)',
           border: 'none',
           zIndex: 99,
-          opacity: showFab ? 1 : 0,
-          transform: showFab ? 'scale(1) translateY(0)' : 'scale(0.5) translateY(40px)',
+          opacity: 1,
+          transform: 'scale(1) translateY(0)',
           transition: 'all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-          pointerEvents: showFab ? 'auto' : 'none'
+          pointerEvents: 'auto'
         }}
       >
         <Plus size={30} strokeWidth={3} />
@@ -484,6 +479,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   }
                 }}>
                   {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
                 </select>
               </div>
 
@@ -499,6 +495,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     }
                   }}>
                     {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -557,6 +554,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     }
                   }}>
                     {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -570,6 +568,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                      }
                    }}>
                      {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                     <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                    </select>
                 </div>
               </div>

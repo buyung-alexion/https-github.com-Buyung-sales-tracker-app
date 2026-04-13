@@ -286,6 +286,7 @@ export default function CheckInVisit({ salesId }: Props) {
           >
              <option value="">-- Deteksi Area Otomatis --</option>
              {AREAS.map(a => <option key={a.id} value={a.id}>{a.id} - {a.name}</option>)}
+             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
           </select>
         </div>
 
