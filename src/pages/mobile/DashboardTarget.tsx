@@ -2,64 +2,41 @@ import { useMemo, useState } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from 'recharts';
 import { AlertCircle, Users } from 'lucide-react';
+import { calculateSalesPoints } from '../../utils/points';
+import type { FilterType } from '../../utils/points';
 
 interface Props { salesId: string; }
 
 export default function DashboardTarget({ salesId }: Props) {
   const { activities, prospek, customers, systemTargets } = useSalesData();
   
-  const [filterType, setFilterType] = useState<'today'|'week'|'month'|'all'>('month');
+  const [filterType, setFilterType] = useState<FilterType>('month');
 
-  const acts = useMemo(() => {
-    const now = new Date();
-    const day = now.getDay() || 7;
-    const startOfWeek = new Date(now);
-    startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setDate(now.getDate() - day + 1);
+  const { totalActual, breakdown, filteredActs } = useMemo(() => 
+    calculateSalesPoints(salesId, activities, prospek, systemTargets, filterType),
+    [salesId, activities, prospek, systemTargets, filterType]
+  );
 
-    return activities.filter(a => {
-      if (a.id_sales !== salesId) return false;
-      const d = new Date(a.timestamp);
-      if (filterType === 'today') return d.toDateString() === now.toDateString();
-      if (filterType === 'week') return d >= startOfWeek;
-      if (filterType === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      return true;
-    });
-  }, [salesId, activities, filterType]);
+  const {
+    followup: followupCount,
+    order: soCount,
+    visitProspek: visitCount,
+    visitCustomer: maintCount,
+    closing: closingCount,
+    newProspek: prospekCount
+  } = breakdown;
 
-  // ─── KPI Indicators (5 resmi) ──────────────────────────────────
-  const followupCount = acts.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
-  const soCount = acts.filter(a => a.tipe_aksi === 'Order').length;
-  const visitCount = acts.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
-  const maintCount = acts.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
-  const closingCount = acts.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-
-  const prospekFiltered = useMemo(() => {
-    const now = new Date();
-    const day = now.getDay() || 7;
-    const startOfWeek = new Date(now);
-    startOfWeek.setHours(0, 0, 0, 0);
-    startOfWeek.setDate(now.getDate() - day + 1);
-
-    return prospek.filter(p => {
-      if (p.sales_owner !== salesId) return false;
-      const d = new Date(p.created_at);
-      if (filterType === 'today') return d.toDateString() === now.toDateString();
-      if (filterType === 'week') return d >= startOfWeek;
-      if (filterType === 'month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-      return true;
-    });
-  }, [salesId, prospek, filterType]);
-  const prospekCount = prospekFiltered.length;
-
-  // ─── Total Actual Points ──────────────────────────────────────
-  const totalActual =
-    (followupCount * (systemTargets?.b_chat ?? 1)) +
-    (soCount * (systemTargets?.b_order ?? 5)) +
-    (visitCount * (systemTargets?.b_visit ?? 5)) +
-    (maintCount * (systemTargets?.b_maint ?? 5)) +
-    (closingCount * (systemTargets?.b_closing ?? 20)) +
-    (prospekCount * (systemTargets?.b_prospek ?? 5));
+  const activityTrendData = useMemo(() => {
+    const data: any[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayStr = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
+      const actsForDay = filteredActs.filter((a: any) => new Date(a.timestamp).getDate() === d.getDate());
+      data.push({ name: dayStr, Aktivitas: actsForDay.length });
+    }
+    return data;
+  }, [filteredActs]);
 
   const totalTarget = systemTargets?.ind_poin ?? 150;
   const overallPct = Math.min(100, totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0);
@@ -70,7 +47,6 @@ export default function DashboardTarget({ salesId }: Props) {
   const dash = (overallPct / 100) * circumference;
 
   // ─── Progress Performance (5 indicators, inline in JSX) ────────
-
   // ─── Informasi Data ───────────────────────────────────────────
   // Prospek Outstanding > 14 hari (belum ada aktivitas selama 14+ hari)
   const now14 = new Date();
@@ -104,34 +80,20 @@ export default function DashboardTarget({ salesId }: Props) {
     return (now14.getTime() - new Date(lastOrder.timestamp).getTime()) > day30Ms;
   });
 
-  // ─── Top Active Customers (by order frequency) ───────────────
   const topActiveCustomers = useMemo(() => {
     return myCustomers
       .map(c => {
-        const orderCount = acts.filter(
-          a => a.target_id === c.id && a.tipe_aksi === 'Order'
+        const orderCount = filteredActs.filter(
+          (a: any) => a.target_id === c.id && a.tipe_aksi === 'Order'
         ).length;
         return { ...c, orderCount };
       })
       .filter(c => c.orderCount > 0)
       .sort((a, b) => b.orderCount - a.orderCount)
       .slice(0, 5);
-  }, [myCustomers, acts]);
+  }, [myCustomers, filteredActs]);
 
   const maxOrderCount = topActiveCustomers[0]?.orderCount ?? 1;
-
-  // ─── Activity Trend Chart ─────────────────────────────────────
-  const activityTrendData = useMemo(() => {
-    const data = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const dayStr = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
-      const actsForDay = acts.filter(a => new Date(a.timestamp).getDate() === d.getDate());
-      data.push({ name: dayStr, Aktivitas: actsForDay.length });
-    }
-    return data;
-  }, [acts]);
 
   return (
     <div className="page-content" style={{ paddingBottom: '80px', position: 'relative' }}>

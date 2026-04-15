@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { calculateSalesPoints } from '../../utils/points';
 
 
 interface Props { salesId: string; }
@@ -28,23 +29,9 @@ export default function Homepage({ salesId }: Props) {
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const isCurrentMonth = (dateStr: string) => {
-    if (!dateStr) return false;
-    const d = new Date(dateStr);
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-  };
-
   const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
   const daysRemaining = Math.ceil((endOfMonth.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
-  const monthlyActivities = activities.filter(a => a.id_sales === salesId && isCurrentMonth(a.timestamp));
-
-  // Actual Performance Points Calculation (Resets monthly)
-  const closingCount = monthlyActivities.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-  const maintenanceCount = monthlyActivities.filter(a => a.target_type === 'customer').length;
-  const totalVisit = monthlyActivities.filter(a => a.tipe_aksi === 'Visit').length;
-  const totalSO = monthlyActivities.filter(a => a.tipe_aksi === 'Order').length;
-  const totalChatCall = monthlyActivities.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
 
   // Prospek & Customer (Lifetime / Unreset)
   const totalProspek = prospek.filter(p => p.sales_owner === salesId).length;
@@ -62,13 +49,15 @@ export default function Homepage({ salesId }: Props) {
     !activities.some(act => act.target_id === c.id && (act.tipe_aksi === 'WA' || act.tipe_aksi === 'Call'))
   ).length;
 
-  const totalActualPoints = 
-    (totalVisit * (systemTargets?.b_visit ?? 5)) +
-    (closingCount * (systemTargets?.b_closing ?? 15)) +
-    (totalProspek * (systemTargets?.b_prospek ?? 5)) +
-    (maintenanceCount * (systemTargets?.b_maint ?? 5)) +
-    (totalSO * (systemTargets?.b_order ?? 20)) +
-    (totalChatCall * (systemTargets?.b_chat ?? 5)) || 0;
+  const { totalActual: totalActualPoints, breakdown } = calculateSalesPoints(
+    salesId,
+    activities,
+    prospek,
+    systemTargets,
+    'month'
+  );
+
+  const { order: totalSO, visitProspek: totalVisit } = breakdown;
 
   // Recent Activities
   const recentActs = activities
