@@ -37,10 +37,10 @@ export default function ProspectingTool({ salesId }: Props) {
     nama_toko: '', 
     nama_pic: '', 
     no_wa: '', 
-    area: AREAS[0].id as string, 
+    area: 'SMD', 
     status: 'Cold' as StatusProspek, 
     link_map: '', 
-    kategori: CATEGORIES[0].id as string, 
+    kategori: 'Retail', 
     rating: 0, 
     foto_profil: '', 
     channel: 'Canvasing' 
@@ -115,7 +115,7 @@ export default function ProspectingTool({ salesId }: Props) {
       setTimeout(() => {
         setAddModal(false);
         setSaveSuccess(false);
-        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id as string, status: 'Cold', link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: '', channel: 'Canvasing' });
+        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
       }, 1500);
     } catch (err) {
       setSaveError('Kesalahan sistem.');
@@ -157,10 +157,10 @@ export default function ProspectingTool({ salesId }: Props) {
           nama_toko: '', 
           nama_pic: '', 
           no_wa: '', 
-          area: AREAS[0].id as string, 
+          area: 'SMD', 
           status: 'Cold', 
           link_map: '', 
-          kategori: CATEGORIES[0].id as string, 
+          kategori: 'Retail', 
           rating: 0, 
           foto_profil: '', 
           channel: 'Canvasing' 
@@ -394,7 +394,7 @@ export default function ProspectingTool({ salesId }: Props) {
                             area: p.area as string, 
                             status: p.status, 
                             link_map: p.link_map || '', 
-                            kategori: (p.kategori || CATEGORIES[0].id) as string, 
+                            kategori: (p.kategori || 'Retail') as string, 
                             rating: p.rating || 0, 
                             foto_profil: p.foto_profil || '', 
                             channel: p.channel || 'Canvasing' 
@@ -540,19 +540,22 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Kategori Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, kategori: e.target.value as string });
-                    }
-                  }}>
-                    {CATEGORIES.map(k => (
-                      <option key={k.id} value={k.id}>{k.name}</option>
-                    ))}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
-                  </select>
+                    <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
+                      if (e.target.value === 'ADD_NEW') {
+                        const val = prompt('Masukkan Kategori Baru:');
+                        if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
+                      } else {
+                        setNewForm({ ...newForm, kategori: e.target.value as string });
+                      }
+                    }}>
+                      {CATEGORIES.map(k => (
+                        <option key={k.id} value={k.id}>{k.name}</option>
+                      ))}
+                      {newForm.kategori && !CATEGORIES.find(k => k.id === newForm.kategori) && (
+                        <option value={newForm.kategori}>{newForm.kategori}</option>
+                      )}
+                      <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+                    </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
@@ -567,6 +570,9 @@ export default function ProspectingTool({ salesId }: Props) {
                     <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value })}>
                       <option value="">-- Pilih Area --</option>
                       {dynamicAreas.map(a => <option key={a} value={a}>{a}</option>)}
+                      {newForm.area && !dynamicAreas.includes(newForm.area) && (
+                        <option value={newForm.area}>{newForm.area}</option>
+                      )}
                     </select>
                     <button type="button" onClick={() => {
                         const val = prompt('Masukkan Nama Area Baru:');
@@ -588,6 +594,9 @@ export default function ProspectingTool({ salesId }: Props) {
                   <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.channel} onChange={e => setNewForm({ ...newForm, channel: e.target.value })}>
                     <option value="">-- Pilih Sumber --</option>
                     {dynamicChannels.map(c => <option key={c} value={c}>{c}</option>)}
+                    {newForm.channel && !dynamicChannels.includes(newForm.channel) && (
+                      <option value={newForm.channel}>{newForm.channel}</option>
+                    )}
                   </select>
                   <button type="button" onClick={() => {
                       const val = prompt('Masukkan Sumber Baru:');

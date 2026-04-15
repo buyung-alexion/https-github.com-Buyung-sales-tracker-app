@@ -32,7 +32,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
   const [editForm, setEditForm] = useState({
     id: '',
-    nama_toko: '', no_wa: '', area: AREAS[0].id as string, link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: '' 
+    nama_toko: '', no_wa: '', area: 'SMD', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' 
   });
 
   const [addModal, setAddModal] = useState(false);
@@ -40,7 +40,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const [addForm, setAddForm] = useState<{
     nama_toko: string; nama_pic: string; no_wa: string; area: string; link_map: string; kategori: string; rating: number; foto_profil: string;
   }>({ 
-    nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id as string, link_map: '', kategori: CATEGORIES[0].id as string, rating: 0, foto_profil: ''
+    nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', link_map: '', kategori: 'Retail', rating: 0, foto_profil: ''
   });
 
   useEffect(() => {
@@ -400,9 +400,9 @@ export default function CustomerMaintenance({ salesId }: Props) {
                             id: c.id,
                             nama_toko: c.nama_toko, 
                             no_wa: c.no_wa, 
-                            area: c.area || AREAS[0].id,
+                            area: c.area || 'SMD',
                             link_map: c.link_map || '', 
-                            kategori: c.kategori || CATEGORIES[0].id, 
+                            kategori: c.kategori || 'Retail', 
                             rating: c.rating || 0, 
                             foto_profil: c.foto_profil || '' 
                           }); 
@@ -556,6 +556,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     }
                   }}>
                     {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                    {addForm.area && !AREAS.find(a => a.id === addForm.area) && <option value={addForm.area}>{addForm.area}</option>}
                     <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
                   </select>
                 </div>
@@ -570,6 +571,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                      }
                    }}>
                      {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+                     {addForm.kategori && !CATEGORIES.find(k => k.id === addForm.kategori) && <option value={addForm.kategori}>{addForm.kategori}</option>}
                      <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                    </select>
                 </div>
@@ -578,6 +580,11 @@ export default function CustomerMaintenance({ salesId }: Props) {
               <div className="form-group" style={{ maxWidth: '50%' }}>
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
                 <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.rating} onChange={e => setAddForm({...addForm, rating: parseInt(e.target.value) || 0})} />
+              </div>
+
+              <div className="form-group">
+                <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Link Map (Google Maps)</label>
+                <input type="text" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={addForm.link_map} onChange={e => setAddForm({...addForm, link_map: e.target.value})} />
               </div>
             </div>
 

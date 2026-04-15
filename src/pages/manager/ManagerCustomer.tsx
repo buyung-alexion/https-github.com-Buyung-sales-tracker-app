@@ -253,8 +253,8 @@ export default function ManagerCustomer() {
     nama_toko: '',
     nama_pic: '',
     no_wa: '',
-    area: AREAS[0].id as string,
-    kategori: CATEGORIES[0].id as string,
+    area: 'SMD',
+    kategori: 'Retail',
     link_map: '',
     rating: 5,
     foto_profil: ''
@@ -339,8 +339,8 @@ export default function ManagerCustomer() {
       nama_toko: '',
       nama_pic: '',
       no_wa: '',
-      area: AREAS[0].id as string,
-      kategori: CATEGORIES[0].id as string,
+      area: 'SMD',
+      kategori: 'Retail',
       link_map: '',
       rating: 5,
       foto_profil: ''
@@ -677,7 +677,7 @@ export default function ManagerCustomer() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {AREAS.find(a => a.id === c.area || a.name === c.area)?.name || c.area}
+                        {c.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -727,7 +727,7 @@ export default function ManagerCustomer() {
                         color: '#0ea5e9',
                         border: '1px solid #e0f2fe'
                       }}>
-                        {(CATEGORIES.find(cat => cat.id === c.kategori || cat.name === c.kategori)?.name || c.kategori || 'Retail').toUpperCase()}
+                        {(c.kategori || 'Retail').toUpperCase()}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
@@ -875,6 +875,9 @@ function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSub
                 style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
                 {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                {form.area && !AREAS.find(a => a.id === form.area) && (
+                  <option value={form.area}>{form.area}</option>
+                )}
                 <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
               </select>
             </div>

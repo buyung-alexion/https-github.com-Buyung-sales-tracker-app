@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { AREAS } from '../../constants';
 import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, Plus, X, ChevronRight } from 'lucide-react';
-import { CATEGORIES, getAreaName, getCategoryName } from '../../constants';
+import { CATEGORIES } from '../../constants';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -102,8 +102,8 @@ export default function ManagerProspek() {
     nama_toko: '',
     nama_pic: '',
     no_wa: '',
-    area: AREAS[0].id as string,
-    kategori: CATEGORIES[0].id as string,
+    area: 'SMD',
+    kategori: 'Retail',
     status: 'Cold' as const,
     link_map: '',
     rating: 3,
@@ -210,8 +210,8 @@ export default function ManagerProspek() {
       nama_toko: '',
       nama_pic: '',
       no_wa: '',
-      area: AREAS[0].id as string,
-      kategori: CATEGORIES[0].id as string,
+      area: 'SMD',
+      kategori: 'Retail',
       status: 'Cold',
       link_map: '',
       rating: 3,
@@ -532,7 +532,7 @@ export default function ManagerProspek() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {getAreaName(p.area)}
+                        {p.area}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -548,7 +548,7 @@ export default function ManagerProspek() {
                          border: '1px solid #e2e8f0',
                          textTransform: 'uppercase'
                        }}>
-                         {getCategoryName(p.kategori)}
+                         {p.kategori}
                        </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -729,6 +729,9 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
                 style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
                 {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                {form.area && !AREAS.find(a => a.id === form.area) && (
+                  <option value={form.area}>{form.area}</option>
+                )}
                 <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
               </select>
             </div>
@@ -747,6 +750,9 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
                 style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
                 {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {form.kategori && !CATEGORIES.find(k => k.id === form.kategori) && (
+                  <option value={form.kategori}>{form.kategori}</option>
+                )}
                 <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
               </select>
             </div>
