@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { getAreaName, AREAS } from '../../constants';
+import { calculateSalesPoints } from '../../utils/points';
 
 
 export default function PerformanceAnalytics() {
@@ -93,50 +94,45 @@ export default function PerformanceAnalytics() {
 
 
 
-  const startDate = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-  
   // Master Aggregation
   const statsPerSales = useMemo(() => {
     return sales.map(s => {
-      // Logic for stats based on filtered period or selection
-      const sActs = activities.filter(a => a.id_sales === s.id);
-      
-      
-      const visitCount = sActs.filter(a => a.tipe_aksi === 'Visit').length;
-      const waCount = sActs.filter(a => a.tipe_aksi === 'WA').length;
-      const callCount = sActs.filter(a => a.tipe_aksi === 'Call').length;
-      const soCount = sActs.filter(a => a.tipe_aksi === 'Order').length;
-      const totalActs = visitCount + waCount + callCount + soCount;
-      
-      const maintainCount = sActs.filter(a => a.target_type === 'customer').length;
-      const activeProspekCount = prospek.filter(p => p.sales_owner === s.id).length;
-      
-      // Closing Count refined for Leaderboard: Customers belonging to this sales originating from prospects
-      const sClosingCount = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false).length;
-      
-      // KPI points formula (Synchronized): 
-      const points = 
-        (sClosingCount * (systemTargets?.b_closing ?? 20)) +
-        (soCount * (systemTargets?.b_order ?? 5)) +
-        (visitCount * (systemTargets?.b_visit ?? 5)) +
-        (maintainCount * (systemTargets?.b_maint ?? 5)) +
-        (activeProspekCount * (systemTargets?.b_prospek ?? 5)) +
-        (waCount + callCount) * (systemTargets?.b_chat ?? 1);
-      
-      const revenueReal = sClosingCount * 3500000; // Multiplier fixed for now as per user preference
+      const { totalActual, breakdown } = calculateSalesPoints(
+        s.id,
+        realActivities,
+        realProspek,
+        systemTargets,
+        selectedPeriod,
+        {
+          area: selectedArea,
+          category: selectedCategory
+        }
+      );
+
+      const {
+        followup: waCount, // Simplified to followup total in this view
+        order: soCount,
+        visitProspek: vProspek,
+        visitCustomer: vCustomer,
+        closing: sClosingCount,
+        newProspek: activeProspekCount
+      } = breakdown;
+
+      const visitCount = vProspek + vCustomer;
+      const totalActs = waCount + soCount + visitCount;
+      const revenueReal = sClosingCount * 3500000;
       const closingRate = totalActs > 0 ? Math.round((sClosingCount / totalActs) * 100) : 0;
-      const activeFollowups = sActs.filter(a => a.target_type === 'prospek').length;
       
       return {
         id: s.id, nama: s.nama,
-        visitCount, waCount, callCount, soCount, totalActs,
-        closingCount: sClosingCount, revenueReal, closingRate, activeFollowups,
-        maintainCount, points, prospekBaru: activeProspekCount,
+        visitCount, waCount, callCount: 0, soCount, totalActs,
+        closingCount: sClosingCount, revenueReal, closingRate, activeFollowups: waCount,
+        maintainCount: vCustomer, points: totalActual, prospekBaru: activeProspekCount,
         foto_profil: s.foto_profil,
-        pointProgressPct: Math.min(100, Math.round((points / (systemTargets?.ind_poin || 150)) * 100))
+        pointProgressPct: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100))
       };
     }).sort((a,b) => b.points - a.points);
-  }, [sales, activities, startDate, systemTargets, prospek, customers]);
+  }, [sales, realActivities, realProspek, systemTargets, selectedPeriod, selectedArea, selectedCategory, realCustomers]);
 
   // Master Aggregation for KPI Cards (Filtered by period, salesman, area)
   const totalProspekCount = prospek.length; // Choice A: Active only

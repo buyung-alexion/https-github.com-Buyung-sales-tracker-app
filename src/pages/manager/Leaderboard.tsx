@@ -1,9 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Award, TrendingUp, Filter } from 'lucide-react';
 import { useSalesData } from '../../hooks/useSalesData';
+import { calculateSalesPoints } from '../../utils/points';
+import type { FilterType } from '../../utils/points';
 
 export default function Leaderboard() {
-  const { sales, activities, prospek, customers, systemTargets } = useSalesData();
+  const { sales, activities, prospek, systemTargets } = useSalesData();
 
   const [filterDate, setFilterDate] = useState<string>('month');
   const [filterSales, setFilterSales] = useState<string>('All');
@@ -30,93 +32,61 @@ export default function Leaderboard() {
     const filteredSales = filterSales === 'All' ? sales : sales.filter(s => s.id === filterSales);
 
     return filteredSales.map(s => {
-      const targetPoin = systemTargets?.ind_poin ?? 150;
+      const { totalActual: actualPoints, breakdown } = calculateSalesPoints(
+        s.id,
+        activities,
+        prospek,
+        systemTargets,
+        filterDate as FilterType
+      );
 
-      let sActs = activities.filter(a => a.id_sales === s.id);
-      let sProspek = prospek.filter(p => p.sales_owner === s.id);
-
-      let thresholdStart = 0;
-      let thresholdEnd = new Date().getTime();
-      let prevStart = 0;
-      let prevEnd = 0;
-
+      // Previous period calculation
+      let prevThresholdStart = 0;
+      let prevThresholdEnd = 0;
       if (filterDate === 'today') {
-        thresholdStart = todayMs;
-        prevStart = todayMs - 86400000;
-        prevEnd = todayMs - 1;
+        prevThresholdStart = todayMs - 86400000;
+        prevThresholdEnd = todayMs - 1;
       } else if (filterDate === 'week') {
-        thresholdStart = weekMs;
-        prevStart = weekMs - (7 * 86400000);
-        prevEnd = weekMs - 1;
+        prevThresholdStart = weekMs - (7 * 86400000);
+        prevThresholdEnd = weekMs - 1;
       } else if (filterDate === 'month') {
-        thresholdStart = monthMs;
-        prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-        prevEnd = monthMs - 1;
-      } else if (filterDate === 'last_month') {
-        thresholdStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
-        thresholdEnd = monthMs - 1;
-        prevStart = new Date(now.getFullYear(), now.getMonth() - 2, 1).getTime();
-        prevEnd = thresholdStart - 1;
+        prevThresholdStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
+        prevThresholdEnd = monthMs - 1;
       }
 
-      let currentActs = sActs;
-      let currentProspek = sProspek;
+      // We need a way to pass custom dates to calculateSalesPoints or just call it twice with different ranges
+      // Since calculateSalesPoints uses labels like 'month', I'll call it twice if it's not 'all'
+      
+      let prevPoints = 0;
+      let prevBreakdown: any = {};
+      
       if (filterDate !== 'all') {
-        currentActs = sActs.filter(a => { const t = new Date(a.timestamp).getTime(); return t >= thresholdStart && t <= thresholdEnd; });
-        currentProspek = sProspek.filter(p => { const t = new Date(p.created_at).getTime(); return t >= thresholdStart && t <= thresholdEnd; });
+        // Temporary hack to calculate previous points: manually filter activities
+        const prevActs = activities.filter(a => {
+          const t = new Date(a.timestamp).getTime();
+          return t >= prevThresholdStart && t <= prevThresholdEnd;
+        });
+        const prevPArr = prospek.filter(p => {
+          const t = new Date(p.created_at).getTime();
+          return t >= prevThresholdStart && t <= prevThresholdEnd;
+        });
+        
+        // Use 'all' type to avoid label-based range logic, as we already pre-filtered the data
+        const prevRes = calculateSalesPoints(s.id, prevActs, prevPArr, systemTargets, 'all');
+        prevPoints = prevRes.totalActual;
+        prevBreakdown = prevRes.breakdown;
       }
 
-      let prevActs = [] as typeof activities;
-      let prevProspekArr = [] as typeof prospek;
-      if (filterDate !== 'all') {
-        prevActs = sActs.filter(a => { const t = new Date(a.timestamp).getTime(); return t >= prevStart && t <= prevEnd; });
-        prevProspekArr = sProspek.filter(p => { const t = new Date(p.created_at).getTime(); return t >= prevStart && t <= prevEnd; });
-      }
+      const {
+        followup: totalFollowup,
+        order: totalSO,
+        visitProspek: totalVisit,
+        visitCustomer: totalMaint,
+        closing: closingCount,
+        newProspek: totalProspek
+      } = breakdown;
 
-      const currentCustomers = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false);
-      const currentP = currentCustomers.filter(c => {
-        const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
-        return t >= thresholdStart && t <= thresholdEnd;
-      });
-      const closingCount = currentP.length;
-
-      const prevCustomers = customers.filter(c => c.sales_pic === s.id && c.is_from_prospek !== false);
-      const prevPArr = prevCustomers.filter(c => {
-        const t = new Date(c.tanggal_join || c.created_at || 0).getTime();
-        return t >= prevStart && t <= prevEnd;
-      });
-      const prevClosing = prevPArr.length;
-
-      const totalVisit = currentActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
-      const totalMaint = currentActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
-      const totalProspek = currentProspek.length;
-      const totalSO = currentActs.filter(a => a.tipe_aksi === 'Order').length;
-      // Followup mencakup WA + Call
-      const totalFollowup = currentActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
-
-      const actualPoints =
-        (totalVisit * (systemTargets?.b_visit ?? 5)) +
-        (totalMaint * (systemTargets?.b_maint ?? 5)) +
-        (closingCount * (systemTargets?.b_closing ?? 20)) +
-        (totalProspek * (systemTargets?.b_prospek ?? 5)) +
-        (totalSO * (systemTargets?.b_order ?? 5)) +
-        (totalFollowup * (systemTargets?.b_chat ?? 1));
-
-      const prevVisit = prevActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'prospek').length;
-      const prevMaint = prevActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
-      const prevProspekCount = prevProspekArr.length;
-      const prevSO = prevActs.filter(a => a.tipe_aksi === 'Order').length;
-      const prevFollowup = prevActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
-
-      const prevPoints =
-        (prevVisit * (systemTargets?.b_visit ?? 5)) +
-        (prevMaint * (systemTargets?.b_maint ?? 5)) +
-        (prevClosing * (systemTargets?.b_closing ?? 20)) +
-        (prevProspekCount * (systemTargets?.b_prospek ?? 5)) +
-        (prevSO * (systemTargets?.b_order ?? 5)) +
-        (prevFollowup * (systemTargets?.b_chat ?? 1));
-
-      // Progress bisa melebihi 100% (overperformance)
+      const targetPoin = systemTargets?.ind_poin ?? 150;
       const percent = targetPoin > 0 ? Math.round((actualPoints / targetPoin) * 100) : 0;
       const prevPercent = targetPoin > 0 ? Math.round((prevPoints / targetPoin) * 100) : 0;
 
@@ -124,12 +94,12 @@ export default function Leaderboard() {
         ...s, targetPoin,
         actualPoints, prevPoints,
         percent, prevPercent,
-        closingCount, prevClosing,
-        totalVisit, prevVisit,
-        totalMaint, prevMaint,
-        totalProspek, prevProspekCount,
-        totalSO, prevSO,
-        totalFollowup, prevFollowup
+        closingCount, prevClosing: prevBreakdown.closing || 0,
+        totalVisit, prevVisit: prevBreakdown.visitProspek || 0,
+        totalMaint, prevMaint: prevBreakdown.visitCustomer || 0,
+        totalProspek, prevProspekCount: prevBreakdown.newProspek || 0,
+        totalSO, prevSO: prevBreakdown.order || 0,
+        totalFollowup, prevFollowup: prevBreakdown.followup || 0
       };
     }).sort((a, b) => b.actualPoints - a.actualPoints);
   }, [sales, activities, prospek, systemTargets, filterDate, filterSales]);
