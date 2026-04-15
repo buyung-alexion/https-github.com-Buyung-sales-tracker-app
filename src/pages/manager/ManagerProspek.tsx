@@ -695,6 +695,7 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>PIC Prospek</label>
               <input 
+                required
                 value={form.nama_pic}
                 onChange={e => setForm({...form, nama_pic: e.target.value})}
                 placeholder="Calon pemilik..."

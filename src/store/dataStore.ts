@@ -11,7 +11,7 @@ export const store = {
     const prospekData = {
       id: crypto.randomUUID(),
       nama_toko: p.nama_toko,
-      nama_pic: p.nama_pic,
+      nama_pic: p.nama_pic || 'Bpk/Ibu',
       no_wa: p.no_wa,
       area: p.area,
       status: p.status,
