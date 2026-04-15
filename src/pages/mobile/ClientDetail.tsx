@@ -85,7 +85,7 @@ export default function ClientDetail() {
             <img src={`https://ui-avatars.com/api/?name=${targetData.nama_toko}&background=random`} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           
-          <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: '12px 0 4px 0', letterSpacing: '-0.5px' }}>
+          <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: '12px 0 4px 0' }}>
             {targetData.nama_toko}
           </h2>
           

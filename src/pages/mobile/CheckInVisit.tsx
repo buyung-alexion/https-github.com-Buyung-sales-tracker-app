@@ -246,7 +246,7 @@ export default function CheckInVisit({ salesId }: Props) {
         marginTop: '-30px' // Pull up over the map slightly
       }}>
         <div style={{ width: '40px', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', margin: '0 auto 12px' }}></div>
-        <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px', margin: 0 }}>Laporan Kunjungan</h2>
+        <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0 }}>Laporan Kunjungan</h2>
       </div>
 
       {/* FOREGROUND PANEL */}

@@ -87,7 +87,7 @@ export default function MobileLeaderboard() {
           >
             <ChevronLeft size={24} color="#111827" strokeWidth={3} />
           </button>
-          <h2 style={{ fontSize: '24px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-1.2px' }}>Leaderboard</h2>
+          <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Leaderboard</h2>
         </div>
       </div>
 

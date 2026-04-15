@@ -181,7 +181,7 @@ export default function Profile() {
             >
               <ArrowLeft size={22} color="#111827" strokeWidth={3} />
             </button>
-            <h2 style={{ fontSize: '24px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-1.2px' }}>Profil</h2>
+            <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Profil</h2>
           </div>
           <button 
             className="tap-active" 

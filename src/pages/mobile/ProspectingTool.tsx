@@ -5,11 +5,16 @@ import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Prospek, StatusProspek } from '../../types';
 import { AREAS, CATEGORIES, getAreaName } from '../../constants';
+import { getUniqueOptions } from '../../utils/formHelpers';
 
 interface Props { salesId: string; }
 
 export default function ProspectingTool({ salesId }: Props) {
-  const { prospek, refresh } = useSalesData();
+  const { prospek = [], refresh } = useSalesData() || {};
+  
+  // Dynamic Options
+  const dynamicAreas = getUniqueOptions(prospek, 'area', AREAS.map(a => a.id));
+  const dynamicChannels = getUniqueOptions(prospek, 'channel', ['Referensi', 'Canvasing', 'Scraping', 'Kontak Sendiri']);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -221,10 +226,10 @@ export default function ProspectingTool({ salesId }: Props) {
         
         <div style={{ position: 'relative', zIndex: 6 }}>
            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-             <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0 }}>Prospecting</h2>
+             <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Prospecting</h2>
              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myProspek.length} TOKO</div>
            </div>
-           <div style={{ color: '#111827', opacity: 0.6, fontSize: '11px', fontWeight: 700 }}>Lead Generation & Acquisition</div>
+           <div className="hero-premium-subtitle">Lead Generation & Acquisition</div>
         </div>
       </div>
 
@@ -356,7 +361,7 @@ export default function ProspectingTool({ salesId }: Props) {
                       </button>
                       <button 
                         className="tap-active"
-                        style={{ flex: 1, background: '#F0F9FF', color: '#0EA5E9', border: '1.5px solid #E0F2FE', borderRadius: '12px', padding: '12px 0', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
+                        style={{ flex: 1, background: '#FFFBEB', color: '#D97706', border: '1.5px solid #FEF3C7', borderRadius: '12px', padding: '12px 0', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
                         onClick={(e) => { 
                           e.stopPropagation(); 
                           store.logCall(salesId, p.id, 'prospek', p.nama_toko, p.no_wa); 
@@ -418,12 +423,12 @@ export default function ProspectingTool({ salesId }: Props) {
           width: '60px', 
           height: '60px', 
           borderRadius: '50%', 
-          background: '#3B82F6', 
-          color: '#fff', 
+          background: 'var(--brand-yellow)', 
+          color: '#111827', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)',
+          boxShadow: '0 10px 25px rgba(255, 204, 0, 0.3)',
           border: 'none',
           zIndex: 99,
           opacity: 1,
@@ -558,19 +563,16 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Area Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, area: e.target.value as string });
-                    }
-                  }}>
-                    {AREAS.map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
-                  </select>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value })}>
+                      <option value="">-- Pilih Area --</option>
+                      {dynamicAreas.map(a => <option key={a} value={a}>{a}</option>)}
+                    </select>
+                    <button type="button" onClick={() => {
+                        const val = prompt('Masukkan Nama Area Baru:');
+                        if (val?.trim()) setNewForm({ ...newForm, area: val.trim() });
+                    }} style={{ padding: '0 12px', background: '#f1f5f9', borderRadius: '12px', fontWeight: 800 }}>+</button>
+                  </div>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
@@ -582,21 +584,16 @@ export default function ProspectingTool({ salesId }: Props) {
 
               <div className="form-group">
                 <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Sumber Prospek</label>
-                <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.channel} onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Sumber Baru:');
-                    if (val && val.trim()) setNewForm({ ...newForm, channel: val.trim() });
-                  } else {
-                    setNewForm({ ...newForm, channel: e.target.value });
-                  }
-                }}>
-                  <option value="Referensi">Referensi</option>
-                  <option value="Canvasing">Canvasing</option>
-                  <option value="Scraping">Scraping</option>
-                  <option value="Kontak Sendiri">Kontak Sendiri</option>
-                  {!['Referensi','Canvasing','Scraping','Kontak Sendiri'].includes(newForm.channel || '') && newForm.channel && <option value={newForm.channel}>{newForm.channel}</option>}
-                  <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah Sumber</option>
-                </select>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.channel} onChange={e => setNewForm({ ...newForm, channel: e.target.value })}>
+                    <option value="">-- Pilih Sumber --</option>
+                    {dynamicChannels.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  <button type="button" onClick={() => {
+                      const val = prompt('Masukkan Sumber Baru:');
+                      if (val?.trim()) setNewForm({ ...newForm, channel: val.trim() });
+                  }} style={{ padding: '0 12px', background: '#f1f5f9', borderRadius: '12px', fontWeight: 800 }}>+</button>
+                </div>
               </div>
 
               {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>{saveError}</div>}

@@ -143,15 +143,15 @@ export default function Homepage({ salesId }: Props) {
         
         <div style={{ position: 'relative', zIndex: 5, paddingBottom: '16px' }}>
           {/* Top Bar - Identity & Icons - Compact Premium */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginLeft: '56px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <div 
                 className="tap-active"
                 onClick={() => navigate('/mobile/profile')}
                 style={{ 
-                  width: '46px', height: '46px', borderRadius: '14px', 
+                  width: '52px', height: '52px', borderRadius: '16px', 
                   background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.08)', border: '2.5px solid rgba(255,255,255,0.8)',
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)', border: '2px solid #fff',
                   overflow: 'hidden'
                 }}
               >
@@ -162,12 +162,13 @@ export default function Homepage({ salesId }: Props) {
                 />
               </div>
               <div>
-                <h2 style={{ fontSize: '18px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.7px', textTransform: 'uppercase' }}>
-                  HALLO {salesDisplayName} 👋
-                </h2>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                   <span style={{ fontSize: '9px', color: '#047857', fontWeight: 900 }}>• ONLINE</span>
-                </div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
+                    <span style={{ fontSize: '10px', color: '#111827', fontWeight: 800, opacity: 0.6, letterSpacing: '0.05em' }}>ONLINE</span>
+                 </div>
+                 <h2 style={{ fontSize: '20px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.5px' }}>
+                   Halo, {salesDisplayName}!
+                 </h2>
               </div>
             </div>
             
@@ -219,7 +220,7 @@ export default function Homepage({ salesId }: Props) {
             {[
               { label: 'Check-In', icon: MapPin, color: '#FFD700', bg: '#FFFBEB', path: '/mobile/checkin' },
               { label: 'Prospek', icon: Target, color: '#F97316', bg: '#FFF7ED', path: '/mobile/prospek', badge: uncontactedProspekCount },
-              { label: 'Customer', icon: Users, color: '#6366f1', bg: '#EEF2FF', path: '/mobile/customer', badge: uncontactedCustomerCount },
+              { label: 'Customer', icon: Users, color: '#D97706', bg: '#FEF3C7', path: '/mobile/customer', badge: uncontactedCustomerCount },
               { label: 'Analytic', icon: BarChart3, color: '#a855f7', bg: '#FAF5FF', path: '/mobile/analytic' },
               { label: 'Chat', icon: MessageSquare, color: '#10b981', bg: '#ECFDF5', path: '/mobile/chat', badge: 0 },
               { label: 'Ranking', icon: Trophy, color: '#f59e0b', bg: '#FFFBEB', path: '/mobile/rank' },
@@ -300,9 +301,9 @@ export default function Homepage({ salesId }: Props) {
           {/* Total Customers (Lifetime) - Indigo Nebula */}
           <div className="shadow-premium tap-active" 
             style={{ 
-              background: 'linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)', 
-              borderRadius: '24px', padding: '18px 16px', color: '#fff',
-              boxShadow: '0 10px 25px rgba(99, 102, 241, 0.25)',
+              background: 'linear-gradient(135deg, #FDE68A 0%, #F59E0B 100%)', 
+              borderRadius: '24px', padding: '18px 16px', color: '#111827',
+              boxShadow: '0 10px 25px rgba(245, 158, 11, 0.25)',
               border: '1px solid rgba(255,255,255,0.2)'
             }}>
              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>

@@ -15,7 +15,9 @@ function daysDiff(dateStr: string): number {
 }
 
 export default function CustomerMaintenance({ salesId }: Props) {
-  const { customers, refresh } = useSalesData();
+  const { customers = [], refresh } = useSalesData() || {};
+  
+  // Dynamic Options
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -224,10 +226,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 6, marginBottom: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0 }}>Customer</h2>
+              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Customer</h2>
               <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myCustomers.length} TOKO</div>
             </div>
-            <div style={{ color: '#111827', opacity: 0.6, fontSize: '11px', fontWeight: 700 }}>Management & Retention</div>
+            <div className="hero-premium-subtitle">Management & Retention</div>
           </div>
       </div>
 
@@ -346,7 +348,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <button 
                       className="tap-active"
-                      style={{ width: '100%', background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)' }} 
+                      style={{ width: '100%', background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }} 
                       onClick={(e) => { 
                         e.stopPropagation(); 
                         store.logOrder(salesId, c.id, c.nama_toko, 1);
@@ -428,12 +430,12 @@ export default function CustomerMaintenance({ salesId }: Props) {
           width: '60px', 
           height: '60px', 
           borderRadius: '50%', 
-          background: '#3B82F6', 
-          color: '#fff', 
+          background: 'var(--brand-yellow)', 
+          color: '#111827', 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'center', 
-          boxShadow: '0 10px 25px rgba(59, 130, 246, 0.4)',
+          boxShadow: '0 10px 25px rgba(255, 204, 0, 0.3)',
           border: 'none',
           zIndex: 99,
           opacity: 1,

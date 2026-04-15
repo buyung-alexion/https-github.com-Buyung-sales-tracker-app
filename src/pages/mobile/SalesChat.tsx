@@ -116,9 +116,17 @@ export default function SalesChat({ salesId }: Props) {
   if (!activeChatId) {
     return (
       <div className="page-content" style={{ background: '#fff', minHeight: '100vh', padding: '0' }}>
-        <div style={{ padding: '24px 20px', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => navigate('/mobile/home')} style={{ background: 'none', border: 'none', padding: 0 }}><ArrowLeft size={24} /></button>
-          <h2 style={{ fontSize: '20px', fontWeight: 900, margin: 0 }}>Live Chat</h2>
+        <div className="hero-compact" style={{ padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', position: 'relative', overflow: 'hidden', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px' }}>
+          {/* Decorative elements */}
+          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 6 }}>
+            <button onClick={() => navigate('/mobile/home')} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={20} color="#111827" strokeWidth={3} /></button>
+            <div>
+              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0 }}>Live Chat</h2>
+              <div className="hero-premium-subtitle">Sales Communication & Support</div>
+            </div>
+          </div>
         </div>
 
         <div style={{ padding: '16px 20px' }}>
@@ -168,21 +176,21 @@ export default function SalesChat({ salesId }: Props) {
   return (
     <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5' }}>
       {/* Header */}
-      <div style={{ background: '#fff', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid #e2e8f0', zIndex: 10 }}>
-        <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'none', border: 'none', padding: 0 }}><ArrowLeft size={24} /></button>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: selectedContact?.type === 'group' ? '#e0e7ff' : (selectedContact?.id === 'Manager-1' ? '#FFFBEB' : '#E0F2FE'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800 }}>
+      <div className="hero-compact" style={{ background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+        <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800 }}>
           {selectedContact?.type === 'group' ? <Users size={20} /> : selectedContact?.name.charAt(0)}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '15px', fontWeight: 800 }}>{selectedContact?.name}</div>
-          <div style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>{selectedContact?.type === 'group' ? `${contacts.length} Members` : 'Online'}</div>
+          <div style={{ fontSize: '15px', fontWeight: 900, color: '#111827' }}>{selectedContact?.name}</div>
+          <div style={{ fontSize: '11px', color: '#111827', opacity: 0.6, fontWeight: 700 }}>{selectedContact?.type === 'group' ? `${contacts.length} Members` : 'Online'}</div>
         </div>
         {selectedContact?.type === 'group' && (
           <button 
             onClick={() => setShowInviteModal(true)}
-            style={{ background: '#f1f5f9', border: 'none', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', fontWeight: 800, color: '#111827', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ background: '#111827', border: 'none', padding: '6px 10px', borderRadius: '10px', fontSize: '10px', fontWeight: 900, color: '#FFCC00', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
-            <Users size={16} /> INVITE
+            <Users size={14} /> INVITE
           </button>
         )}
       </div>

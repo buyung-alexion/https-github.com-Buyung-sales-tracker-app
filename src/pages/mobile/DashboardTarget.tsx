@@ -155,10 +155,10 @@ export default function DashboardTarget({ salesId }: Props) {
         <div className="page-title-row" style={{ marginBottom: '16px', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h2 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, letterSpacing: '-1px' }}>Analytics</h2>
+              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Analytics</h2>
               <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')} POIN</div>
             </div>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#111827', opacity: 0.6 }}>Performance & Goals</div>
+            <div className="hero-premium-subtitle">Performance & Goals</div>
           </div>
         </div>
 
