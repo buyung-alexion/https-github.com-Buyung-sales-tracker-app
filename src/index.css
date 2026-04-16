@@ -440,7 +440,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .form-row { display: flex; gap: 12px; }
 .form-row .form-group { flex: 1; margin-bottom: 0; }
 
-.btn-primary { flex: 1; padding: 11px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; background: var(--brand-yellow); color: #111827; border: none; transition: all 0.2s; }
+.btn-primary { padding: 11px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; background: var(--brand-yellow); color: #111827; border: none; transition: all 0.2s; }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn-secondary { flex: 1; padding: 11px 20px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; background: var(--bg-glass); border: 1px solid var(--border); color: var(--text); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }

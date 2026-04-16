@@ -153,10 +153,12 @@ export default function DataManagement() {
         if (error) throw error;
       }
       setTeamModal({isOpen: false, data: null});
-      const { data: sales } = await supabase.from('sales').select('*');
+      const { data: sales } = await supabase.from('sales').select('*').order('nama');
       setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
         id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role, foto_profil: s.foto_profil, no_wa: s.no_wa
       }))}));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (err: any) {
       setFormError(err.message || 'Gagal menyimpan data karyawan.');
     } finally { setIsSubmitting(false); }
@@ -294,7 +296,7 @@ export default function DataManagement() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Tim & Kredensial</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>KELOLA LOGIN & IDENTITAS</p></div>
-                  <button onClick={() => openTeamModal()} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH KARYAWAN</button>
+                  <button onClick={() => openTeamModal()} className="btn-primary" style={{ flex: 'none', padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH KARYAWAN</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {data.teams.map((u: any) => (
