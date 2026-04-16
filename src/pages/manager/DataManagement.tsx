@@ -37,8 +37,7 @@ export default function DataManagement() {
           pass: s.password, 
           role: s.role,
           foto_profil: s.foto_profil,
-          no_wa: s.no_wa,
-          target_visit: s.target_visit
+          no_wa: s.no_wa
         })),
         targets: {
           indPoin: targets.ind_poin || 150,
@@ -75,7 +74,7 @@ export default function DataManagement() {
   const [roleForm, setRoleForm] = useState({ role: 'Sales', akses: 'Mobile App, Limited Analytics' });
 
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
-  const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '', target_visit: 0 });
+  const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '' });
 
   const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
   const [masterForm, setMasterForm] = useState({ id: '', name: '' });
@@ -120,13 +119,12 @@ export default function DataManagement() {
         pass: existingData.pass,
         role: existingData.role,
         foto_profil: existingData.foto_profil,
-        no_wa: existingData.no_wa,
-        target_visit: existingData.target_visit || 0
+        no_wa: existingData.no_wa
       });
       setTeamModal({ isOpen: true, data: existingData });
     } else {
       const nextId = await store.generateNextSalesId();
-      setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '', target_visit: 0 });
+      setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '' });
       setTeamModal({ isOpen: true, data: null });
     }
     setFormError(null);
@@ -138,10 +136,7 @@ export default function DataManagement() {
     setFormError(null);
     try {
       if (teamModal.data) {
-        const { error } = await store.updateSales(teamModal.data.id, {
-          nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
-          role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa,
-          target_visit: teamForm.target_visit
+          role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
         });
         if (error) throw error;
       } else {
@@ -151,8 +146,7 @@ export default function DataManagement() {
         }
         const { error } = await store.addSales({
           id: teamForm.id, nama: teamForm.nama, username: teamForm.username,
-          password: teamForm.pass, role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa,
-          target_visit: teamForm.target_visit
+          password: teamForm.pass, role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
         } as any);
         if (error) throw error;
       }
@@ -423,8 +417,7 @@ export default function DataManagement() {
               <input required style={inputStyle} value={teamForm.pass} onChange={e => setTeamForm({...teamForm, pass: e.target.value})} />
               <label style={labelStyle}>Nomor WA</label>
               <input style={inputStyle} value={teamForm.no_wa} onChange={e => setTeamForm({...teamForm, no_wa: e.target.value})} placeholder="62xxx" />
-              <label style={labelStyle}>Target Visit Harian</label>
-              <input type="number" style={inputStyle} value={teamForm.target_visit} onChange={e => setTeamForm({...teamForm, target_visit: parseInt(e.target.value) || 0})} />
+
               <label style={labelStyle}>URL Foto Profil</label>
               <input style={inputStyle} value={teamForm.foto_profil} onChange={e => setTeamForm({...teamForm, foto_profil: e.target.value})} placeholder="https://..." />
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>

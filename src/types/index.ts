@@ -62,7 +62,6 @@ export interface Sales {
   role?: string;
   foto_profil?: string; // uploaded profile photo URL
   area?: Area;
-  target_visit?: number;
 }
 
 export interface RoleDef {
