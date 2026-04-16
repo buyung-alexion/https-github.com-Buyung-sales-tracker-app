@@ -133,16 +133,28 @@ export const chatStore = {
       };
     });
 
-    const groups: ChatContact[] = [
-      {
+    // Mengambil grup dari database
+    const { data: dbRooms } = await supabase.from('chat_rooms').select('*').eq('type', 'group');
+    const groups: ChatContact[] = (dbRooms || []).map(r => ({
+      id: r.id,
+      name: r.name,
+      type: 'group' as const,
+      lastMessage: 'Channel grup tim Sales',
+      lastMessageTime: '',
+      unreadCount: getUnreadCount(r.id),
+    }));
+
+    // Fallback if no groups found (ensure some default existence)
+    if (groups.length === 0) {
+      groups.push({
         id: 'g-pusat',
         name: 'Grup Pengumuman Pusat',
         type: 'group' as const,
         lastMessage: 'Channel resmi tim Sales',
         lastMessageTime: '',
         unreadCount: getUnreadCount('g-pusat'),
-      }
-    ];
+      });
+    }
 
     if (includeManager) {
       groups.unshift({

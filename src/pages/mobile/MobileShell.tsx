@@ -6,7 +6,7 @@ import Homepage from './Homepage';
 import DashboardTarget from './DashboardTarget';
 import ProspectingTool from './ProspectingTool';
 import CustomerMaintenance from './CustomerMaintenance';
-import CheckInVisit from './CheckInVisit';
+import ActivityReport from './ActivityReport';
 import Profile from './Profile';
 import ClientDetail from './ClientDetail';
 import SalesChat from './SalesChat';
@@ -17,7 +17,7 @@ export default function MobileShell() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const chatUnread = useChatNotifications(user?.id);
+  const { unreadCount: chatUnread, newMsg, clearNewMsg } = useChatNotifications(user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
   const isEditingProfile = location.pathname === '/mobile/profile' && location.search.includes('edit=true');
@@ -114,6 +114,34 @@ export default function MobileShell() {
         </div>
       )}
 
+      {/* NOTIFICATION TOAST (New Message) */}
+      {newMsg && (
+        <div 
+          className="animate-slide-down shadow-premium" 
+          onClick={() => { navigate('/mobile/chat'); clearNewMsg(); }}
+          style={{ 
+            position: 'fixed', top: '20px', left: '20px', right: '20px', 
+            background: 'rgba(30, 41, 59, 0.95)', backdropFilter: 'blur(10px)',
+            borderRadius: '16px', padding: '12px 16px', zIndex: 1100,
+            display: 'flex', alignItems: 'center', gap: '12px', color: '#fff'
+          }}
+        >
+          <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--brand-yellow)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <MessageSquare size={20} color="#111827" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: '11px', fontWeight: 800, opacity: 0.6 }}>PESAN BARU</div>
+            <div style={{ fontSize: '13px', fontWeight: 700 }}>{newMsg.content.substring(0, 40)}{newMsg.content.length > 40 ? '...' : ''}</div>
+          </div>
+          <button 
+            onClick={(e) => { e.stopPropagation(); clearNewMsg(); }}
+            style={{ background: 'transparent', border: 'none', color: '#fff', opacity: 0.5 }}
+          >
+            <X size={18} />
+          </button>
+        </div>
+      )}
+
       {/* Header with Menu Trigger - Integrated with Homepage via props or absolute overlay */}
       <div style={{ 
         position: 'fixed', top: '16px', left: '20px', zIndex: 1000,
@@ -140,7 +168,7 @@ export default function MobileShell() {
           <Route path="analytic" element={<DashboardTarget salesId={user.id} />} />
           <Route path="prospek" element={<ProspectingTool salesId={user.id} />} />
           <Route path="customer" element={<CustomerMaintenance salesId={user.id} />} />
-          <Route path="checkin" element={<CheckInVisit salesId={user.id} />} />
+          <Route path="activity" element={<ActivityReport salesId={user.id} />} />
           <Route path="profile" element={<Profile />} />
           <Route path="profile/:type/:id" element={<ClientDetail />} />
           <Route path="chat" element={<SalesChat salesId={user.id} />} />
@@ -153,7 +181,7 @@ export default function MobileShell() {
           {[
             { to: '/mobile/home',     Icon: LayoutDashboard, label: 'Home'      },
             { to: '/mobile/analytic', Icon: BarChart2,        label: 'Analytics' },
-            { to: '/mobile/checkin',  Icon: MapPin,           label: 'Visit'     },
+            { to: '/mobile/activity', Icon: MapPin,           label: 'Activity'  },
             { to: '/mobile/chat',     Icon: MessageSquare,    label: 'Chat'      },
           ].map(({ to, Icon, label }) => (
             <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>

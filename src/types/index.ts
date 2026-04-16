@@ -49,6 +49,7 @@ export interface Activity {
   tipe_aksi: TipeAksi;
   catatan_hasil: string;
   geotagging?: { area: Area; lat?: number; lng?: number; photo?: string };
+  sales_volume?: number | string;
 }
 
 export interface Sales {
@@ -60,6 +61,8 @@ export interface Sales {
   password?: string;
   role?: string;
   foto_profil?: string; // uploaded profile photo URL
+  area?: Area;
+  target_visit?: number;
 }
 
 export interface RoleDef {

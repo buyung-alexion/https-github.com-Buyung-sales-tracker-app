@@ -106,12 +106,13 @@ export default function PerformanceAnalytics() {
       );
 
       const {
-        followup: waCount, // Simplified to followup total in this view
+        followup: waCount, 
         order: soCount,
         visitProspek: vProspek,
         visitCustomer: vCustomer,
         closing: sClosingCount,
-        newProspek: activeProspekCount
+        newProspek: activeProspekCount,
+        totalVolume: sVolume
       } = breakdown;
 
       const visitCount = vProspek + vCustomer;
@@ -124,6 +125,7 @@ export default function PerformanceAnalytics() {
         visitCount, waCount, callCount: 0, soCount, totalActs,
         closingCount: sClosingCount, revenueReal, closingRate, activeFollowups: waCount,
         maintainCount: vCustomer, points: totalActual, prospekBaru: activeProspekCount,
+        totalVolume: sVolume,
         foto_profil: s.foto_profil,
         pointProgressPct: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100))
       };
@@ -134,7 +136,8 @@ export default function PerformanceAnalytics() {
   const totalProspekCount = masterStats.breakdown.newProspek;
   const totalCustomer = customers.length;
   const totalUniqueClosing = masterStats.breakdown.closing;
-  const totalSO = masterStats.breakdown.order;
+  const totalVolume = masterStats.breakdown.totalVolume;
+  
   const totalActivityCount = activities.length;
 
 
@@ -515,7 +518,7 @@ export default function PerformanceAnalytics() {
           { label: 'Total Prospek', value: totalProspekCount, from: '#a855f7', to: '#7c3aed', icon: <Target size={26} />, shadow: 'rgba(168, 85, 247, 0.3)', trend: trends.prospek },
           { label: 'Total Customer', value: totalCustomer, from: '#6366f1', to: '#4f46e5', icon: <Users size={26} />, shadow: 'rgba(99, 102, 241, 0.3)', trend: trends.customer },
           { label: 'Total Closing', value: totalUniqueClosing, from: '#10b981', to: '#059669', icon: <CheckCircle size={26} />, shadow: 'rgba(16, 185, 129, 0.3)', trend: trends.closing },
-          { label: 'Total Sales Order', value: totalSO, from: '#f59e0b', to: '#d97706', icon: <FileText size={26} />, shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
+          { label: 'Volume Sales (KG)', value: totalVolume, from: '#f59e0b', to: '#d97706', icon: <FileText size={26} />, shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
           { label: 'Total Activity', value: totalActivityCount, from: '#3b82f6', to: '#2563eb', icon: <Zap size={26} />, shadow: 'rgba(59, 130, 246, 0.3)', trend: trends.activity }
         ].map((item: any, i) => (
           <div key={i} style={{ 
@@ -779,7 +782,7 @@ export default function PerformanceAnalytics() {
             {/* Column Headers */}
             <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr', gap: '8px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', marginBottom: '8px' }}>
               <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Salesman</div>
-              {['Prospek','Closing','SO','Visit','F.up','Poin','Progress'].map(h => (
+              {['Prospek','Closing','KG','Visit','F.up','Poin','Progress'].map(h => (
                 <div key={h} style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>{h}</div>
               ))}
             </div>
@@ -849,9 +852,9 @@ export default function PerformanceAnalytics() {
                       <div style={{ fontSize: '14px', fontWeight: 900, color: '#10b981' }}>{s.closingCount}</div>
                     </div>
 
-                    {/* SO */}
+                    {/* Volume */}
                     <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#f59e0b' }}>{s.soCount}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 950, color: '#f59e0b' }}>{s.totalVolume.toLocaleString()}</div>
                     </div>
 
                     {/* Visit */}
@@ -1933,7 +1936,7 @@ export default function PerformanceAnalytics() {
                           <div style={{fontSize:'12px',fontWeight:800,color:'#475569'}}>Top Area Order (SO)</div>
                           <span style={{fontSize:'12px',color:'#cbd5e1'}}>•••</span>
                         </div>
-                        <div style={{fontSize:'20px',fontWeight:900,color:'#1e293b',marginBottom:'2px'}}>{totalSO} Order</div>
+                        <div style={{fontSize:'20px',fontWeight:900,color:'#1e293b',marginBottom:'2px'}}>{totalVolume.toLocaleString()} KG</div>
                         <div style={{fontSize:'9px',fontWeight:800,color:'#10b981',display:'flex',alignItems:'center',gap:'4px'}}>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
                           Dominan di {topA?.city || 'N/A'}<span style={{color:'#94a3b8',marginLeft:'2px'}}>({topA?.so_val || 0} SO)</span>

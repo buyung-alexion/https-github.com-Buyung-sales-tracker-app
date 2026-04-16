@@ -39,7 +39,7 @@ const iconBlue = createIcon('#3b82f6');
 
 // MapUpdater is deprecated in favor of mapRef
 
-export default function CheckInVisit({ salesId }: Props) {
+export default function ActivityReport({ salesId }: Props) {
   const { activities, customers, prospek, masterAreas, refresh } = useSalesData();
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [catatan, setCatatan] = useState('');
@@ -51,6 +51,8 @@ export default function CheckInVisit({ salesId }: Props) {
   const [location, setLocation] = useState<{lat: number, lng: number} | null>({ lat: -1.265, lng: 116.83 }); // Default Balikpapan
   const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tipeAksi, setTipeAksi] = useState<string>('Visit');
+  const [salesVolume, setSalesVolume] = useState<string>('');
   const mapRef = useRef<L.Map | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -165,13 +167,15 @@ export default function CheckInVisit({ salesId }: Props) {
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      let tName = targetData ? targetData.name : `Check-in area ${selectedArea}`;
+      let tName = targetData ? targetData.name : `Aktivitas area ${selectedArea}`;
       const { error } = await store.logActivity({
         id_sales: salesId,
         target_id: targetType === 'General' ? salesId : targetId,
         target_type: targetType === 'General' ? 'area' : (targetType === 'Customer' ? 'customer' : 'prospek'),
-        target_nama: tName, tipe_aksi: 'Visit',
-        catatan_hasil: catatan || `Visit to ${tName}`,
+        target_nama: tName, 
+        tipe_aksi: tipeAksi as any,
+        catatan_hasil: catatan || `${tipeAksi} di ${tName}`,
+        sales_volume: tipeAksi === 'Order' ? parseFloat(salesVolume) || 0 : 0,
         geotagging: { area: selectedArea, lat: location.lat, lng: location.lng, photo: photoBase64 }
       });
 
@@ -185,6 +189,7 @@ export default function CheckInVisit({ salesId }: Props) {
       await refresh();
       setTimeout(() => {
           setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
+          setTipeAksi('Visit'); setSalesVolume('');
           setIsSubmitting(false);
       }, 2000);
     } catch (err) {
@@ -245,7 +250,7 @@ export default function CheckInVisit({ salesId }: Props) {
         marginTop: '-30px' // Pull up over the map slightly
       }}>
         <div style={{ width: '40px', height: '6px', background: 'rgba(0,0,0,0.1)', borderRadius: '4px', margin: '0 auto 12px' }}></div>
-        <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0 }}>Laporan Kunjungan</h2>
+        <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0 }}>Laporan Aktivitas</h2>
       </div>
 
       {/* FOREGROUND PANEL */}
@@ -258,7 +263,7 @@ export default function CheckInVisit({ salesId }: Props) {
 
         {success && (
           <div className="animate-fade-up" style={{ background: '#ECFDF5', border: '1px solid #34D399', borderRadius: '16px', padding: '14px', color: '#059669', fontWeight: '800', display: 'flex', gap: '8px', alignItems:'center', fontSize: '14px' }}>
-            <CheckCircle size={18} /> Laporan Kunjungan Berhasil Disimpan!
+            <CheckCircle size={18} /> Laporan Aktivitas Berhasil Disimpan!
           </div>
         )}
 
@@ -308,6 +313,9 @@ export default function CheckInVisit({ salesId }: Props) {
           </div>
         </div>
 
+        {/* Activity type selection removed as per simplified workflow */}
+
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Lampiran Foto Bukti</label>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
@@ -352,7 +360,7 @@ export default function CheckInVisit({ salesId }: Props) {
             boxShadow: lockCheckIn ? 'none' : '0 10px 20px rgba(255, 204, 0, 0.2)'
           }}
         >
-          {isSubmitting ? <Loader2 size={22} className="animate-spin" /> : 'Kirim Laporan Kunjungan'}
+          {isSubmitting ? <Loader2 size={22} className="animate-spin" /> : 'Kirim Laporan Aktivitas'}
         </button>
       </div>
     </div>

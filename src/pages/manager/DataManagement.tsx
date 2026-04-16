@@ -9,6 +9,8 @@ export default function DataManagement() {
   const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
   const [isLoading, setIsLoading] = useState(true);
 
+  const { masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
@@ -73,19 +75,16 @@ export default function DataManagement() {
   const [roleForm, setRoleForm] = useState({ role: 'Sales', akses: 'Mobile App, Limited Analytics' });
 
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
-  const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '' });
+  const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '', target_visit: 0 });
 
   const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
-  const [masterForm, setMasterForm] = useState({ name: '' });
+  const [masterForm, setMasterForm] = useState({ id: '', name: '' });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-
-  // Wait, I should use useSalesData hook for the data lists to benefit from context
-
-  // --- ROLE ACTIONS ---
+  // --- ACTIONS ---
   const openRoleModal = (existingData?: any) => {
     if (existingData) {
       setRoleForm({ role: existingData.role, akses: existingData.akses });
@@ -98,11 +97,8 @@ export default function DataManagement() {
 
   const handleSaveRole = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (roleModal.data) {
-       await store.updateRole(roleModal.data.id, roleForm);
-    } else {
-       await store.addRole(roleForm);
-    }
+    if (roleModal.data) await store.updateRole(roleModal.data.id, roleForm);
+    else await store.addRole(roleForm);
     setRoleModal({isOpen: false, data: null});
     const roles = await store.fetchRoles();
     setData(d => ({...d, roles}));
@@ -115,7 +111,6 @@ export default function DataManagement() {
     }
   };
 
-  // --- TEAM ACTIONS ---
   const openTeamModal = async (existingData?: any) => {
     if (existingData) {
       setTeamForm({
@@ -125,12 +120,13 @@ export default function DataManagement() {
         pass: existingData.pass,
         role: existingData.role,
         foto_profil: existingData.foto_profil,
-        no_wa: existingData.no_wa
+        no_wa: existingData.no_wa,
+        target_visit: existingData.target_visit || 0
       });
       setTeamModal({ isOpen: true, data: existingData });
     } else {
       const nextId = await store.generateNextSalesId();
-      setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '' });
+      setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '', target_visit: 0 });
       setTeamModal({ isOpen: true, data: null });
     }
     setFormError(null);
@@ -140,86 +136,35 @@ export default function DataManagement() {
     e.preventDefault();
     setIsSubmitting(true);
     setFormError(null);
-
     try {
       if (teamModal.data) {
         const { error } = await store.updateSales(teamModal.data.id, {
-          nama: teamForm.nama,
-          username: teamForm.username,
-          password: teamForm.pass,
-          role: teamForm.role,
-          foto_profil: teamForm.foto_profil,
-          no_wa: teamForm.no_wa
+          nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
+          role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa,
+          target_visit: teamForm.target_visit
         });
         if (error) throw error;
       } else {
         if(data.teams.some((t:any) => t.id === teamForm.id)) {
             setFormError(`ID Karyawan ${teamForm.id} sudah digunakan!`);
-            setIsSubmitting(false);
-            return;
+            setIsSubmitting(false); return;
         }
         const { error } = await store.addSales({
-          id: teamForm.id,
-          nama: teamForm.nama,
-          username: teamForm.username,
-          password: teamForm.pass,
-          role: teamForm.role,
-          foto_profil: teamForm.foto_profil,
-          no_wa: teamForm.no_wa
+          id: teamForm.id, nama: teamForm.nama, username: teamForm.username,
+          password: teamForm.pass, role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa,
+          target_visit: teamForm.target_visit
         } as any);
-        if (error) {
-          if (error.code === '23505') {
-            throw new Error('Username sudah digunakan oleh karyawan lain.');
-          }
-          throw error;
-        }
+        if (error) throw error;
       }
-      
       setTeamModal({isOpen: false, data: null});
       const { data: sales } = await supabase.from('sales').select('*');
       setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
-        id: s.id, 
-        nama: s.nama, 
-        username: s.username, 
-        pass: s.password, 
-        role: s.role,
-        foto_profil: s.foto_profil,
-        no_wa: s.no_wa
+        id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role, foto_profil: s.foto_profil, no_wa: s.no_wa
       }))}));
     } catch (err: any) {
-      console.error('Save team error:', err);
       setFormError(err.message || 'Gagal menyimpan data karyawan.');
-    } finally {
-      setIsSubmitting(false);
-    }
+    } finally { setIsSubmitting(false); }
   };
-
-  const handleSaveTargets = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setSaveSuccess(false);
-
-    try {
-      const payload = {
-        ind_poin: data.targets.indPoin,
-        b_visit: data.targets.bVisit,
-        b_prospek: data.targets.bProspek,
-        b_closing: data.targets.bClosing,
-        b_order: data.targets.bOrder,
-        b_chat: data.targets.bChat,
-        b_maint: data.targets.bVisit // Fallback or sync b_maint to b_visit if not separated
-      };
-      
-      await store.updateSystemTargets(payload);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (err: any) {
-      alert('Gagal menyimpan target: ' + err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
 
   const handleDeleteTeam = async (id: string) => {
     if (window.confirm('Hapus kredensial tim ini?')) {
@@ -228,52 +173,59 @@ export default function DataManagement() {
     }
   };
 
-
-
-  // --- MASTER DATA ACTIONS ---
-  const { masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
+  const handleSaveTargets = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        ind_poin: data.targets.indPoin, b_visit: data.targets.bVisit, b_prospek: data.targets.bProspek,
+        b_closing: data.targets.bClosing, b_order: data.targets.bOrder, b_chat: data.targets.bChat, b_maint: data.targets.bVisit
+      };
+      await store.updateSystemTargets(payload);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) { alert('Gagal: ' + err.message); }
+    finally { setIsSubmitting(false); }
+  };
 
   const openMasterModal = (type: 'area' | 'category' | 'channel' | 'status' | 'action', existingData?: any) => {
-    setMasterForm({ name: existingData ? existingData.name : '' });
+    setMasterForm({ id: existingData ? existingData.id : '', name: existingData ? existingData.name : '' });
     setMasterModal({ isOpen: true, type, data: existingData });
   };
 
   const handleSaveMaster = async (e: React.FormEvent) => {
     e.preventDefault();
-    const type = masterModal.type;
-    const name = masterForm.name.trim();
-    if (!name) return;
-
+    if (!masterModal.type) return;
     try {
-      if (type === 'area') {
-        if (masterModal.data) {
-           // update is complex if ID changes, so we just restrict to newly added for now
-           // For simplicity, we only allow ADD and DELETE in master data to avoid consistency issues
-           alert('Update Wilayah tidak tersedia, silakan hapus dan tambah baru.');
-        } else {
-           await store.addMasterArea(name);
+      setIsSubmitting(true);
+      const name = masterForm.name.trim();
+      const customId = masterForm.id.trim();
+      if (masterModal.data) {
+        const currentId = masterModal.data.id;
+        const updates = { name, id: customId || currentId };
+        switch (masterModal.type) {
+          case 'area': await store.updateMasterArea(currentId, updates); break;
+          case 'category': await store.updateMasterCategory(currentId, updates); break;
+          case 'channel': await store.updateMasterChannel(currentId, updates); break;
+          case 'status': await store.updateMasterProspectStatus(currentId, updates); break;
+          case 'action': await store.updateMasterAction(currentId, updates); break;
         }
-      } else if (type === 'category') {
-        if (masterModal.data) alert('Update Kategori tidak tersedia.');
-        else await store.addMasterCategory(name);
-      } else if (type === 'channel') {
-        if (masterModal.data) alert('Update Sumber tidak tersedia.');
-        else await store.addMasterChannel(name);
-      } else if (type === 'status') {
-        if (masterModal.data) alert('Update Status tidak tersedia.');
-        else await store.addMasterProspectStatus(name);
-      } else if (type === 'action') {
-        if (masterModal.data) alert('Update Aktivitas tidak tersedia.');
-        else await store.addMasterAction(name);
+      } else {
+        switch (masterModal.type) {
+          case 'area': await store.addMasterArea(name, customId); break;
+          case 'category': await store.addMasterCategory(name, customId); break;
+          case 'channel': await store.addMasterChannel(name, customId); break;
+          case 'status': await store.addMasterProspectStatus(name, customId); break;
+          case 'action': await store.addMasterAction(name, customId); break;
+        }
       }
       setMasterModal({ isOpen: false, type: null, data: null });
       await refreshGlobal();
-    } catch (err: any) {
-      alert(err.message);
-    }
+    } catch (err: any) { alert(err.message); }
+    finally { setIsSubmitting(false); }
   };
 
-  const handleDeleteMaster = async (type: 'area' | 'category' | 'channel', id: string) => {
+  const handleDeleteMaster = async (type: string, id: string) => {
     if (!window.confirm(`Hapus ${type} ini?`)) return;
     try {
       if (type === 'area') await store.deleteMasterArea(id);
@@ -282,532 +234,224 @@ export default function DataManagement() {
       else if (type === 'status') await store.deleteMasterProspectStatus(id);
       else if (type === 'action') await store.deleteMasterAction(id);
       await refreshGlobal();
-    } catch (err: any) {
-      alert(err.message);
-    }
+    } catch (err: any) { alert(err.message); }
   };
 
-  // --- REUSABLE MODAL INLINE STYLES ---
-  const overlayStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' };
-  const modalStyle: React.CSSProperties = { background: '#fff', padding: '32px', borderRadius: '16px', width: '100%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' };
-  const inputStyle: React.CSSProperties = { width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '14px', boxSizing: 'border-box' };
-  const labelStyle: React.CSSProperties = { display: 'block', margin: '16px 0 8px', fontSize: '13px', fontWeight: 600, color: '#475569' };
+  // --- STYLES ---
+  const overlayStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' };
+  const modalStyle: React.CSSProperties = { background: '#fff', padding: '32px', borderRadius: '24px', width: '100%', maxWidth: '400px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' };
+  const inputStyle: React.CSSProperties = { width: '100%', padding: '14px', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '14px', boxSizing: 'border-box', fontWeight: 600, color: '#1e293b' };
+  const labelStyle: React.CSSProperties = { display: 'block', margin: '16px 0 8px', fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' };
+  const tabContentStyle: React.CSSProperties = { animation: 'fadeIn 0.4s ease-out' };
 
   if (isLoading) {
-    return <div className="mgr-page" style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontWeight: 600 }}>Memuat master data...</div>;
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '20px', background: '#f8fafc' }}>
+        <Loader2 size={48} className="animate-spin" color="#FFCC00" />
+        <div style={{ fontSize: '16px', fontWeight: 800, color: '#64748b', letterSpacing: '1px' }}>MENYIAPKAN DATA MANAGEMENT...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="mgr-page" style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', gap: '32px', alignItems: 'flex-start', marginTop: '24px' }}>
+    <div className="mgr-page" style={{ position: 'relative', paddingBottom: '100px' }}>
+      <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', marginTop: '24px' }}>
         
-        {/* SIDEBAR TABS */}
-        {/* SIDEBAR TABS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '240px', flexShrink: 0 }}>
-          {tabs.map(tab => (
-            <button 
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                padding: '16px 20px',
-                borderRadius: '16px',
-                border: activeTab === tab.id ? 'none' : '1px solid transparent',
-                background: activeTab === tab.id ? '#111827' : 'transparent',
-                color: activeTab === tab.id ? '#FFCC00' : '#64748b',
-                fontWeight: 900,
-                fontSize: '13px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                textAlign: 'left',
-                boxShadow: activeTab === tab.id ? '0 12px 24px rgba(0,0,0,0.1)' : 'none',
-                textTransform: 'uppercase',
-                letterSpacing: '0.03em'
-              }}
-              onMouseOver={e => { if(activeTab !== tab.id) e.currentTarget.style.background = 'rgba(15, 23, 42, 0.05)'; }}
-              onMouseOut={e => { if(activeTab !== tab.id) e.currentTarget.style.background = 'transparent'; }}
-            >
-              <div style={{ 
-                width: '32px', height: '32px', borderRadius: '10px', 
-                background: activeTab === tab.id ? 'rgba(255, 204, 0, 0.1)' : '#f1f5f9',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                transition: 'all 0.3s'
-              }}>
-                {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 16, strokeWidth: 3 })}
-              </div>
-              {tab.label}
-            </button>
-          ))}
+        {/* SIDEBAR */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '260px', flexShrink: 0, position: 'sticky', top: '24px' }}>
+          <div style={{ padding: '0 20px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Menu Konfigurasi</div>
+          {tabs.map(tab => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ padding: '14px 20px', borderRadius: '20px', border: 'none', background: isActive ? '#111827' : 'transparent', color: isActive ? '#FFCC00' : '#64748b', fontWeight: 800, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', transition: 'all 0.3s', boxShadow: isActive ? '0 15px 30px rgba(0,0,0,0.12)' : 'none', transform: isActive ? 'translateX(10px)' : 'none' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: isActive ? 'rgba(255, 204, 0, 0.15)' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5, color: isActive ? '#FFCC00' : '#cbd5e1' })}
+                </div>
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
-        
-        {/* MAIN CONTENT AREA */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          
-          {/* ROLE TAB */}
-          {activeTab === 'role' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{ 
-                background: '#fff', padding: '32px', borderRadius: '32px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Role & Hak Akses</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>STRUKTUR OTORITAS TIM</p>
-                </div>
-                <button 
-                  onClick={() => openRoleModal()} 
-                  style={{ background: 'var(--brand-yellow)', color: '#111827', padding: '14px 28px', fontSize: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)' }}
-                >
-                  <Plus size={18} strokeWidth={3} /> TAMBAH ROLE
-                </button>
-              </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {data.roles.map((u: any) => (
-                  <div key={u.id} style={{ 
-                    background: '#fff', borderRadius: '24px', padding: '24px 32px', 
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                      <div style={{ 
-                        width: '56px', height: '56px', borderRadius: '18px', 
-                        background: u.role === 'Admin' ? '#fee2e2' : u.role === 'Manager' ? '#fffbeb' : '#f0f9ff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Shield size={24} color={u.role === 'Admin' ? '#ef4444' : u.role === 'Manager' ? '#f59e0b' : '#0ea5e9'} strokeWidth={2.5} />
-                      </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#1e293b' }}>{u.role}</h4>
-                          <span style={{ fontSize: '10px', fontWeight: 900, background: '#f8fafc', color: '#94a3b8', padding: '3px 10px', borderRadius: '8px', border: '1px solid #f1f5f9', textTransform: 'uppercase' }}>Active Role</span>
-                        </div>
-                        <div style={{ color: '#64748b', fontSize: '13px', fontWeight: 600, marginTop: '4px', maxWidth: '400px' }}>{u.akses}</div>
-                      </div>
+        {/* CONTENT */}
+        <div style={{ flex: 1, minWidth: 0, paddingRight: '20px' }}>
+          <div style={tabContentStyle}>
+            
+            {activeTab === 'role' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Role & Hak Akses</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>STRUKTUR OTORITAS TIM</p></div>
+                  <button onClick={() => openRoleModal()} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH ROLE</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {data.roles.map((u: any) => (
+                    <div key={u.id} style={{ background: '#fff', borderRadius: '24px', padding: '24px 32px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={24} color="#FFCC00" /></div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.role}</h4><div style={{ color: '#64748b', fontSize: '13px' }}>{u.akses}</div></div></div>
+                      <div style={{ display: 'flex', gap: '12px' }}><button onClick={() => openRoleModal(u)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', border: 'none', cursor: 'pointer' }}><Edit2 size={16} color="#3b82f6" /></button><button onClick={() => handleDeleteRole(u.id)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#ef4444" /></button></div>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button 
-                        onClick={() => openRoleModal(u)} 
-                        style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', color: '#3b82f6', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteRole(u.id)} 
-                        style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'team' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Tim & Kredensial</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>KELOLA LOGIN & IDENTITAS</p></div>
+                  <button onClick={() => openTeamModal()} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH KARYAWAN</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {data.teams.map((u: any) => (
+                    <div key={u.id} style={{ background: '#fff', borderRadius: '24px', padding: '24px 32px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', overflow: 'hidden' }}>{u.foto_profil ? <img src={u.foto_profil} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Users size={24} />}</div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.nama}</h4><div style={{ fontSize: '12px', color: '#64748b' }}>ID: <span style={{ color: '#1e293b', fontWeight: 900 }}>{u.id}</span> | ROLE: {u.role}</div></div></div>
+                      <div style={{ display: 'flex', gap: '12px' }}><button onClick={() => openTeamModal(u)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', border: 'none', cursor: 'pointer' }}><Edit2 size={16} color="#3b82f6" /></button><button onClick={() => handleDeleteTeam(u.id)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#ef4444" /></button></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'target' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Target & Bobot Poin</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>KONFIGURASI INDIKATOR KINERJA</p></div>
+                  {saveSuccess && <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '12px 24px', borderRadius: '14px', fontSize: '13px', fontWeight: 800 }}>✅ Berhasil Disimpan!</div>}
+                </div>
+                <form onSubmit={handleSaveTargets} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Target Poin Bulanan</label>
+                      <input type="number" style={inputStyle} value={data.targets.indPoin} onChange={e => setData(d => ({...d, targets: {...d.targets, indPoin: parseInt(e.target.value) || 0}}))} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Poin Visit (Bobot)</label>
+                      <input type="number" style={inputStyle} value={data.targets.bVisit} onChange={e => setData(d => ({...d, targets: {...d.targets, bVisit: parseInt(e.target.value) || 0}}))} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Poin Prospek Baru</label>
+                      <input type="number" style={inputStyle} value={data.targets.bProspek} onChange={e => setData(d => ({...d, targets: {...d.targets, bProspek: parseInt(e.target.value) || 0}}))} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Bonus Closing (Cust)</label>
+                      <input type="number" style={inputStyle} value={data.targets.bClosing} onChange={e => setData(d => ({...d, targets: {...d.targets, bClosing: parseInt(e.target.value) || 0}}))} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Poin Per Order (Sales)</label>
+                      <input type="number" style={inputStyle} value={data.targets.bOrder} onChange={e => setData(d => ({...d, targets: {...d.targets, bOrder: parseInt(e.target.value) || 0}}))} />
+                    </div>
+                    <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9' }}>
+                      <label style={labelStyle}>Poin Per Chat</label>
+                      <input type="number" style={inputStyle} value={data.targets.bChat} onChange={e => setData(d => ({...d, targets: {...d.targets, bChat: parseInt(e.target.value) || 0}}))} />
                     </div>
                   </div>
-                ))}
-                {data.roles.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', fontSize: '14px', fontWeight: 700 }}>Belum ada data role.</div>}
+                  <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ padding: '16px', borderRadius: '16px', fontWeight: 900 }}>{isSubmitting ? 'MENYIMPAN...' : 'UPDATE KONFIGURASI'}</button>
+                </form>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* TEAM TAB */}
-          {activeTab === 'team' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{ 
-                background: '#fff', padding: '32px', borderRadius: '32px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Tim & Kredensial</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>KELOLA LOGIN & IDENTITAS</p>
+            {(activeTab === 'area' || activeTab === 'category' || activeTab === 'channel' || activeTab === 'status' || activeTab === 'action') && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Manajemen {activeTab.toUpperCase()}</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>DATA MASTER SISTEM</p></div>
+                  <button onClick={() => openMasterModal(activeTab as any)} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH {activeTab.toUpperCase()}</button>
                 </div>
-                <button 
-                  onClick={() => openTeamModal()} 
-                  style={{ background: 'var(--brand-yellow)', color: '#111827', padding: '14px 28px', fontSize: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)' }}
-                >
-                  <Plus size={18} strokeWidth={3} /> TAMBAH KARYAWAN
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {data.teams.map((u: any) => (
-                  <div key={u.id} style={{ 
-                    background: '#fff', borderRadius: '24px', padding: '24px 32px', 
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '24px', flex: 1 }}>
-                      <div style={{ 
-                        width: '56px', height: '56px', borderRadius: '18px', 
-                        background: '#f8fafc',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '20px', fontWeight: 900, color: '#1e293b', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.03)',
-                        overflow: 'hidden'
-                      }}>
-                        {u.foto_profil ? (
-                          <img src={u.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : u.nama.charAt(0)}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                  {(activeTab === 'area' ? masterAreas : activeTab === 'category' ? masterCategories : activeTab === 'channel' ? masterChannels : activeTab === 'status' ? masterStatuses : masterActions).map((m: any) => (
+                    <div key={m.id} style={{ background: '#fff', borderRadius: '24px', padding: '20px 24px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><MapPin size={20} color="#FFCC00" /></div>
+                        <div><div style={{ fontWeight: 900, color: '#1e293b' }}>{m.name}</div><div style={{ fontSize: '10px', color: '#94a3b8' }}>ID: {m.id}</div></div>
                       </div>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#1e293b' }}>{u.nama}</h4>
-                          <span style={{ 
-                            fontSize: '10px', fontWeight: 900, 
-                            background: u.role === 'Admin' ? '#fee2e2' : u.role === 'Manager' ? '#fffbeb' : '#f0f9ff',
-                            color: u.role === 'Admin' ? '#ef4444' : u.role === 'Manager' ? '#f59e0b' : '#0ea5e9',
-                            padding: '3px 10px', borderRadius: '8px', textTransform: 'uppercase' 
-                          }}>{u.role || '-'}</span>
-                        </div>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>ID Karyawan: <span style={{ color: '#1e293b' }}>{u.id}</span></div>
-                           <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
-                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>USER: <span style={{ color: '#1e293b' }}>{u.username}</span></div>
-                           <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
-                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>PWD: <span style={{ color: '#cbd5e1', letterSpacing: '4px' }}>••••••</span></div>
-                         </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => openMasterModal(activeTab as any, m)} style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f0f9ff', border: 'none', cursor: 'pointer' }}><Edit2 size={14} color="#0ea5e9" /></button>
+                        <button onClick={() => handleDeleteMaster(activeTab, m.id)} style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={14} color="#ef4444" /></button>
                       </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px' }}>
-                      <button 
-                        onClick={() => openTeamModal(u)} 
-                        style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', color: '#3b82f6', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteTeam(u.id)} 
-                        style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {data.teams.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', fontSize: '14px', fontWeight: 700 }}>Belum ada data tim.</div>}
-              </div>
-            </div>
-          )}
-          
-          {/* TARGET & BOBOT TAB */}
-          {activeTab === 'target' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div style={{ 
-                background: '#fff', padding: '32px', borderRadius: '32px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Target & Bobot Poin</h3>
-                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>KONFIGURASI INDIKATOR KINERJA</p>
+                  ))}
                 </div>
-                {saveSuccess && (
-                  <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '12px 24px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, border: '1px solid #dcfce7', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    ✅ Berhasil Disimpan!
-                  </div>
-                )}
               </div>
+            )}
 
-              <form onSubmit={handleSaveTargets} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
-                   {/* TARGET INDEKS */}
-                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255, 204, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                           <Target size={20} color="#FFCC00" strokeWidth={3} />
-                        </div>
-                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Indikator Target</h4>
-                      </div>
-                      <label style={{ ...labelStyle, margin: '0 0 8px' }}>Poin Target Bulanan</label>
-                      <input 
-                        type="number" 
-                        style={inputStyle} 
-                        value={data.targets.indPoin} 
-                        onChange={e => setData(d => ({...d, targets: {...d.targets, indPoin: parseInt(e.target.value) || 0}}))}
-                      />
-                      <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', fontWeight: 600 }}>Total poin yang harus dicapai sales untuk mencapai status 100%.</p>
-                   </div>
-
-                   {/* BOBOT SALES */}
-                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                           <ShoppingCart size={20} color="#22c55e" strokeWidth={3} />
-                        </div>
-                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Bobot Akun & Order</h4>
-                      </div>
-                      <div style={{ display: 'flex', gap: '16px' }}>
-                        <div style={{ flex: 1 }}>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Closing (Akun)</label>
-                          <input type="number" style={inputStyle} value={data.targets.bClosing} onChange={e => setData(d => ({...d, targets: {...d.targets, bClosing: parseInt(e.target.value) || 0}}))} />
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Sales Order</label>
-                          <input type="number" style={inputStyle} value={data.targets.bOrder} onChange={e => setData(d => ({...d, targets: {...d.targets, bOrder: parseInt(e.target.value) || 0}}))} />
-                        </div>
-                      </div>
-                   </div>
-
-                   {/* BOBOT AKTIVITAS */}
-                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                           <Users size={20} color="#0ea5e9" strokeWidth={3} />
-                        </div>
-                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Bobot Aktivitas</h4>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Visit</label>
-                          <input type="number" style={inputStyle} value={data.targets.bVisit} onChange={e => setData(d => ({...d, targets: {...d.targets, bVisit: parseInt(e.target.value) || 0}}))} />
-                        </div>
-                        <div>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Prospek Baru</label>
-                          <input type="number" style={inputStyle} value={data.targets.bProspek} onChange={e => setData(d => ({...d, targets: {...d.targets, bProspek: parseInt(e.target.value) || 0}}))} />
-                        </div>
-                        <div>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Followup/Chat</label>
-                          <input type="number" style={inputStyle} value={data.targets.bChat} onChange={e => setData(d => ({...d, targets: {...d.targets, bChat: parseInt(e.target.value) || 0}}))} />
-                        </div>
-                        <div>
-                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Maintenance</label>
-                          <input type="number" disabled style={{ ...inputStyle, background: '#f8fafc' }} value={data.targets.bVisit} />
-                        </div>
-                      </div>
-                   </div>
-                </div>
-
-                <div style={{ 
-                  background: '#1e293b', padding: '24px 32px', borderRadius: '24px', 
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                       <Shield size={24} color="#FFCC00" />
-                    </div>
-                    <div>
-                      <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px' }}>Konfirmasi Perubahan</div>
-                      <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600 }}>Perubahan bobot akan berpengaruh pada seluruh perhitungan poin tim.</div>
-                    </div>
-                  </div>
-                  <button 
-                    type="submit" 
-                    disabled={isSubmitting}
-                    style={{ 
-                      background: 'var(--brand-yellow)', color: '#111827', padding: '16px 40px', 
-                      borderRadius: '16px', fontWeight: 900, border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                      fontSize: '14px', letterSpacing: '0.02em', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)',
-                      display: 'flex', alignItems: 'center', gap: '10px'
-                    }}
-                  >
-                    {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> MENYIMPAN...</> : 'UPDATE BOBOT SISTEM'}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* MASTER DATA TABS (Area, Category, Channel, Status, Action) */}
-          {(activeTab === 'area' || activeTab === 'category' || activeTab === 'channel' || activeTab === 'status' || activeTab === 'action') && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-               <div style={{ 
-                background: '#fff', padding: '32px', borderRadius: '32px', 
-                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-              }}>
-                <div>
-                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>
-                    {activeTab === 'area' ? 'Manajemen Wilayah' : 
-                     activeTab === 'category' ? 'Kategori Bisnis' : 
-                     activeTab === 'channel' ? 'Sumber / Channel' :
-                     activeTab === 'status' ? 'Status Prospek' : 'Tipe Aktivitas'}
-                  </h3>
-                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>DATA MASTER SISTEM</p>
-                </div>
-                <button 
-                  onClick={() => openMasterModal(activeTab as any)} 
-                  style={{ background: 'var(--brand-yellow)', color: '#111827', padding: '14px 28px', fontSize: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)' }}
-                >
-                  <Plus size={18} strokeWidth={3} /> TAMBAH {activeTab.toUpperCase()}
-                </button>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                {(activeTab === 'area' ? masterAreas : 
-                  activeTab === 'category' ? masterCategories : 
-                  activeTab === 'channel' ? masterChannels :
-                  activeTab === 'status' ? masterStatuses : masterActions).map((m: any) => (
-                  <div key={m.id} style={{ 
-                    background: '#fff', borderRadius: '24px', padding: '20px 24px', 
-                    boxShadow: '0 8px 30px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9',
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div style={{ 
-                        width: '40px', height: '40px', borderRadius: '12px', 
-                        background: activeTab === 'area' ? '#f0f9ff' : activeTab === 'category' ? '#fff7ed' : activeTab === 'channel' ? '#f0fdf4' : activeTab === 'status' ? '#fef2f2' : '#f5f3ff',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        {activeTab === 'area' ? <MapPin size={20} color="#0ea5e9" /> : 
-                         activeTab === 'category' ? <ShoppingCart size={20} color="#f97316" /> : 
-                         activeTab === 'channel' ? <TrendingUp size={20} color="#22c55e" /> :
-                         activeTab === 'status' ? <Target size={20} color="#ef4444" /> : <Users size={20} color="#8b5cf6" />}
-                      </div>
-                      <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '15px' }}>{m.name}</div>
-                    </div>
-                    <button 
-                      onClick={() => handleDeleteMaster(activeTab as any, m.id)} 
-                      style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
-      {/* --- MASTER DATA MODAL --- */}
+      {/* MASTER MODAL */}
       {masterModal.isOpen && (
         <div style={overlayStyle}>
           <div style={modalStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>Tambah {masterModal.type?.toUpperCase()} Baru</h3>
-              <button onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+              <h3 style={{ margin: 0, fontWeight: 900 }}>{masterModal.data ? 'Edit' : 'Tambah'} {masterModal.type?.toUpperCase()}</h3>
+              <button onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
             </div>
             <form onSubmit={handleSaveMaster}>
+              <label style={labelStyle}>ID (Optional)</label>
+              <input style={inputStyle} value={masterForm.id} onChange={e => setMasterForm({ ...masterForm, id: e.target.value.toUpperCase() })} placeholder="Auto-generate jika kosong" />
               <label style={labelStyle}>Nama {masterModal.type}</label>
-              <input required style={inputStyle} value={masterForm.name} onChange={e => setMasterForm({ name: e.target.value })} placeholder={`Contoh: ${masterModal.type === 'area' ? 'Jakarta' : 'Retail'}`} />
-              
+              <input required style={inputStyle} value={masterForm.name} onChange={e => setMasterForm({ ...masterForm, name: e.target.value })} />
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button type="button" onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Batal</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Simpan</button>
+                <button type="button" onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
+                <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 900 }}>Simpan</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* --- MODALS --- */}
-      {roleModal.isOpen && (
-        <div style={overlayStyle}>
-          <div style={modalStyle}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>{roleModal.data ? 'Edit Role' : 'Tambah Role Baru'}</h3>
-              <button onClick={() => setRoleModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
-            </div>
-            <form onSubmit={handleSaveRole}>
-              <label style={labelStyle}>Role Utama (Pilih atau Ketik Baru)</label>
-              <input required list="role-options" style={inputStyle} value={roleForm.role} onChange={e => setRoleForm({...roleForm, role: e.target.value})} placeholder="Contoh: Supervisor" />
-              <datalist id="role-options">
-                <option value="Sales" />
-                <option value="Manager" />
-                <option value="Admin" />
-              </datalist>
-
-              <label style={labelStyle}>Hak Akses Dashboard (Multi-Pilih)</label>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px', border: '1px solid #e2e8f0', borderRadius: '8px', maxHeight: '150px', overflowY: 'auto' }}>
-                {['Mobile App', 'Limited Analytics', 'Full Web Dashboard', 'Live Feed', 'All System Settings', 'Database'].map(ak => {
-                  const isChecked = roleForm.akses.includes(ak);
-                  return (
-                    <label key={ak} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: '#334155' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={isChecked}
-                        onChange={(e) => {
-                          let currentArray = roleForm.akses ? roleForm.akses.split(',').map(s=>s.trim()).filter(Boolean) : [];
-                          if (e.target.checked) currentArray.push(ak);
-                          else currentArray = currentArray.filter(i => i !== ak);
-                          setRoleForm({...roleForm, akses: currentArray.join(', ')});
-                        }}
-                      />
-                      {ak}
-                    </label>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button type="button" onClick={() => setRoleModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Batal</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Simpan</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+      {/* TEAM MODAL */}
       {teamModal.isOpen && (
         <div style={overlayStyle}>
           <div style={modalStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>{teamModal.data ? 'Edit Karyawan' : 'Tambah Karyawan Baru'}</h3>
-              <button onClick={() => setTeamModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+              <h3 style={{ margin: 0, fontWeight: 900 }}>{teamModal.data ? 'Edit Tim' : 'Tambah Tim'}</h3>
+              <button onClick={() => setTeamModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
             </div>
             <form onSubmit={handleSaveTeam}>
-              {formError && (
-                <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <X size={16} /> {formError}
-                </div>
-              )}
+              {formError && <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '12px' }}>{formError}</div>}
               <label style={labelStyle}>ID Karyawan</label>
-              <input required disabled={!!teamModal.data} style={{...inputStyle, background: teamModal.data ? '#f1f5f9' : '#fff' }} value={teamForm.id} onChange={e => setTeamForm({...teamForm, id: e.target.value})} placeholder="Contoh: S003" />
-
-              <label style={labelStyle}>Nama Lengkap</label>
-              <input required style={inputStyle} value={teamForm.nama} onChange={e => setTeamForm({...teamForm, nama: e.target.value})} placeholder="Contoh: Junaidi" />
-
-              <label style={labelStyle}>Pilih Role Terikat</label>
+              <input required style={inputStyle} value={teamForm.id} onChange={e => setTeamForm({...teamForm, id: e.target.value})} />
+              <label style={labelStyle}>Nama</label>
+              <input required style={inputStyle} value={teamForm.nama} onChange={e => setTeamForm({...teamForm, nama: e.target.value})} />
+              <label style={labelStyle}>Role</label>
               <select required style={inputStyle} value={teamForm.role} onChange={e => setTeamForm({...teamForm, role: e.target.value})}>
-                <option value="">-- Tentukan Role/Jabatan --</option>
-                {data.roles.map((r: any) => (
-                  <option key={r.id} value={r.role}>{r.role}</option>
-                ))}
+                <option value="">-- Pilih Role --</option>
+                {data.roles.map((r: any) => <option key={r.id} value={r.role}>{r.role}</option>)}
               </select>
-              
-              <label style={labelStyle}>Username Login</label>
-              <input required style={inputStyle} value={teamForm.username} onChange={e => setTeamForm({...teamForm, username: e.target.value})} placeholder="Contoh: junaidi_s3" />
-
-              <label style={labelStyle}>Password Kredensial</label>
-              <input required style={inputStyle} value={teamForm.pass} onChange={e => setTeamForm({...teamForm, pass: e.target.value})} placeholder="Ketik sandi baru..." />
-
-              <label style={labelStyle}>Nomor WhatsApp</label>
-              <input style={inputStyle} value={teamForm.no_wa || ''} onChange={e => setTeamForm({...teamForm, no_wa: e.target.value})} placeholder="Contoh: 62812345678" />
-
-
-              <label style={labelStyle}>URL Foto Profil (Optional)</label>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <input style={inputStyle} value={teamForm.foto_profil || ''} onChange={e => setTeamForm({...teamForm, foto_profil: e.target.value})} placeholder="https://..." />
-                <input 
-                  type="file" 
-                  accept="image/*" 
-                  style={{ display: 'none' }} 
-                  id="sales-photo-input" 
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onloadend = () => {
-                        setTeamForm(prev => ({ ...prev, foto_profil: reader.result as string }));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }} 
-                />
-                <button 
-                  type="button"
-                  onClick={() => document.getElementById('sales-photo-input')?.click()}
-                  style={{ padding: '0 12px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', fontSize: '12px', fontWeight: 700 }}
-                >
-                  UP
-                </button>
-              </div>
-
+              <label style={labelStyle}>Username</label>
+              <input required style={inputStyle} value={teamForm.username} onChange={e => setTeamForm({...teamForm, username: e.target.value})} />
+              <label style={labelStyle}>Password</label>
+              <input required style={inputStyle} value={teamForm.pass} onChange={e => setTeamForm({...teamForm, pass: e.target.value})} />
+              <label style={labelStyle}>Nomor WA</label>
+              <input style={inputStyle} value={teamForm.no_wa} onChange={e => setTeamForm({...teamForm, no_wa: e.target.value})} placeholder="62xxx" />
+              <label style={labelStyle}>Target Visit Harian</label>
+              <input type="number" style={inputStyle} value={teamForm.target_visit} onChange={e => setTeamForm({...teamForm, target_visit: parseInt(e.target.value) || 0})} />
+              <label style={labelStyle}>URL Foto Profil</label>
+              <input style={inputStyle} value={teamForm.foto_profil} onChange={e => setTeamForm({...teamForm, foto_profil: e.target.value})} placeholder="https://..." />
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button type="button" disabled={isSubmitting} onClick={() => setTeamModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.6 : 1 }}>Batal</button>
-                <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                  {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> Menyimpan...</> : 'Simpan Data'}
-                </button>
+                <button type="button" onClick={() => setTeamModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
+                <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 900 }}>Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ROLE MODAL */}
+      {roleModal.isOpen && (
+        <div style={overlayStyle}>
+          <div style={modalStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontWeight: 900 }}>Role & Akses</h3>
+              <button onClick={() => setRoleModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
+            </div>
+            <form onSubmit={handleSaveRole}>
+              <label style={labelStyle}>Nama Role</label>
+              <input required style={inputStyle} value={roleForm.role} onChange={e => setRoleForm({...roleForm, role: e.target.value})} />
+              <label style={labelStyle}>Hak Akses (CSV)</label>
+              <input style={inputStyle} value={roleForm.akses} onChange={e => setRoleForm({...roleForm, akses: e.target.value})} placeholder="Akses 1, Akses 2, ..." />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button type="button" onClick={() => setRoleModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 900 }}>Simpan</button>
               </div>
             </form>
           </div>

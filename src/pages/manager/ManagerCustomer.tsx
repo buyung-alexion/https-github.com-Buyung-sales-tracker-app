@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, Tag, Briefcase, ShoppingCart } from 'lucide-react';
+import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, Tag, Briefcase, ShoppingCart, TrendingUp, Target, Layers, Layout } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
@@ -49,49 +49,64 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
   }, [customers]);
 
   const maxArea = Math.max(1, ...areaStats.map(s => s.count));
-  const maxCat = Math.max(1, ...catStats.map(s => s.count));
 
-  const cardStyle = { background: '#ffffff', borderRadius: '24px', padding: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column' as const, minHeight: '340px', border: '1px solid #f8fafc' };
-  const titleStyle = { fontSize: '18px', fontWeight: 900, color: '#1e293b', textAlign: 'left' as const, margin: 0 };
-  const subTitleStyle = { fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: '0.5px', marginBottom: '24px' };
+  const cardStyle = { 
+    background: 'rgba(255, 255, 255, 0.7)', 
+    backdropFilter: 'blur(20px)',
+    borderRadius: '32px', 
+    padding: '30px', 
+    boxShadow: '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)', 
+    display: 'flex', 
+    flexDirection: 'column' as const, 
+    minHeight: '380px', 
+    border: 'none',
+    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+    cursor: 'default'
+  };
+  const titleStyle = { fontSize: '20px', fontWeight: 950, color: '#1e293b', textAlign: 'left' as const, margin: 0, letterSpacing: '-0.5px' };
+  const subTitleStyle = { fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: '1px', marginTop: '4px' };
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
       
       {/* Chart 1: Customer By Sales (Modern Pill Design) */}
-      <div style={cardStyle}>
-        <div style={{ marginBottom: '24px' }}>
-          <h3 style={titleStyle}>Customer By Sales</h3>
-          <div style={subTitleStyle}>SEBARAN CUSTOMER PER SALES</div>
+      <div 
+        style={cardStyle}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
+      >
+        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)' }}>
+            <TrendingUp size={20} color="#fff" />
+          </div>
+          <div>
+            <h3 style={titleStyle}>Customer By Sales</h3>
+            <div style={subTitleStyle}>SEBARAN PER SALESMAN</div>
+          </div>
         </div>
 
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '8px' }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '16px', paddingBottom: '10px' }}>
           {salesStats.map((s, idx) => {
             const heightPercent = (s.count / maxSales) * 100;
             const gradients = [
-              'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)',
-              'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
+              'linear-gradient(180deg, #6366f1 0%, #444ce7 100%)',
+              'linear-gradient(180deg, #a855f7 0%, #9333ea 100%)',
               'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)',
               'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
               'linear-gradient(180deg, #10b981 0%, #059669 100%)'
             ];
             
             return (
-              <div key={s.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1 }}>
-                {/* Total Customer Badge */}
-                <div style={{ background: '#f1f5f9', padding: '4px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 950, color: '#475569', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                  {s.count} Toko
-                </div>
-
-                {/* Pillar Bar */}
+              <div key={s.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', minWidth: '40px' }}>
+                <div style={{ fontSize: '12px', fontWeight: 950, color: '#1e293b' }}>{s.count}</div>
                 <div style={{ 
-                  width: '32px', 
-                  height: '160px', 
-                  background: '#f8fafc', 
+                  width: '24px', 
+                  height: '140px', 
+                  background: '#f1f5f9', 
                   borderRadius: '100px', 
                   position: 'relative', 
                   overflow: 'hidden',
-                  border: '1px solid #f1f5f9'
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
                 }}>
                   <div style={{ 
                     position: 'absolute', 
@@ -101,19 +116,18 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
                     height: `${heightPercent}%`, 
                     background: gradients[idx % gradients.length], 
                     borderRadius: '100px',
-                    boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3)'
+                    boxShadow: '0 -4px 10px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.3)',
+                    transition: 'height 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
                   }} />
                 </div>
-
-                {/* Name Badge */}
                 <div style={{ 
-                  background: '#f59e0b', 
-                  padding: '6px 14px', 
-                  borderRadius: '100px', 
-                  fontSize: '11px', 
-                  fontWeight: 950, 
-                  color: '#1e293b',
-                  boxShadow: '0 6px 15px -3px rgba(245, 158, 11, 0.4)',
+                  background: '#f8fafc', 
+                  padding: '4px 10px', 
+                  borderRadius: '8px', 
+                  fontSize: '9px', 
+                  fontWeight: 900, 
+                  color: '#64748b',
+                  border: '1px solid #e2e8f0',
                   whiteSpace: 'nowrap'
                 }}>
                   {s.nama}
@@ -124,76 +138,105 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
         </div>
       </div>
 
-      {/* Chart 2: Retention Status (Donut) */}
-      <div style={cardStyle}>
-        <h3 style={{ ...titleStyle, textAlign: 'center' }}>Retention Status</h3>
-        <div style={{ ...subTitleStyle, textAlign: 'center' }}>Status Keaktifan Toko</div>
+      {/* Chart 2: Retention Status (Premium Donut) */}
+      <div 
+        style={cardStyle}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
+      >
+        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)' }}>
+            <Target size={20} color="#fff" />
+          </div>
+          <div>
+            <h3 style={titleStyle}>Retention Status</h3>
+            <div style={subTitleStyle}>KESEHATAN DATABASE</div>
+          </div>
+        </div>
+
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ position: 'relative', width: '130px', height: '130px' }}>
+          <div style={{ position: 'relative', width: '150px', height: '150px' }}>
             <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
               <defs>
                 <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" stopColor="#10b981" />
                   <stop offset="100%" stopColor="#059669" />
                 </linearGradient>
-                <linearGradient id="nonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#94a3b8" />
-                  <stop offset="100%" stopColor="#64748b" />
-                </linearGradient>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
               </defs>
-              <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="8" />
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="12" />
               <circle 
                 cx="50" cy="50" r="42" fill="none" 
-                stroke="url(#nonGrad)" strokeWidth="8" 
-                strokeDasharray={`${263.8}`} 
-                strokeDashoffset={`${(activePercent / 100) * 263.8}`} 
-                strokeLinecap="round"
-                style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
-              />
-              <circle 
-                cx="50" cy="50" r="42" fill="none" 
-                stroke="url(#activeGrad)" strokeWidth="10" 
+                stroke="url(#activeGrad)" strokeWidth="12" 
                 strokeDasharray={`${(activePercent / 100) * 263.8} 263.8`} 
                 strokeLinecap="round"
-                style={{ transition: 'stroke-dasharray 0.5s ease-in-out', filter: 'drop-shadow(0 2px 4px rgba(16, 185, 129, 0.2))' }}
+                filter="url(#glow)"
+                style={{ transition: 'stroke-dasharray 1.5s ease-out' }}
               />
             </svg>
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <span style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b', lineHeight: '1' }}>{customers.length}</span>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</span>
+              <span style={{ fontSize: '38px', fontWeight: 950, color: '#1e293b', lineHeight: '1', letterSpacing: '-1px' }}>{customers.length}</span>
+              <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>TOTAL TOKO</span>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '16px', marginTop: '20px' }}>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#1e293b' }}>
-               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981' }}></span> Aktif
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%', marginTop: '30px' }}>
+             <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #dcfce7' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px rgba(16,185,129,0.5)' }} />
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{activePercent}%</div>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>Aktif</div>
+                </div>
              </div>
-             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: 800, color: '#64748b' }}>
-               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444' }}></span> Non-Aktif
+             <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #fee2e2' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{100 - activePercent}%</div>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase' }}>Low</div>
+                </div>
              </div>
           </div>
         </div>
       </div>
 
-      {/* Chart 3: Customer By Area (Horizontal Bars) */}
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>Customer By Area</h3>
-        <div style={subTitleStyle}>SEBARAN WILAYAH</div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px', justifyContent: 'center' }}>
+      {/* Chart 3: Customer By Area (Horizontal Progress) */}
+      <div 
+        style={cardStyle}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
+      >
+        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(245, 158, 11, 0.2)' }}>
+            <Layers size={20} color="#fff" />
+          </div>
+          <div>
+            <h3 style={titleStyle}>Customer By Area</h3>
+            <div style={subTitleStyle}>DOMINASI WILAYAH</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
           {areaStats.map((a, idx) => {
-             const widthPercent = Math.max(10, (a.count / maxArea) * 100);
+             const widthPercent = (a.count / maxArea) * 100;
              const colors = ['#6366f1', '#a855f7', '#f59e0b', '#3b82f6', '#10b981'];
              return (
                 <div key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', fontWeight: 800, color: '#1e293b', marginBottom: '6px' }}>
-                    <span>{a.name}</span>
-                    <span style={{ color: colors[idx % colors.length] }}>{a.count} <span style={{fontSize: '9px', opacity: 0.6}}>toko</span></span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{a.name}</span>
+                    <span style={{ fontSize: '12px', fontWeight: 950, color: colors[idx % colors.length] }}>{a.count} <small style={{fontSize: '9px', opacity: 0.6}}>TOKO</small></span>
                   </div>
-                  <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '100px', overflow: 'hidden' }}>
+                  <div style={{ width: '100%', height: '10px', background: '#f1f5f9', borderRadius: '100px', position: 'relative' }}>
                     <div style={{ 
                       height: '100%', width: `${widthPercent}%`, 
                       background: colors[idx % colors.length], 
                       borderRadius: '100px',
-                      boxShadow: 'inset 0 1px 2px rgba(255,255,255,0.2)'
+                      boxShadow: `0 4px 10px ${colors[idx % colors.length]}44`,
+                      transition: 'width 1s ease-out'
                     }} />
                   </div>
                 </div>
@@ -202,26 +245,38 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
         </div>
       </div>
 
-      {/* Chart 4: By Category (Vertical Bars) */}
-      <div style={cardStyle}>
-        <h3 style={titleStyle}>By Category</h3>
-        <div style={subTitleStyle}>SEGMENTASI TOKO</div>
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 10px', marginTop: 'auto' }}>
+      {/* Chart 4: By Category (Layout Design) */}
+      <div 
+        style={cardStyle}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
+      >
+        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(236, 72, 153, 0.2)' }}>
+            <Layout size={20} color="#fff" />
+          </div>
+          <div>
+            <h3 style={titleStyle}>Segmentasi Toko</h3>
+            <div style={subTitleStyle}>BERDASARKAN KATEGORI</div>
+          </div>
+        </div>
+
+        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
           {catStats.map((c, idx) => {
-            const heightPercent = Math.max(10, (c.count / maxCat) * 100);
-            const gradients = [
-              'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
-              'linear-gradient(180deg, #a855f7 0%, #7c3aed 100%)',
-              'linear-gradient(180deg, #ec4899 0%, #db2777 100%)',
-              'linear-gradient(180deg, #6366f1 0%, #4f46e5 100%)'
-            ];
+            const colors = ['#f59e0b', '#a855f7', '#ec4899', '#6366f1'];
             return (
-              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', flex: 1 }}>
-                <div style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{c.count}</div>
-                <div style={{ width: '14px', height: '110px', background: '#f1f5f9', borderRadius: '100px', position: 'relative', overflow: 'hidden' }}>
-                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: `${heightPercent}%`, background: gradients[idx % gradients.length], borderRadius: '100px', boxShadow: 'inset 0 2px 4px rgba(255,255,255,0.3)' }} />
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', width: '45px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
+              <div key={idx} style={{ 
+                background: '#f8fafc', 
+                padding: '16px', 
+                borderRadius: '20px', 
+                border: '1px solid #f1f5f9',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                transition: 'all 0.2s ease'
+              }}>
+                <div style={{ fontSize: '24px', fontWeight: 950, color: colors[idx % colors.length] }}>{c.count}</div>
+                <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{c.name}</div>
               </div>
             );
           })}

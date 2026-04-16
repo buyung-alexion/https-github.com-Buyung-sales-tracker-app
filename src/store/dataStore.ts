@@ -127,6 +127,7 @@ export const store = {
       tipe_aksi: a.tipe_aksi,
       catatan_hasil: a.catatan_hasil,
       geotagging: (a as any).geotagging,
+      sales_volume: (a as any).sales_volume || 0,
       timestamp: new Date().toISOString()
     };
     const { error } = await supabase.from('activity').insert([activityData]);
@@ -176,12 +177,57 @@ export const store = {
     await this.logActivity({
       id_sales: salesId,
       target_id: salesId, // self target for general check-in if needed
-      target_type: 'customer',
-      target_nama: `Check-in ${area}`,
+      target_type: 'area', // changed from customer to area for clarity
+      target_nama: `Antivitas Area ${area}`,
       tipe_aksi: 'Visit',
       catatan_hasil: catatan,
       geotagging: { area },
     });
+  },
+
+  // ─── ATTENDANCE (CLOCK IN/OUT) ──────────────────────────
+  async getTodayAttendance(salesId: string) {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('*')
+      .eq('sales_id', salesId)
+      .gte('check_in', `${today}T00:00:00Z`)
+      .lte('check_in', `${today}T23:59:59Z`)
+      .maybeSingle();
+    return { data, error };
+  },
+  async fetchRecentAttendance() {
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await supabase
+      .from('attendance')
+      .select('*')
+      .gte('check_in', `${today}T00:00:00Z`)
+      .order('check_in', { ascending: false });
+    return { data, error };
+  },
+
+  async clockIn(salesId: string, loc: { lat: number, lng: number, area: string }, photo: string) {
+    const attendanceData = {
+      id: crypto.randomUUID(),
+      sales_id: salesId,
+      check_in: new Date().toISOString(),
+      loc_in: loc,
+      photo_in: photo,
+      status: 'active'
+    };
+    const { error } = await supabase.from('attendance').insert([attendanceData]);
+    return { error };
+  },
+
+  async clockOut(id: string, loc: { lat: number, lng: number, area: string }, photo: string) {
+    const { error } = await supabase.from('attendance').update({
+      check_out: new Date().toISOString(),
+      loc_out: loc,
+      photo_out: photo,
+      status: 'completed'
+    }).eq('id', id);
+    return { error };
   },
 
   async logNote(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, catatan: string) {
@@ -269,9 +315,25 @@ export const store = {
     if (error) console.error('fetchMasterAreas error:', error);
     return data || [];
   },
-  async addMasterArea(name: string) {
-    const { data, error } = await supabase.from('master_areas').insert([{ id: name, name }]).select();
+  async addMasterArea(name: string, customId?: string) {
+    let id = customId?.trim();
+    if (!id) {
+      const words = name.trim().split(/\s+/);
+      if (words.length > 1) {
+        id = words.map(w => w[0].toUpperCase()).join('');
+      } else {
+        id = name.length > 3 ? name.substring(0, 3).toUpperCase() : name.toUpperCase();
+      }
+      id = id.replace(/[^A-Z0-9]/g, '');
+    }
+
+    const { data, error } = await supabase.from('master_areas').insert([{ id, name }]).select();
     if (error) console.error('addMasterArea error:', error);
+    return { data, error };
+  },
+  async updateMasterArea(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_areas').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterArea error:', error);
     return { data, error };
   },
   async deleteMasterArea(id: string) {
@@ -285,9 +347,15 @@ export const store = {
     if (error) console.error('fetchMasterCategories error:', error);
     return data || [];
   },
-  async addMasterCategory(name: string) {
-    const { data, error } = await supabase.from('master_categories').insert([{ id: name, name }]).select();
+  async addMasterCategory(name: string, customId?: string) {
+    const id = customId?.trim() || crypto.randomUUID();
+    const { data, error } = await supabase.from('master_categories').insert([{ id, name }]).select();
     if (error) console.error('addMasterCategory error:', error);
+    return { data, error };
+  },
+  async updateMasterCategory(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_categories').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterCategory error:', error);
     return { data, error };
   },
   async deleteMasterCategory(id: string) {
@@ -301,9 +369,15 @@ export const store = {
     if (error) console.error('fetchMasterChannels error:', error);
     return data || [];
   },
-  async addMasterChannel(name: string) {
-    const { data, error } = await supabase.from('master_channels').insert([{ id: name, name }]).select();
+  async addMasterChannel(name: string, customId?: string) {
+    const id = customId?.trim() || crypto.randomUUID();
+    const { data, error } = await supabase.from('master_channels').insert([{ id, name }]).select();
     if (error) console.error('addMasterChannel error:', error);
+    return { data, error };
+  },
+  async updateMasterChannel(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_channels').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterChannel error:', error);
     return { data, error };
   },
   async deleteMasterChannel(id: string) {
@@ -318,9 +392,15 @@ export const store = {
     if (error) console.error('fetchMasterProspectStatus error:', error);
     return data || [];
   },
-  async addMasterProspectStatus(name: string) {
-    const { data, error } = await supabase.from('master_prospect_status').insert([{ id: name, name }]).select();
+  async addMasterProspectStatus(name: string, customId?: string) {
+    const id = customId?.trim() || crypto.randomUUID();
+    const { data, error } = await supabase.from('master_prospect_status').insert([{ id, name }]).select();
     if (error) console.error('addMasterProspectStatus error:', error);
+    return { data, error };
+  },
+  async updateMasterProspectStatus(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_prospect_status').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterProspectStatus error:', error);
     return { data, error };
   },
   async deleteMasterProspectStatus(id: string) {
@@ -334,9 +414,15 @@ export const store = {
     if (error) console.error('fetchMasterActions error:', error);
     return data || [];
   },
-  async addMasterAction(name: string) {
-    const { data, error } = await supabase.from('master_actions').insert([{ id: name, name }]).select();
+  async addMasterAction(name: string, customId?: string) {
+    const id = customId?.trim() || crypto.randomUUID();
+    const { data, error } = await supabase.from('master_actions').insert([{ id, name }]).select();
     if (error) console.error('addMasterAction error:', error);
+    return { data, error };
+  },
+  async updateMasterAction(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_actions').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterAction error:', error);
     return { data, error };
   },
   async deleteMasterAction(id: string) {

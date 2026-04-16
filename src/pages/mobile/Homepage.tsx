@@ -24,6 +24,8 @@ export default function Homepage({ salesId }: Props) {
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
 
+  
+
   // Monthly filter for reset logic
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -110,8 +112,11 @@ export default function Homepage({ salesId }: Props) {
 
   const myCustomers = customers.filter(c => c.sales_pic === salesId);
   const filteredCustomers = myCustomers.filter(c => 
-    c.nama_toko.toLowerCase().includes(orderSearch.toLowerCase())
+    c.nama_toko.toLowerCase().includes(orderSearch.toLowerCase()) ||
+    c.area.toLowerCase().includes(orderSearch.toLowerCase())
   );
+
+
 
 
   return (
@@ -191,6 +196,8 @@ export default function Homepage({ salesId }: Props) {
                <div className="tap-active" onClick={() => navigate('/mobile/analytic')} style={{ marginTop: '6px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '3px', color: 'var(--brand-yellow)', fontSize: '10px', fontWeight: 800 }}>Lihat Detail <ChevronRight size={12} /></div>
             </div>
           </div>
+
+
         </div>
       </div>
 
@@ -207,7 +214,7 @@ export default function Homepage({ salesId }: Props) {
         }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px 8px' }}>
             {[
-              { label: 'Check-In', icon: MapPin, color: '#FFD700', bg: '#FFFBEB', path: '/mobile/checkin' },
+              { label: 'Activity', icon: MapPin, color: '#FFD700', bg: '#FFFBEB', path: '/mobile/activity' },
               { label: 'Prospek', icon: Target, color: '#F97316', bg: '#FFF7ED', path: '/mobile/prospek', badge: uncontactedProspekCount },
               { label: 'Customer', icon: Users, color: '#D97706', bg: '#FEF3C7', path: '/mobile/customer', badge: uncontactedCustomerCount },
               { label: 'Analytic', icon: BarChart3, color: '#a855f7', bg: '#FAF5FF', path: '/mobile/analytic' },
@@ -331,27 +338,40 @@ export default function Homepage({ salesId }: Props) {
             <span style={{ fontSize: '12px', fontWeight: 800, color: '#6366f1' }}>Lihat Semua</span>
           </div>
 
-          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
-             {/* Alert 1 */}
-             <div className="tap-active shadow-premium" onClick={() => navigate('/mobile/customer')} style={{ minWidth: '240px', background: '#fff', borderRadius: '24px', padding: '16px', border: '1px solid #fee2e2', display: 'flex', gap: '12px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                   <AlertTriangle size={24} color="#EF4444" />
+          <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '16px', scrollbarWidth: 'none' }}>
+             {/* Alert 1: Overdue Customers */}
+             {overdueCustomers > 0 && (
+               <div className="tap-active shadow-premium" onClick={() => navigate('/mobile/customer')} style={{ minWidth: '260px', background: '#fff', borderRadius: '24px', padding: '16px', border: '1px solid #fee2e2', display: 'flex', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#FEF2F2', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <AlertTriangle size={24} color="#EF4444" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                     <h4 style={{ fontSize: '14px', fontWeight: 950, color: '#111827', margin: 0 }}>Warning Customer</h4>
+                     <p style={{ fontSize: '11px', color: '#ef4444', fontWeight: 700, marginTop: '2px' }}>{overdueCustomers} Toko belum order {'>'}14 hari</p>
+                  </div>
+               </div>
+             )}
+
+             {/* Alert 2: Overdue Prospects */}
+             {overdueProspek > 0 && (
+               <div className="tap-active shadow-premium" onClick={() => navigate('/mobile/prospek')} style={{ minWidth: '260px', background: '#fff', borderRadius: '24px', padding: '16px', border: '1px solid #ffedd5', display: 'flex', gap: '12px' }}>
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                     <Target size={24} color="#F97316" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                     <h4 style={{ fontSize: '14px', fontWeight: 950, color: '#111827', margin: 0 }}>Warning Prospek</h4>
+                     <p style={{ fontSize: '11px', color: '#f97316', fontWeight: 700, marginTop: '2px' }}>{overdueProspek} Butuh kunjungan ulang</p>
+                  </div>
+               </div>
+             )}
+
+             {/* Default Info if no alerts */}
+             {overdueCustomers === 0 && overdueProspek === 0 && (
+                <div style={{ minWidth: '100%', background: '#F0FDF4', borderRadius: '24px', padding: '16px', border: '1px solid #BBF7D0', display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <CheckCircle size={20} color="#10B981" />
+                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#065F46' }}>Semua target aman! Terus tingkatkan performa.</span>
                 </div>
-                <div>
-                   <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', margin: 0 }}>Customer Non-Aktif</h4>
-                   <p style={{ fontSize: '11px', color: '#ef4444', fontWeight: 700, marginTop: '2px' }}>{overdueCustomers} Belum order {'>'}14 hari</p>
-                </div>
-             </div>
-             {/* Alert 2 */}
-             <div className="tap-active shadow-premium" onClick={() => navigate('/mobile/prospek')} style={{ minWidth: '240px', background: '#fff', borderRadius: '24px', padding: '16px', border: '1px solid #ffedd5', display: 'flex', gap: '12px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#FFF7ED', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                   <Target size={24} color="#F97316" />
-                </div>
-                <div>
-                   <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', margin: 0 }}>Prospek Terlantar</h4>
-                   <p style={{ fontSize: '11px', color: '#f97316', fontWeight: 700, marginTop: '2px' }}>{overdueProspek} Membutuhkan follow-up</p>
-                </div>
-             </div>
+             )}
           </div>
         </div>
 

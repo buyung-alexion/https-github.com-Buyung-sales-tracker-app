@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 
 export function useChatNotifications(currentUserId: string | undefined) {
   const [unreadCount, setUnreadCount] = useState(0);
+  const [newMsg, setNewMsg] = useState<any>(null);
 
   const fetchUnreadCount = async () => {
     if (!currentUserId) return;
@@ -36,6 +37,11 @@ export function useChatNotifications(currentUserId: string | undefined) {
           // If message is for a chat I'm part of (hard to filter perfectly in client, but let's just re-fetch)
           if (payload.new.sender_id !== currentUserId) {
             fetchUnreadCount();
+            setNewMsg(payload.new);
+            // Optional: Browser Notification if permission granted
+            if (Notification.permission === 'granted') {
+              new Notification('Pesan Baru', { body: payload.new.content });
+            }
           }
         }
       )
@@ -51,5 +57,5 @@ export function useChatNotifications(currentUserId: string | undefined) {
     };
   }, [currentUserId]);
 
-  return unreadCount;
+  return { unreadCount, newMsg, clearNewMsg: () => setNewMsg(null) };
 }

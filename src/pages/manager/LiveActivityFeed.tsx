@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
+import { store } from '../../store/dataStore';
 
 import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+
 
 const ACT_ICON: Record<string, React.ReactNode> = {
   WA: <MessageSquare size={14} />,
@@ -26,6 +27,7 @@ export default function LiveActivityFeed() {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
+  const [attendance, setAttendance] = useState<any[]>([]);
   const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
 
   // Pagination states
@@ -46,6 +48,15 @@ export default function LiveActivityFeed() {
     (activities || []).forEach(a => { if (a.geotagging?.area) set.add(a.geotagging.area); });
     return Array.from(set).sort();
   }, [activities]);
+
+  const fetchAttendance = async () => {
+    const { data } = await store.fetchRecentAttendance();
+    setAttendance(data || []);
+  };
+
+  useEffect(() => {
+    fetchAttendance();
+  }, []);
 
   const filtered = useMemo(() => {
     const acts = activities || [];
@@ -95,15 +106,9 @@ export default function LiveActivityFeed() {
       );
   }, [allProspek, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs]);
 
-  // Pie Chart Data
-  const pieData = [
-    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: 'url(#colorFollowupGradient)', raw: '#DB2777' },
-    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: 'url(#colorVisitGradient)', raw: '#EAB308' },
-    { name: 'Sales Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: 'url(#colorOrderGradient)', raw: '#EF4444' },
-    { name: 'Prospek', value: filteredProspek.length, color: '#818cf8', raw: '#818cf8' },
-  ];
   
-  const totalActs = pieData.reduce((acc, curr) => acc + curr.value, 0);
+  
+  
 
 
   const salesPerformanceData = useMemo(() => {
@@ -197,7 +202,7 @@ export default function LiveActivityFeed() {
   // Set Shell Title on Mount
   useEffect(() => {
     const event = new CustomEvent('setMgrTitle', { 
-      detail: { title: 'Activity Stream', sub: 'Pantau aktivitas tim dan pencatatan secara real-time' } 
+      detail: { title: 'Activity Center', sub: 'Pantau aktivitas tim dan pencatatan secara real-time' } 
     });
     window.dispatchEvent(event);
   }, []);
@@ -295,7 +300,7 @@ export default function LiveActivityFeed() {
         {/* 2. MIDDLE: DASHBOARD ANALYTICS GRID */}
         <div style={{ 
           display: 'grid', 
-          gridTemplateColumns: '1.2fr 0.8fr', 
+          gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', 
           gap: '24px',
           width: '100%'
         }}>
@@ -345,79 +350,43 @@ export default function LiveActivityFeed() {
               ))}
             </div>
           </div>
+        </div>
 
-
-          {/* Activity Share (Pie Chart) */}
-          <div style={{ 
-            background: 'white', 
-            borderRadius: '32px', 
-            padding: '32px', 
-            boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-            border: '1px solid #f1f5f9',
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: '450px'
-          }}>
-            <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Proporsi Aktivitas</h3>
-              <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>SHARE BY TYPE</p>
-            </div>
-            
-            <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <defs>
-                    <linearGradient id="colorVisitGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#FACC15" />
-                      <stop offset="100%" stopColor="#EAB308" />
-                    </linearGradient>
-                    <linearGradient id="colorFollowupGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#EC4899" />
-                      <stop offset="100%" stopColor="#DB2777" />
-                    </linearGradient>
-                    <linearGradient id="colorOrderGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#F87171" />
-                      <stop offset="100%" stopColor="#EF4444" />
-                    </linearGradient>
-                  </defs>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
-                    paddingAngle={8}
-                    dataKey="value"
-                    stroke="none"
-                    cornerRadius={6}
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <RechartsTooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.1)' }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                <div style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b', lineHeight: 1 }}>{totalActs}</div>
-                <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginTop: '2px' }}>Total Acts</div>
+        {/* 2.5 ATTENDANCE LOG (New Section) */}
+        <div style={{ 
+          background: 'white', 
+          borderRadius: '32px', 
+          padding: '32px', 
+          boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+          border: '1px solid #f1f5f9'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+             <div>
+                <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Attendance Log</h3>
+                <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>HARI INI</p>
+             </div>
+             <button onClick={fetchAttendance} style={{ padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800 }}>Refresh</button>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+            {attendance.length > 0 ? attendance.map(att => (
+              <div key={att.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#f8fafc', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
+                <img src={att.photo_in} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} alt="Sales In" />
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{getSalesName(att.id_sales)}</div>
+                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{att.location_in?.area || 'Area'} • {new Date(att.check_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+                <div style={{ 
+                  padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 900,
+                  background: att.status === 'active' ? '#dcfce7' : '#f1f5f9',
+                  color: att.status === 'active' ? '#166534' : '#64748b'
+                }}>
+                  {att.status === 'active' ? 'WORKING' : 'FINISHED'}
+                </div>
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '24px' }}>
-              {pieData.map(d => {
-                const pct = totalActs > 0 ? Math.round((d.value / totalActs) * 100) : 0;
-                return (
-                  <div key={d.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: '12px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: d.raw }}></div>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{d.name}</span>
-                    </div>
-                    <span style={{ fontSize: '12px', fontWeight: 900, color: '#1e293b' }}>{pct}%</span>
-                  </div>
-                );
-              })}
-            </div>
+            )) : (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: 800 }}>Belum ada sales yang Clock-in hari ini.</div>
+            )}
           </div>
         </div>
 
@@ -438,8 +407,9 @@ export default function LiveActivityFeed() {
                   <th>Sales</th>
                   <th>Tipe</th>
                   <th>Target</th>
-                  <th>Catatan</th>
+                  <th>Note</th>
                   <th>Area</th>
+                  <th style={{ textAlign: 'center' }}>Vol (KG)</th>
                   <th style={{ textAlign: 'center' }}>Bukti</th>
                 </tr>
               </thead>
@@ -466,6 +436,9 @@ export default function LiveActivityFeed() {
                           </td>
                           <td className="note-cell">{a.catatan_hasil}</td>
                           <td>{a.geotagging?.area || '—'}</td>
+                          <td style={{ textAlign: 'center', fontWeight: 900, color: '#f59e0b' }}>
+                            {a.sales_volume ? `${a.sales_volume} KG` : '—'}
+                          </td>
                           <td style={{ textAlign: 'center', width: '60px' }}>
                             {a.geotagging?.photo ? (
                               <button 

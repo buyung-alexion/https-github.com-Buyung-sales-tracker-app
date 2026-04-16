@@ -3,8 +3,8 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 
 const env = fs.readFileSync('.env.local', 'utf8');
-const supabaseUrl = env.match(/VITE_SUPABASE_URL=(.*)/)?.[1];
-const supabaseAnonKey = env.match(/VITE_SUPABASE_ANON_KEY=(.*)/)?.[1];
+const supabaseUrl = env.match(/VITE_SUPABASE_URL=["']?(.*?)["']?$/m)?.[1];
+const supabaseAnonKey = env.match(/VITE_SUPABASE_ANON_KEY=["']?(.*?)["']?$/m)?.[1];
 
 if (!supabaseUrl || !supabaseAnonKey) {
   process.exit(1);
@@ -13,7 +13,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function checkAll() {
-  const tables = ['activity', 'sales', 'roles', 'system_targets', 'messages'];
+  const tables = ['activity', 'sales', 'roles', 'system_targets', 'messages', 'prospek', 'customer'];
   
   for (const table of tables) {
     console.log(`\n--- Checking ${table} Table ---`);
