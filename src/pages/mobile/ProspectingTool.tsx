@@ -3,14 +3,13 @@ import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, CheckCheck, Search, Filter, Plus, X, MapPin, Edit3, PhoneCall, Camera, Users, Activity, FileText, Loader2, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { store } from '../../store/dataStore';
-import { getAreaName } from '../../constants';
 import { useSalesData } from '../../hooks/useSalesData';
 
 
 interface Props { salesId: string; }
 
 export default function ProspectingTool({ salesId }: Props) {
-  const { prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], refresh } = useSalesData() || {};
+  const { prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], masterStatuses = [], refresh } = useSalesData() || {};
   
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -218,12 +217,14 @@ export default function ProspectingTool({ salesId }: Props) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getStatusColor = (status: StatusProspek = 'Cold') => {
+  const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
+
+  const getStatusColor = (status: string = 'Cold') => {
     switch (status) {
-      case 'Hot': return '#EF4444';
-      case 'Warm': return '#F59E0B';
-      case 'Cold': return '#3B82F6';
-      default: return '#94A3B8';
+      case 'Hot': return '#EF4444'; // Bright Red
+      case 'Warm': return '#F59E0B'; // Bright Amber
+      case 'Cold': return '#3B82F6'; // Bright Blue
+      default: return '#6366F1'; // Vibrant Indigo fallback
     }
   };
 
@@ -314,7 +315,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   position: 'relative', 
                   border: '1px solid rgba(0,0,0,0.02)',
                   borderLeft: `5px solid ${accent}`,
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                  boxShadow: `0 10px 25px ${accent}15`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   overflow: 'hidden'
                 }}
@@ -584,7 +585,8 @@ export default function ProspectingTool({ salesId }: Props) {
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
                   <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={addForm.status} onChange={e => setAddForm({ ...addForm, status: e.target.value as StatusProspek })}>
-                    <option>Cold</option><option>Warm</option><option>Hot</option>
+                    <option value="">-- Pilih Status --</option>
+                    {masterStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -695,7 +697,8 @@ export default function ProspectingTool({ salesId }: Props) {
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
                   <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value as StatusProspek })}>
-                    <option>Cold</option><option>Warm</option><option>Hot</option>
+                    <option value="">-- Pilih Status --</option>
+                    {masterStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -846,19 +849,31 @@ export default function ProspectingTool({ salesId }: Props) {
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Level Prospek (Suhu)</label>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['All', 'Hot', 'Warm', 'Cold'].map(s => (
+                  <button 
+                    onClick={() => setFilterStatus('All')}
+                    style={{ 
+                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                      background: filterStatus === 'All' ? '#111827' : '#F8FAFC',
+                      color: filterStatus === 'All' ? '#FFCC00' : '#64748b',
+                      border: filterStatus === 'All' ? 'none' : '1px solid #f1f5f9',
+                      transition: 'all 0.2s', textAlign: 'center'
+                    }}
+                  >
+                    Semua
+                  </button>
+                  {masterStatuses.map(s => (
                     <button 
-                      key={s}
-                      onClick={() => setFilterStatus(s as any)}
+                      key={s.id}
+                      onClick={() => setFilterStatus(s.id as any)}
                       style={{ 
                         padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                        background: filterStatus === s ? '#111827' : '#F8FAFC',
-                        color: filterStatus === s ? '#FFCC00' : '#64748b',
-                        border: filterStatus === s ? 'none' : '1px solid #f1f5f9',
+                        background: filterStatus === s.id ? '#111827' : '#F8FAFC',
+                        color: filterStatus === s.id ? '#FFCC00' : '#64748b',
+                        border: filterStatus === s.id ? 'none' : '1px solid #f1f5f9',
                         transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
-                      {s === 'All' ? 'Semua' : s === 'Hot' ? '🔥 Hot' : s === 'Warm' ? '☀️ Warm' : '❄️ Cold'}
+                      {s.id === 'Hot' ? '🔥 ' : s.id === 'Warm' ? '☀️ ' : '❄️ '} {s.name}
                     </button>
                   ))}
                 </div>

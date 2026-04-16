@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function DataManagement() {
-  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'channel'>('role');
+  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'channel' | 'status' | 'action'>('role');
   const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,6 +64,8 @@ export default function DataManagement() {
     { id: 'area', label: 'Area / Wilayah', icon: <MapPin size={16} /> },
     { id: 'category', label: 'Kategori Bisnis', icon: <ShoppingCart size={16} /> },
     { id: 'channel', label: 'Sumber / Channel', icon: <TrendingUp size={16} /> },
+    { id: 'status', label: 'Status Prospek', icon: <Target size={16} /> },
+    { id: 'action', label: 'Tipe Aktivitas', icon: <Users size={16} /> },
   ];
 
   // --- MODAL STATES ---
@@ -73,7 +75,7 @@ export default function DataManagement() {
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
   const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '' });
 
-  const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | null; data: any}>({isOpen: false, type: null, data: null});
+  const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
   const [masterForm, setMasterForm] = useState({ name: '' });
 
 
@@ -148,7 +150,6 @@ export default function DataManagement() {
        await store.addSales({
          id: teamForm.id,
          nama: teamForm.nama,
-         armada: 'A',
          username: teamForm.username,
          password: teamForm.pass,
          role: teamForm.role,
@@ -179,9 +180,9 @@ export default function DataManagement() {
 
 
   // --- MASTER DATA ACTIONS ---
-  const { masterAreas, masterCategories, masterChannels, refresh: refreshGlobal } = useSalesData();
+  const { masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
 
-  const openMasterModal = (type: 'area' | 'category' | 'channel', existingData?: any) => {
+  const openMasterModal = (type: 'area' | 'category' | 'channel' | 'status' | 'action', existingData?: any) => {
     setMasterForm({ name: existingData ? existingData.name : '' });
     setMasterModal({ isOpen: true, type, data: existingData });
   };
@@ -207,6 +208,12 @@ export default function DataManagement() {
       } else if (type === 'channel') {
         if (masterModal.data) alert('Update Sumber tidak tersedia.');
         else await store.addMasterChannel(name);
+      } else if (type === 'status') {
+        if (masterModal.data) alert('Update Status tidak tersedia.');
+        else await store.addMasterProspectStatus(name);
+      } else if (type === 'action') {
+        if (masterModal.data) alert('Update Aktivitas tidak tersedia.');
+        else await store.addMasterAction(name);
       }
       setMasterModal({ isOpen: false, type: null, data: null });
       await refreshGlobal();
@@ -221,6 +228,8 @@ export default function DataManagement() {
       if (type === 'area') await store.deleteMasterArea(id);
       else if (type === 'category') await store.deleteMasterCategory(id);
       else if (type === 'channel') await store.deleteMasterChannel(id);
+      else if (type === 'status') await store.deleteMasterProspectStatus(id);
+      else if (type === 'action') await store.deleteMasterAction(id);
       await refreshGlobal();
     } catch (err: any) {
       alert(err.message);
@@ -428,8 +437,8 @@ export default function DataManagement() {
             </div>
           )}
 
-          {/* MASTER DATA TABS (Area, Category, Channel) */}
-          {(activeTab === 'area' || activeTab === 'category' || activeTab === 'channel') && (
+          {/* MASTER DATA TABS (Area, Category, Channel, Status, Action) */}
+          {(activeTab === 'area' || activeTab === 'category' || activeTab === 'channel' || activeTab === 'status' || activeTab === 'action') && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                <div style={{ 
                 background: '#fff', padding: '32px', borderRadius: '32px', 
@@ -438,7 +447,10 @@ export default function DataManagement() {
               }}>
                 <div>
                   <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>
-                    {activeTab === 'area' ? 'Manajemen Wilayah' : activeTab === 'category' ? 'Kategori Bisnis' : 'Sumber / Channel'}
+                    {activeTab === 'area' ? 'Manajemen Wilayah' : 
+                     activeTab === 'category' ? 'Kategori Bisnis' : 
+                     activeTab === 'channel' ? 'Sumber / Channel' :
+                     activeTab === 'status' ? 'Status Prospek' : 'Tipe Aktivitas'}
                   </h3>
                   <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>DATA MASTER SISTEM</p>
                 </div>
@@ -451,7 +463,10 @@ export default function DataManagement() {
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-                {(activeTab === 'area' ? masterAreas : activeTab === 'category' ? masterCategories : masterChannels).map((m: any) => (
+                {(activeTab === 'area' ? masterAreas : 
+                  activeTab === 'category' ? masterCategories : 
+                  activeTab === 'channel' ? masterChannels :
+                  activeTab === 'status' ? masterStatuses : masterActions).map((m: any) => (
                   <div key={m.id} style={{ 
                     background: '#fff', borderRadius: '24px', padding: '20px 24px', 
                     boxShadow: '0 8px 30px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9',
@@ -460,10 +475,13 @@ export default function DataManagement() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                       <div style={{ 
                         width: '40px', height: '40px', borderRadius: '12px', 
-                        background: activeTab === 'area' ? '#f0f9ff' : activeTab === 'category' ? '#fff7ed' : '#f0fdf4',
+                        background: activeTab === 'area' ? '#f0f9ff' : activeTab === 'category' ? '#fff7ed' : activeTab === 'channel' ? '#f0fdf4' : activeTab === 'status' ? '#fef2f2' : '#f5f3ff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}>
-                        {activeTab === 'area' ? <MapPin size={20} color="#0ea5e9" /> : activeTab === 'category' ? <ShoppingCart size={20} color="#f97316" /> : <TrendingUp size={20} color="#22c55e" />}
+                        {activeTab === 'area' ? <MapPin size={20} color="#0ea5e9" /> : 
+                         activeTab === 'category' ? <ShoppingCart size={20} color="#f97316" /> : 
+                         activeTab === 'channel' ? <TrendingUp size={20} color="#22c55e" /> :
+                         activeTab === 'status' ? <Target size={20} color="#ef4444" /> : <Users size={20} color="#8b5cf6" />}
                       </div>
                       <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '15px' }}>{m.name}</div>
                     </div>

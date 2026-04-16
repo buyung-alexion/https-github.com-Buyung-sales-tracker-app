@@ -372,10 +372,7 @@ input, textarea, select { font-family: inherit; }
 .status-warm-grad { background: #FDE68A; color: #111827; font-weight: bold;}
 .status-cold-grad { background: #E0F2FE; color: #0369A1; font-weight: bold;}
 
-.armada-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.arm-a { background: #E0F2FE; color: #0284C7; }
-.arm-b { background: #D1FAE5; color: #059669; }
-.arm-c { background: #FEF3C7; color: #D97706; }
+/* (Removed Armada Badges) */
 
 /* ─── ACT BADGES ─────────────────────────────────────────── */
 .act-badge { padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 700; }
@@ -554,7 +551,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.3); background: var(--bg-glass-hover); }
 .kpi-header { display: flex; align-items: center; justify-content: space-between; }
 .kpi-name { font-size: 18px; font-weight: 800; }
-.kpi-armada { font-size: 11px; }
+.kpi-title-wrap { font-size: 11px; }
 .kpi-metrics { display: flex; gap: 16px; }
 .kpi-metric { display: flex; flex-direction: column; gap: 2px; }
 .kpi-val { font-size: 22px; font-weight: 800; color: var(--kpi-color, var(--indigo)); }

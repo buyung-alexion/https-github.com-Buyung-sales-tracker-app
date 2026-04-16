@@ -1,7 +1,6 @@
 export type Area = string; // Stores AreaId (e.g., 'A001')
 export type StatusProspek = 'Cold' | 'Warm' | 'Hot';
 export type TipeAksi = 'WA' | 'Visit' | 'Call' | 'Order' | 'Note';
-export type Armada = 'A' | 'B' | 'C';
 
 export interface Prospek {
   id: string;
@@ -56,7 +55,6 @@ export interface Sales {
   id: string;
   nama: string;
   no_wa?: string;
-  armada: Armada;
   target_maintenance?: number; // kept as optional just in case, but unused
   username?: string;
   password?: string;

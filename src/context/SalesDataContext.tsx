@@ -12,6 +12,8 @@ interface SalesDataContextType {
   masterAreas: {id: string, name: string}[];
   masterCategories: {id: string, name: string}[];
   masterChannels: {id: string, name: string}[];
+  masterStatuses: {id: string, name: string}[];
+  masterActions: {id: string, name: string}[];
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -28,12 +30,14 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const [masterAreas, setMasterAreas] = useState<{id: string, name: string}[]>([]);
   const [masterCategories, setMasterCategories] = useState<{id: string, name: string}[]>([]);
   const [masterChannels, setMasterChannels] = useState<{id: string, name: string}[]>([]);
+  const [masterStatuses, setMasterStatuses] = useState<{id: string, name: string}[]>([]);
+  const [masterActions, setMasterActions] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchTimeoutRef = React.useRef<any>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH] = await Promise.all([
+      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC] = await Promise.all([
         supabase.from('sales').select('*').order('id'),
         supabase.from('prospek').select('*').order('created_at', { ascending: false }),
         supabase.from('customer').select('*').order('tanggal_join', { ascending: false }),
@@ -41,7 +45,9 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         supabase.from('system_targets').select('*').eq('id', 1).single(),
         supabase.from('master_areas').select('*').order('name'),
         supabase.from('master_categories').select('*').order('name'),
-        supabase.from('master_channels').select('*').order('name')
+        supabase.from('master_channels').select('*').order('name'),
+        supabase.from('master_prospect_status').select('*').order('name'),
+        supabase.from('master_actions').select('*').order('name')
       ]);
 
       const filteredSales = (resSales.data || []).filter(s => {
@@ -57,6 +63,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setMasterAreas(resMA.data || []);
       setMasterCategories(resMC.data || []);
       setMasterChannels(resMCH.data || []);
+      setMasterStatuses(resMS.data || []);
+      setMasterActions(resMAC.data || []);
     } catch (err) {
       console.error('Error fetching data central:', err);
     } finally {
@@ -88,6 +96,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_areas' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_categories' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_channels' }, () => debouncedFetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_prospect_status' }, () => debouncedFetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_actions' }, () => debouncedFetch())
       .subscribe();
 
     return () => {
@@ -105,6 +115,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
     masterAreas,
     masterCategories,
     masterChannels,
+    masterStatuses,
+    masterActions,
     loading,
     refresh: fetchData
   };

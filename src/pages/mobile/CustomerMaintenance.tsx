@@ -31,7 +31,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
   const [editForm, setEditForm] = useState({
     id: '',
-    nama_toko: '', no_wa: '', area: 'SMD', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '' 
+    nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' 
   });
 
   const [addModal, setAddModal] = useState(false);
@@ -39,7 +39,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const [addForm, setAddForm] = useState<{
     nama_toko: string; nama_pic: string; no_wa: string; area: string; link_map: string; kategori: string; rating: number; foto_profil: string;
   }>({ 
-    nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', link_map: '', kategori: 'Retail', rating: 0, foto_profil: ''
+    nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: ''
   });
 
   useEffect(() => {
@@ -126,14 +126,16 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
   const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
 
-  const getAccentColor = (kategori: string = 'K001') => {
-    switch (kategori) {
-      case 'K001': return '#3B82F6';
-      case 'K002': return '#10B981';
-      case 'K003': return '#F59E0B';
-      case 'K004': return '#8B5CF6';
-      default: return '#94A3B8';
-    }
+  const getAccentColor = (kategoriId: string = '') => {
+    // Generate distinct colors based on ID if not matched to specific known ones
+    const colors: Record<string, string> = {
+      'Retail': '#3B82F6',   // Vibrant Blue
+      'Grosir': '#10B981',   // Vibrant Emerald
+      'Catering': '#F59E0B', // Vibrant Amber
+      'Hotel': '#8B5CF6',    // Vibrant Violet
+      'Resto': '#EC4899'     // Vibrant Pink
+    };
+    return colors[kategoriId] || '#6366F1'; // Vibrant Indigo fallback
   };
 
 
@@ -144,6 +146,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
     try {
       const { error } = await store.updateCustomer(editForm.id, {
         nama_toko: editForm.nama_toko,
+        nama_pic: editForm.nama_pic,
         no_wa: editForm.no_wa,
         area: editForm.area,
         link_map: editForm.link_map,
@@ -163,7 +166,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setEditForm({ id: '', nama_toko: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
+        setEditForm({ id: '', nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -294,10 +297,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   borderRadius: '16px', 
                   padding: '16px', 
                   marginBottom: '12px', 
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.03)', 
                   position: 'relative', 
                   border: '1px solid rgba(0,0,0,0.02)',
                   borderLeft: `5px solid ${accent}`,
+                  boxShadow: `0 10px 25px ${accent}15`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   overflow: 'hidden'
                 }}
@@ -317,7 +320,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{c.nama_toko}</h3>
+                      <div>
+                        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{c.nama_toko}</h3>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: accent, marginTop: '2px' }}>👤 {c.nama_pic || 'No PIC'}</div>
+                      </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontSize: '14px', fontWeight: 900, color: '#334155' }}>📦 {c.total_order_volume}kg</div>
                       </div>
@@ -398,6 +404,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                           setEditForm({ 
                             id: c.id,
                             nama_toko: c.nama_toko, 
+                            nama_pic: c.nama_pic || '',
                             no_wa: c.no_wa, 
                             area: c.area || 'SMD',
                             link_map: c.link_map || '', 
@@ -458,6 +465,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
               <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Store Name *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_toko} onChange={e => setEditForm({...editForm, nama_toko: e.target.value})} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC Name</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_pic} onChange={e => setEditForm({...editForm, nama_pic: e.target.value})} /></div>
               <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>WA Number *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.no_wa} onChange={e => setEditForm({...editForm, no_wa: e.target.value})} /></div>
               <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={editForm.link_map} onChange={e => setEditForm({...editForm, link_map: e.target.value})} /></div>
               

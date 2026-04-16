@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSalesDataContext } from '../context/SalesDataContext';
-import type { SystemTargets, Prospek, Customer, Activity, Sales, Area, StatusProspek, TipeAksi, Armada } from '../types';
+import type { SystemTargets, Prospek, Customer, Activity, Sales, Area, StatusProspek, TipeAksi } from '../types';
 
 export function useSalesData() {
   const context = useSalesDataContext();
@@ -24,4 +24,4 @@ export function useCurrentSales() {
   return { currentSalesId, setSales, salesData };
 }
 
-export type { SystemTargets, Prospek, Customer, Activity, Sales, Area, StatusProspek, TipeAksi, Armada };
+export type { SystemTargets, Prospek, Customer, Activity, Sales, Area, StatusProspek, TipeAksi };

@@ -30,7 +30,7 @@ export const generateDailyDigest = (
 
     totalV += sVisits; totalP += sPros; totalC += sCust; totalWA += sWA;
 
-    text += `🚚 *Armada ${s.armada} - ${s.nama.split(' ')[0]}*\n`;
+    text += `👤 *Sales ${s.nama.split(' ')[0]}*\n`;
     text += `📍 Visit: ${sVisits} toko\n`;
     text += `💬 WhatsApp: ${sWA} chat\n`;
     text += `🌱 Prospek Baru Dihubungi: ${sPros}\n`;

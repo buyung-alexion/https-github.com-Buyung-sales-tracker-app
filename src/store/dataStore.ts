@@ -307,4 +307,37 @@ export const store = {
     if (error) console.error('deleteMasterChannel error:', error);
     return { error };
   },
+
+  // --- NEW MASTER STATUS & ACTIONS ---
+  async fetchMasterProspectStatus() {
+    const { data, error } = await supabase.from('master_prospect_status').select('*').order('name');
+    if (error) console.error('fetchMasterProspectStatus error:', error);
+    return data || [];
+  },
+  async addMasterProspectStatus(name: string) {
+    const { data, error } = await supabase.from('master_prospect_status').insert([{ id: name, name }]).select();
+    if (error) console.error('addMasterProspectStatus error:', error);
+    return { data, error };
+  },
+  async deleteMasterProspectStatus(id: string) {
+    const { error } = await supabase.from('master_prospect_status').delete().eq('id', id);
+    if (error) console.error('deleteMasterProspectStatus error:', error);
+    return { error };
+  },
+
+  async fetchMasterActions() {
+    const { data, error } = await supabase.from('master_actions').select('*').order('name');
+    if (error) console.error('fetchMasterActions error:', error);
+    return data || [];
+  },
+  async addMasterAction(name: string) {
+    const { data, error } = await supabase.from('master_actions').insert([{ id: name, name }]).select();
+    if (error) console.error('addMasterAction error:', error);
+    return { data, error };
+  },
+  async deleteMasterAction(id: string) {
+    const { error } = await supabase.from('master_actions').delete().eq('id', id);
+    if (error) console.error('deleteMasterAction error:', error);
+    return { error };
+  },
 };
