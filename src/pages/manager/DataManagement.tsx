@@ -136,6 +136,8 @@ export default function DataManagement() {
     setFormError(null);
     try {
       if (teamModal.data) {
+        const { error } = await store.updateSales(teamModal.data.id, {
+          nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
           role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
         });
         if (error) throw error;
