@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { AREAS, CATEGORIES } from '../../constants';
 import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, Tag, Briefcase, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
@@ -234,7 +233,7 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
 };
 
 export default function ManagerCustomer() {
-  const { customers: rawCustomers, sales, activities, refresh } = useSalesData();
+  const { customers: rawCustomers, sales, activities, masterAreas, masterCategories, refresh } = useSalesData();
   const [search, setSearch] = useState('');
   const [filterSales, setFilterSales] = useState('All');
   const [filterArea, setFilterArea] = useState('All');
@@ -249,12 +248,24 @@ export default function ManagerCustomer() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const [form, setForm] = useState({
+  const [addForm, setAddForm] = useState({
     nama_toko: '',
     nama_pic: '',
     no_wa: '',
-    area: 'SMD',
-    kategori: 'Retail',
+    area: '',
+    kategori: '',
+    link_map: '',
+    rating: 5,
+    foto_profil: ''
+  });
+
+  const [editForm, setEditForm] = useState({
+    id: '',
+    nama_toko: '',
+    nama_pic: '',
+    no_wa: '',
+    area: '',
+    kategori: '',
     link_map: '',
     rating: 5,
     foto_profil: ''
@@ -335,7 +346,7 @@ export default function ManagerCustomer() {
   }, [customerWithStats, viewAll]);
 
   const handleOpenAdd = () => {
-    setForm({
+    setAddForm({
       nama_toko: '',
       nama_pic: '',
       no_wa: '',
@@ -351,12 +362,13 @@ export default function ManagerCustomer() {
   };
 
   const handleOpenEdit = (c: any) => {
-    setForm({
+    setEditForm({
+      id: c.id,
       nama_toko: c.nama_toko || '',
       nama_pic: c.nama_pic || '',
       no_wa: c.no_wa || '',
-      area: c.area || AREAS[0].id,
-      kategori: c.kategori || CATEGORIES[0].id,
+      area: c.area || 'SMD',
+      kategori: c.kategori || 'Retail',
       link_map: c.link_map || '',
       rating: c.rating || 5,
       foto_profil: c.foto_profil || ''
@@ -372,36 +384,36 @@ export default function ManagerCustomer() {
     setIsSubmitting(true);
     setSaveError(null);
 
-    try {
-      let error;
-      if (editModal) {
-        const { error: err } = await store.updateCustomer(editModal.id, form);
-        error = err;
-      } else {
-        const { error: err } = await store.addCustomer({ 
-          ...form, 
-          sales_pic: filterSales === 'All' ? 'm001' : filterSales,
-          last_order_date: new Date().toISOString(),
-          total_order_volume: 0
-        });
-        error = err;
+    const payload = editModal ? editForm : addForm;
+
+      try {
+        let error;
+        if (editModal) {
+          ({ error } = await store.updateCustomer(editModal.id, payload));
+        } else {
+          ({ error } = await store.addCustomer({ 
+            ...payload, 
+            sales_pic: filterSales === 'All' ? 'm001' : filterSales,
+            last_order_date: new Date().toISOString(),
+            total_order_volume: 0
+          }));
+        }
+
+        if (error) throw error;
+
+        setSaveSuccess(true);
+        await refresh();
+        setTimeout(() => {
+          setAddModal(false);
+          setEditModal(null);
+          setSaveSuccess(false);
+        }, 1000);
+      } catch (err: any) {
+        setSaveError(err.message || 'Gagal menyimpan data');
+      } finally {
+        setIsSubmitting(false);
       }
-
-      if (error) throw error;
-
-      setSaveSuccess(true);
-      await refresh();
-      setTimeout(() => {
-        setAddModal(false);
-        setEditModal(null);
-        setSaveSuccess(false);
-      }, 1000);
-    } catch (err: any) {
-      setSaveError(err.message || 'Gagal menyimpan data');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
 
 
   return (
@@ -464,7 +476,7 @@ export default function ManagerCustomer() {
               }}
             >
               <option value="All">Semua Wilayah</option>
-              {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
         </div>
@@ -493,7 +505,7 @@ export default function ManagerCustomer() {
               }}
             >
               <option value="All">Semua Kategori</option>
-              {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              {masterCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
         </div>
@@ -796,19 +808,21 @@ export default function ManagerCustomer() {
         isOpen={addModal || !!editModal}
         onClose={() => { setAddModal(false); setEditModal(null); }}
         customer={editModal}
-        form={form}
-        setForm={setForm}
+        form={editModal ? editForm : addForm}
+        setForm={editModal ? setEditForm : setAddForm}
         onSave={handleSave}
         isSubmitting={isSubmitting}
         saveError={saveError}
         saveSuccess={saveSuccess}
+        masterAreas={masterAreas}
+        masterCategories={masterCategories}
       />
     </div>
   );
 }
 
 // Add/Edit Modal (Premium Manager Style)
-function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSubmitting, saveError, saveSuccess }: any) {
+function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [] }: any) {
   if (!isOpen) return null;
 
   return (
@@ -864,39 +878,22 @@ function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSub
               <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Area</label>
               <select 
                 value={form.area}
-                onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Area Baru:');
-                    if (val && val.trim()) setForm({ ...form, area: val.trim() });
-                  } else {
-                    setForm({ ...form, area: e.target.value });
-                  }
-                }}
+                onChange={e => setForm({...form, area: e.target.value})}
                 style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
-                {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                {form.area && !AREAS.find(a => a.id === form.area) && (
-                  <option value={form.area}>{form.area}</option>
-                )}
-                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+                <option value="">-- Pilih Area --</option>
+                {masterAreas.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Segmentasi</label>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Kategori</label>
               <select 
                 value={form.kategori}
-                onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Kategori Baru:');
-                    if (val && val.trim()) setForm({ ...form, kategori: val.trim() });
-                  } else {
-                    setForm({ ...form, kategori: e.target.value });
-                  }
-                }}
+                onChange={e => setForm({...form, kategori: e.target.value})}
                 style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+                <option value="">-- Pilih Kategori --</option>
+                {masterCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>

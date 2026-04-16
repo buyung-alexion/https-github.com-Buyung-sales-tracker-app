@@ -1,12 +1,16 @@
-import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { getAreaName, AREAS } from '../../constants';
+import { getAreaName } from '../../constants';
 import { calculateSalesPoints } from '../../utils/points';
+import { useState, useEffect, useMemo } from 'react';
+import { 
+  ResponsiveContainer, 
+  PieChart, Pie, Cell
+} from 'recharts';
+
 
 
 export default function PerformanceAnalytics() {
-  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets } = useSalesData();
+  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas } = useSalesData();
 
   // --- MASTER FILTER STATES ---
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month');
@@ -83,8 +87,8 @@ export default function PerformanceAnalytics() {
   }, [realActivities, realProspek, realCustomers, selectedPeriod, selectedSales, selectedArea, selectedCategory]);
 
   const areas = useMemo(() => {
-    return AREAS;
-  }, []);
+    return masterAreas;
+  }, [masterAreas]);
 
   // Points-Based Targets
 
@@ -345,7 +349,7 @@ export default function PerformanceAnalytics() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>📅</span>
+          <span style={{ fontSize: '18px' }}>Ã°Å¸â€œâ€¦</span>
           <select 
             value={selectedPeriod} 
             onChange={(e) => setSelectedPeriod(e.target.value as any)}
@@ -361,7 +365,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>👤</span>
+          <span style={{ fontSize: '18px' }}>Ã°Å¸â€˜Â¤</span>
           <select 
             value={selectedSales} 
             onChange={(e) => setSelectedSales(e.target.value)}
@@ -375,7 +379,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>📍</span>
+          <span style={{ fontSize: '18px' }}>Ã°Å¸â€œÂ</span>
           <select 
             value={selectedArea} 
             onChange={(e) => setSelectedArea(e.target.value)}
@@ -389,7 +393,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>🛠️</span>
+          <span style={{ fontSize: '18px' }}>Ã°Å¸â€ºÂ Ã¯Â¸Â</span>
           <select 
             value={selectedCategory} 
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -437,11 +441,11 @@ export default function PerformanceAnalytics() {
         padding: '0 2px'
       }}>
         {[
-          { label: 'Total Prospek', value: totalProspekCount, from: '#a855f7', to: '#7c3aed', icon: 'Σ', shadow: 'rgba(168, 85, 247, 0.3)', trend: trends.prospek },
-          { label: 'Total Customer', value: totalCustomer, from: '#6366f1', to: '#4f46e5', icon: '👤', shadow: 'rgba(99, 102, 241, 0.3)', trend: trends.customer },
-          { label: 'Total Closing', value: totalUniqueClosing, from: '#10b981', to: '#059669', icon: '✓', shadow: 'rgba(16, 185, 129, 0.3)', trend: trends.closing },
-          { label: 'Total Sales Order', value: totalSO, from: '#f59e0b', to: '#d97706', icon: '📄', shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
-          { label: 'Total Activity', value: totalActivityCount, from: '#3b82f6', to: '#2563eb', icon: '⚡', shadow: 'rgba(59, 130, 246, 0.3)', trend: trends.activity }
+          { label: 'Total Prospek', value: totalProspekCount, from: '#a855f7', to: '#7c3aed', icon: 'ÃŽÂ£', shadow: 'rgba(168, 85, 247, 0.3)', trend: trends.prospek },
+          { label: 'Total Customer', value: totalCustomer, from: '#6366f1', to: '#4f46e5', icon: 'Ã°Å¸â€˜Â¤', shadow: 'rgba(99, 102, 241, 0.3)', trend: trends.customer },
+          { label: 'Total Closing', value: totalUniqueClosing, from: '#10b981', to: '#059669', icon: 'Ã¢Å“â€œ', shadow: 'rgba(16, 185, 129, 0.3)', trend: trends.closing },
+          { label: 'Total Sales Order', value: totalSO, from: '#f59e0b', to: '#d97706', icon: 'Ã°Å¸â€œâ€ž', shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
+          { label: 'Total Activity', value: totalActivityCount, from: '#3b82f6', to: '#2563eb', icon: 'Ã¢Å¡Â¡', shadow: 'rgba(59, 130, 246, 0.3)', trend: trends.activity }
         ].map((item: any, i) => (
           <div key={i} style={{ 
             background: `linear-gradient(135deg, ${item.from}, ${item.to})`, 
@@ -497,7 +501,7 @@ export default function PerformanceAnalytics() {
                     color: '#fff',
                     border: '1px solid rgba(255,255,255,0.1)'
                   }}>
-                    {item.trend >= 0 ? '+' : ''}{item.trend}% {item.trend >= 0 ? '↑' : '↓'}
+                    {item.trend >= 0 ? '+' : ''}{item.trend}% {item.trend >= 0 ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
                   </div>
                   {item.achieve !== undefined && (
                     <div style={{ 
@@ -596,7 +600,7 @@ export default function PerformanceAnalytics() {
                         padding: '2px 4px',
                         borderRadius: '4px'
                       }}>
-                        {growthPerc >= 0 ? '+' : ''}{growthPerc}% {growthPerc >= 0 ? '↑' : '↓'}
+                        {growthPerc >= 0 ? '+' : ''}{growthPerc}% {growthPerc >= 0 ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
                       </div>
                     )}
                     
@@ -877,10 +881,10 @@ export default function PerformanceAnalytics() {
 
               <div className="vertical-progress-container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#f8fafc', borderRadius: '24px' }}>
                 {[
-                  { label: 'Prospek', val: 100, color: 'linear-gradient(to top, #6366f1, #818cf8)', icon: '🎯' },
-                  { label: 'Cold', val: Math.round((fStatusColdNum / fTotal) * 100), color: 'linear-gradient(to top, #3b82f6, #60a5fa)', icon: '❄️' },
-                  { label: 'Hot', val: Math.round((fStatusHotNum / fTotal) * 100), color: 'linear-gradient(to top, #f59e0b, #fbbf24)', icon: '🔥' },
-                  { label: 'Clos.', val: Math.round((fClosedNum / fTotal) * 100), color: 'linear-gradient(to top, #10b981, #34d399)', icon: '✅' }
+                  { label: 'Prospek', val: 100, color: 'linear-gradient(to top, #6366f1, #818cf8)', icon: 'Ã°Å¸Å½Â¯' },
+                  { label: 'Cold', val: Math.round((fStatusColdNum / fTotal) * 100), color: 'linear-gradient(to top, #3b82f6, #60a5fa)', icon: 'Ã¢Ââ€žÃ¯Â¸Â' },
+                  { label: 'Hot', val: Math.round((fStatusHotNum / fTotal) * 100), color: 'linear-gradient(to top, #f59e0b, #fbbf24)', icon: 'Ã°Å¸â€Â¥' },
+                  { label: 'Clos.', val: Math.round((fClosedNum / fTotal) * 100), color: 'linear-gradient(to top, #10b981, #34d399)', icon: 'Ã¢Å“â€¦' }
                 ].map((bar, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '48px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 900, color: '#1e293b' }}>{bar.val}%</span>
@@ -971,7 +975,7 @@ export default function PerformanceAnalytics() {
                <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                  <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Growth Top</div>
-                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
+                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
                  </div>
                  <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                    {(() => {
@@ -996,12 +1000,12 @@ export default function PerformanceAnalytics() {
                <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
                  {(() => {
                    const topSales = salesLeadDistribution.slice(0, 2);
-                   const maxVal = Math.max(...salesLeadDistribution.map(s => s.value), 1);
+                   const maxVal = Math.max(...salesLeadDistribution.map((s: any) => s.value), 1);
                    return (
                      <>
                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                          <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Status Prospek</div>
-                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
+                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
                        </div>
                        <div style={{ fontSize: '8px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '6px' }}>
                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
@@ -1009,7 +1013,7 @@ export default function PerformanceAnalytics() {
                        </div>
                        {/* Mini Pin Chart (Sales) */}
                        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', flex: 1, marginTop: '8px', position: 'relative', minHeight: '60px' }}>
-                         {topSales.map((salesEntry, i) => {
+                         {topSales.map((salesEntry: any, i: number) => {
                            const h = (salesEntry.value / maxVal) * 45;
                            const color = i === 0 ? '#3b82f6' : '#94a3b8';
                            return (
@@ -1082,7 +1086,7 @@ export default function PerformanceAnalytics() {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '28px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>
-                ❤️
+                Ã¢ÂÂ¤Ã¯Â¸Â
               </div>
             </div>
 
@@ -1100,9 +1104,9 @@ export default function PerformanceAnalytics() {
               marginBottom: '16px' 
             }}>
               {[
-                { label: 'TOTAL', val: customers.length, color: '#1e293b', icon: '👥' },
-                { label: 'ACTIVE', val: retentionAnalysis.activeCount, color: '#10b981', icon: '✅' },
-                { label: 'DORMANT', val: retentionAnalysis.dormantCount, color: '#ef4444', icon: '⚠️' }
+                { label: 'TOTAL', val: customers.length, color: '#1e293b', icon: 'Ã°Å¸â€˜Â¥' },
+                { label: 'ACTIVE', val: retentionAnalysis.activeCount, color: '#10b981', icon: 'Ã¢Å“â€¦' },
+                { label: 'DORMANT', val: retentionAnalysis.dormantCount, color: '#ef4444', icon: 'Ã¢Å¡Â Ã¯Â¸Â' }
               ].map(m => (
                 <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                    <span style={{ fontSize: '14px' }}>{m.icon}</span>
@@ -1130,7 +1134,7 @@ export default function PerformanceAnalytics() {
                 gap: '8px'
               }}>
                <span>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
-               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
+               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Ã¢Å“Â¨' : 'Ã¢Å¡Â¡'}</span>
             </button>
           </div>
         </div>
@@ -1144,7 +1148,7 @@ export default function PerformanceAnalytics() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
             <div>
               <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Sales Activity Field Report</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>Distribusi aktivitas lapangan per salesman — Bulan Ini</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>Distribusi aktivitas lapangan per salesman Ã¢â‚¬â€ Bulan Ini</div>
             </div>
             {/* Legend */}
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -1154,7 +1158,7 @@ export default function PerformanceAnalytics() {
                 { label: 'Sales Order',  color: '#f59e0b' },
                 { label: 'Visit',        color: '#3b82f6' },
                 { label: 'Followup',     color: '#f43f5e' },
-              ].map(item => (
+              ].map((item: any) => (
                 <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: item.color }} />
                   <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{item.label}</span>
@@ -1177,7 +1181,7 @@ export default function PerformanceAnalytics() {
 
                 // Determine max value across all salesmen for proportional bar height
                 const allMax = Math.max(
-                  ...statsPerSales.slice(0, 8).flatMap(x =>
+                  ...statsPerSales.slice(0, 8).flatMap((x: any) =>
                     [x.prospekBaru, x.closingCount, x.soCount, x.visitCount, x.waCount + x.callCount]
                   ),
                   1
@@ -1188,7 +1192,7 @@ export default function PerformanceAnalytics() {
                   <div key={s.id} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
                     {/* Bars Group */}
                     <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: `${BAR_MAX_H + 24}px`, marginBottom: '16px', paddingTop: '24px', boxSizing: 'border-box', position: 'relative', width: '100%', justifyContent: 'center' }}>
-                      {metrics.map(m => {
+                      {(metrics as any[]).map((m: any) => {
                         const barH = Math.max(Math.round((m.val / allMax) * BAR_MAX_H), m.val > 0 ? 4 : 0);
                         return (
                           <div key={m.key} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', width: '22px' }}>
@@ -1247,29 +1251,29 @@ export default function PerformanceAnalytics() {
             </div>
           </div>
 
-          {/* Bottom: Keaktifan Sales Metrics — clean horizontal strip */}
+          {/* Bottom: Keaktifan Sales Metrics Ã¢â‚¬â€ clean horizontal strip */}
           {(() => {
             const n = statsPerSales.length || 1;
             const DAYS = 30;
 
-            const avgActsPerDay   = statsPerSales.reduce((a, s) => a + s.totalActs,                0) / n / DAYS;
-            const avgFollowupDay  = statsPerSales.reduce((a, s) => a + s.waCount + s.callCount,    0) / n / DAYS;
-            const avgClosingRate  = statsPerSales.reduce((a, s) => a + s.closingRate,              0) / n;
-            const avgSOPerDay     = statsPerSales.reduce((a, s) => a + s.soCount,                  0) / n / DAYS;
+            const avgActsPerDay   = statsPerSales.reduce((a: any, s: any) => a + s.totalActs,                0) / n / DAYS;
+            const avgFollowupDay  = statsPerSales.reduce((a: any, s: any) => a + s.waCount + s.callCount,    0) / n / DAYS;
+            const avgClosingRate  = statsPerSales.reduce((a: any, s: any) => a + s.closingRate,              0) / n;
+            const avgSOPerDay     = statsPerSales.reduce((a: any, s: any) => a + s.soCount,                  0) / n / DAYS;
 
             const mostActive  = statsPerSales[0];
-            const leastActive = [...statsPerSales].sort((a, b) => a.totalActs - b.totalActs)[0];
+            const leastActive = [...(statsPerSales as any[])].sort((a: any, b: any) => a.totalActs - b.totalActs)[0];
 
             const metrics = [
-              { icon: '⚡', color: '#6366f1', value: avgActsPerDay.toFixed(1),  unit: 'akt/hari',   label: 'Avg. Aktivitas / Hari',  sub: 'Rata-rata activity harian' },
-              { icon: '💬', color: '#f43f5e', value: avgFollowupDay.toFixed(1), unit: 'chat/hari',  label: 'Avg. Followup / Hari',   sub: 'WA + Call per hari' },
-              { icon: '🎯', color: '#10b981', value: avgClosingRate.toFixed(0) + '%', unit: '',     label: 'Avg. Closing Rate',      sub: 'Dari total aktivitas' },
-              { icon: '📋', color: '#f59e0b', value: avgSOPerDay.toFixed(1),    unit: 'SO/hari',    label: 'Avg. Sales Order / Hari', sub: 'Rata-rata order harian' },
+              { icon: 'Ã¢Å¡Â¡', color: '#6366f1', value: avgActsPerDay.toFixed(1),  unit: 'akt/hari',   label: 'Avg. Aktivitas / Hari',  sub: 'Rata-rata activity harian' },
+              { icon: 'Ã°Å¸â€™Â¬', color: '#f43f5e', value: avgFollowupDay.toFixed(1), unit: 'chat/hari',  label: 'Avg. Followup / Hari',   sub: 'WA + Call per hari' },
+              { icon: 'Ã°Å¸Å½Â¯', color: '#10b981', value: avgClosingRate.toFixed(0) + '%', unit: '',     label: 'Avg. Closing Rate',      sub: 'Dari total aktivitas' },
+              { icon: 'Ã°Å¸â€œâ€¹', color: '#f59e0b', value: avgSOPerDay.toFixed(1),    unit: 'SO/hari',    label: 'Avg. Sales Order / Hari', sub: 'Rata-rata order harian' },
               {
-                icon: '🏆', color: '#3b82f6',
+                icon: 'Ã°Å¸Ââ€ ', color: '#3b82f6',
                 value: mostActive?.nama?.split(' ')[0] || '-', unit: '',
                 label: 'Salesman Teraktif',
-                sub: leastActive?.id !== mostActive?.id ? `Perlu boost: ${leastActive?.nama?.split(' ')[0] || '-'}` : 'Semua merata 👏',
+                sub: leastActive?.id !== mostActive?.id ? `Perlu boost: ${leastActive?.nama?.split(' ')[0] || '-'}` : 'Semua merata Ã°Å¸â€˜Â',
               },
             ];
 
@@ -1331,37 +1335,37 @@ export default function PerformanceAnalytics() {
         {/* Right: Dominant Activities (Budget Style) */}
         {(() => {
             const totals = {
-              Prospek: statsPerSales.reduce((a, s) => a + s.prospekBaru, 0),
-              Closing: statsPerSales.reduce((a, s) => a + s.closingCount, 0),
-              SO: statsPerSales.reduce((a, s) => a + s.soCount, 0),
-              Visit: statsPerSales.reduce((a, s) => a + s.visitCount, 0),
-              Followup: statsPerSales.reduce((a, s) => a + s.waCount + s.callCount, 0),
+              Prospek: statsPerSales.reduce((a: any, s: any) => a + s.prospekBaru, 0),
+              Closing: statsPerSales.reduce((a: any, s: any) => a + s.closingCount, 0),
+              SO: statsPerSales.reduce((a: any, s: any) => a + s.soCount, 0),
+              Visit: statsPerSales.reduce((a: any, s: any) => a + s.visitCount, 0),
+              Followup: statsPerSales.reduce((a: any, s: any) => a + s.waCount + s.callCount, 0),
             };
-            const totalAll = Object.values(totals).reduce((a,b) => a+b, 0);
+            const totalAll = Object.values(totals).reduce((a: any, b: any) => (a as number) + (b as number), 0);
 
             // Prev month activities for real trend comparison
             const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
             const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-            const prevMonthActs = activities.filter(a => {
+            const prevMonthActs = (activities as any[]).filter((a: any) => {
               const t = new Date(a.timestamp).getTime();
               return t >= prevMonthStart && t < prevMonthEnd;
             });
             const prevTotals = {
-              Followup: prevMonthActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length,
-              Visit:    prevMonthActs.filter(a => a.tipe_aksi === 'Visit').length,
-              Prospek:  prospek.filter(p => { const t = new Date(p.created_at).getTime(); return t >= prevMonthStart && t < prevMonthEnd; }).length,
-              Closing:  prevMonthActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length,
-              SO:       prevMonthActs.filter(a => a.tipe_aksi === 'Order').length,
+              Followup: prevMonthActs.filter((a: any) => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length,
+              Visit:    prevMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length,
+              Prospek:  (prospek as any[]).filter((p: any) => { const t = new Date(p.created_at).getTime(); return t >= prevMonthStart && t < prevMonthEnd; }).length,
+              Closing:  prevMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length,
+              SO:       prevMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length,
             };
 
             // Sort to find the most dominant
             const domActs = [
-              { label: 'Followup', value: totals.Followup, prevValue: prevTotals.Followup, color: '#f43f5e', icon: '💬' },
-              { label: 'Visit',    value: totals.Visit,    prevValue: prevTotals.Visit,    color: '#3b82f6', icon: '🏃' },
-              { label: 'Prospek',  value: totals.Prospek,  prevValue: prevTotals.Prospek,  color: '#6366f1', icon: '🎯' },
-              { label: 'Closing',  value: totals.Closing,  prevValue: prevTotals.Closing,  color: '#10b981', icon: '🤝' },
-              { label: 'SO',       value: totals.SO,       prevValue: prevTotals.SO,       color: '#f59e0b', icon: '📋' },
-            ].sort((a,b) => b.value - a.value);
+              { label: 'Followup', value: totals.Followup, prevValue: prevTotals.Followup, color: '#f43f5e', icon: 'Ã°Å¸â€™Â¬' },
+              { label: 'Visit',    value: totals.Visit,    prevValue: prevTotals.Visit,    color: '#3b82f6', icon: 'Ã°Å¸ÂÆ’' },
+              { label: 'Prospek',  value: totals.Prospek,  prevValue: prevTotals.Prospek,  color: '#6366f1', icon: 'Ã°Å¸Å½Â¯' },
+              { label: 'Closing',  value: totals.Closing,  prevValue: prevTotals.Closing,  color: '#10b981', icon: 'Ã°Å¸Â¤Â' },
+              { label: 'SO',       value: totals.SO,       prevValue: prevTotals.SO,       color: '#f59e0b', icon: 'Ã°Å¸â€œâ€¹' },
+            ].sort((a: any, b: any) => (b.value as number) - (a.value as number));
 
              return (
               <div style={{ 
@@ -1428,7 +1432,7 @@ export default function PerformanceAnalytics() {
                                 color: isUp ? '#059669' : '#dc2626',
                                 fontSize: '10px', fontWeight: 900,
                               }}>
-                                {isUp ? '↑' : '↓'}{Math.abs(trendVal)}%
+                                {isUp ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}{Math.abs(trendVal)}%
                               </div>
                             </div>
                           </div>
@@ -1468,23 +1472,23 @@ export default function PerformanceAnalytics() {
           const cutThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
           const cutLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
 
-          const thisMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutThisMonth).length || 0;
-          const lastMonthProspek = prospek.filter(p => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 0;
+          const thisMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutThisMonth).length || 0;
+          const lastMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 0;
 
-          const thisMonthActs = activities.filter(a => new Date(a.timestamp) >= cutThisMonth);
-          const lastMonthActs = activities.filter(a => new Date(a.timestamp) >= cutLastMonth && new Date(a.timestamp) < cutThisMonth);
+          const thisMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutThisMonth);
+          const lastMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutLastMonth && new Date(a.timestamp) < cutThisMonth);
 
-          const thisMonthClosing = thisMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
-          const lastMonthClosing = lastMonthActs.filter(a => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
+          const thisMonthClosing = thisMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
+          const lastMonthClosing = lastMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
 
-          const thisMonthSO = thisMonthActs.filter(a => a.tipe_aksi === 'Order').length || 0;
-          const lastMonthSO = lastMonthActs.filter(a => a.tipe_aksi === 'Order').length || 0;
+          const thisMonthSO = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
+          const lastMonthSO = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
 
-          const thisMonthVisit = thisMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 0;
-          const lastMonthVisit = lastMonthActs.filter(a => a.tipe_aksi === 'Visit').length || 0;
+          const thisMonthVisit = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
+          const lastMonthVisit = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
 
-          const thisMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutThisMonth).length || 0;
-          const lastMonthCust = customers.filter(c => new Date(c.created_at || now.toISOString()) >= cutLastMonth && new Date(c.created_at || now.toISOString()) < cutThisMonth).length || 0;
+          const thisMonthCust = (customers as any[]).filter((c: any) => new Date(c.created_at || now.toISOString()) >= cutThisMonth).length || 0;
+          const lastMonthCust = (customers as any[]).filter((c: any) => new Date(c.created_at || now.toISOString()) >= cutLastMonth && new Date(c.created_at || now.toISOString()) < cutThisMonth).length || 0;
 
           const metrics = [
             { label: 'Prospek Baru', thisMonth: thisMonthProspek, lastMonth: lastMonthProspek, color: '#6366f1' },
@@ -1538,7 +1542,7 @@ export default function PerformanceAnalytics() {
                             color: isUp ? '#10b981' : '#ef4444',
                             fontSize: '12px', fontWeight: 900,
                          }}>
-                            {isUp ? '↑' : '↓'}
+                            {isUp ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
                          </div>
                        </div>
                      </div>
@@ -1554,15 +1558,15 @@ export default function PerformanceAnalytics() {
                   // Insight 1: Sales closing turun vs bulan lalu
                   const lastMs = new Date(now.getFullYear(), now.getMonth() - 1, 1).getTime();
                   const thisMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-                  const worstSales = sales.map(s => {
-                    const last = activities.filter(a => a.id_sales === s.id && a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp).getTime() >= lastMs && new Date(a.timestamp).getTime() < thisMs).length;
-                    const curr = activities.filter(a => a.id_sales === s.id && a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp).getTime() >= thisMs).length;
+                  const worstSales = (sales as any[]).map((s: any) => {
+                    const last = (activities as any[]).filter((a: any) => a.id_sales === s.id && a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp).getTime() >= lastMs && new Date(a.timestamp).getTime() < thisMs).length;
+                    const curr = (activities as any[]).filter((a: any) => a.id_sales === s.id && a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp).getTime() >= thisMs).length;
                     const pct = last > 0 ? Math.round(((curr - last) / last) * 100) : 0;
                     return { nama: s.nama.split(' ')[0], pct, last, curr };
-                  }).filter(s => s.pct < 0 && s.last > 0).sort((a,b) => a.pct - b.pct)[0];
+                  }).filter((s: any) => s.pct < 0 && s.last > 0).sort((a: any, b: any) => a.pct - b.pct)[0];
                   // Insight 2: Area kunjungan tinggi tapi konversi rendah
                   const areaMap: Record<string, { visit: number; closing: number }> = {};
-                  activities.forEach(a => {
+                  (activities as any[]).forEach((a: any) => {
                     const area = (a as any).geotagging?.area || '';
                     if (!area) return;
                     if (!areaMap[area]) areaMap[area] = { visit: 0, closing: 0 };
@@ -1572,11 +1576,11 @@ export default function PerformanceAnalytics() {
                   const lowConv = Object.entries(areaMap)
                     .filter(([, s]) => s.visit >= 3)
                     .map(([name, s]) => ({ name, ...s, rate: Math.round((s.closing / s.visit) * 100) }))
-                    .sort((a,b) => a.rate - b.rate)[0];
+                    .sort((a: any, b: any) => a.rate - b.rate)[0];
                   // Insight 3: Prospek aging 14+ hari tanpa follow-up
                   const cutoff14 = now.getTime() - 14 * 24 * 60 * 60 * 1000;
-                  const recentTargets = new Set(activities.filter(a => new Date(a.timestamp).getTime() >= cutoff14 && a.target_type === 'prospek').map(a => a.target_id));
-                  const agingCount = prospek.filter(p => new Date(p.created_at).getTime() < cutoff14 && !recentTargets.has(p.id)).length;
+                  const recentTargets = new Set((activities as any[]).filter((a: any) => new Date(a.timestamp).getTime() >= cutoff14 && a.target_type === 'prospek').map((a: any) => a.target_id));
+                  const agingCount = (prospek as any[]).filter((p: any) => new Date(p.created_at).getTime() < cutoff14 && !recentTargets.has(p.id)).length;
                   const items: { urgent: boolean; dot: string; text: React.ReactNode }[] = [];
                   if (worstSales) items.push({ urgent: true, dot: '#ef4444', text: <><b>{worstSales.nama}</b> closing turun <span style={{ color: '#ef4444', fontWeight: 900 }}>{worstSales.pct}%</span> vs bulan lalu ({worstSales.last} &rarr; {worstSales.curr})</> });
                   if (lowConv) items.push({ urgent: false, dot: '#f59e0b', text: <>Area <b>{lowConv.name}</b> visit tinggi ({lowConv.visit}x) tapi konversi hanya {lowConv.rate}%</> });
@@ -1630,26 +1634,26 @@ export default function PerformanceAnalytics() {
 
           // 3. Extract Unique Areas from Customers
           const areaCounts: Record<string, number> = {};
-          customers.forEach(c => {
+          (customers as any[]).forEach((c: any) => {
             const a = (c.area || 'Unknown').trim();
             areaCounts[a] = (areaCounts[a] || 0) + 1;
           });
 
           // 4. Build mapDataPois (Discover New Areas)
           const COLORS = ['#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#e11d48', '#0ea5e9', '#6366f1', '#f43f5e', '#14b8a6', '#8b5cf6'];
-          let finalPois: any[] = [...BASE_CITIES.map(c => ({ ...c, value: 0 }))];
+          let finalPois: any[] = [...BASE_CITIES.map((c: any) => ({ ...c, value: 0 }))];
           
           Object.entries(areaCounts).forEach(([areaName, count]) => {
             const areaLower = areaName.toLowerCase();
-            const anchor = finalPois.find(p => p.keywords?.some((kw: string) => areaLower.includes(kw)));
+            const anchor = finalPois.find((p: any) => p.keywords?.some((kw: string) => areaLower.includes(kw)));
             
             if (anchor) {
               anchor.value += count;
             } else {
               // It's a new area! Dynamically allocate.
               // Find a land dot that is far from existing POIs
-              const existingCoords = finalPois.map(p => ({ x: p.x, y: p.y }));
-              const availableDots = landDots.filter(dot => 
+              const existingCoords = finalPois.map((p: any) => ({ x: p.x, y: p.y }));
+              const availableDots = landDots.filter((dot: any) => 
                 !existingCoords.some(ex => Math.abs(ex.x - dot.x) < 4 && Math.abs(ex.y - dot.y) < 3)
               );
               
@@ -1663,7 +1667,7 @@ export default function PerformanceAnalytics() {
                 y: targetDot.y,
                 value: count,
                 color: COLORS[finalPois.length % COLORS.length],
-                icon: '🏢', // Building icon for new cities as requested
+                icon: 'Ã°Å¸ÂÂ¢', // Building icon for new cities as requested
                 isDynamic: true
               });
             }
@@ -1780,7 +1784,7 @@ export default function PerformanceAnalytics() {
                   <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Distribusi Kota</div>
-                      <span style={{ fontSize: '12px', color: '#cbd5e1' }}>•••</span>
+                      <span style={{ fontSize: '12px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
                     </div>
                     {mapDataPois.slice(0, 4).map(area => {
                       const pct = totalMapCust > 0 ? Math.round((area.value / totalMapCust) * 100) : 0;
@@ -1798,7 +1802,7 @@ export default function PerformanceAnalytics() {
                     })}
                   </div>
                  <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                   <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Top 5 Growth</div><span style={{ fontSize: '12px', color: '#cbd5e1' }}>•••</span></div>
+                   <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Top 5 Growth</div><span style={{ fontSize: '12px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span></div>
                    <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
                      {(() => { 
                        const top = [...mapDataPois].sort((a,b) => b.value - a.value).slice(0, 5); 
@@ -1813,7 +1817,7 @@ export default function PerformanceAnalytics() {
                              })}
                            </svg>
                            <div style={{position:'absolute',display:'flex',flexDirection:'column',alignItems:'center'}}>
-                             <span style={{fontSize:'14px',marginBottom:'2px'}}>{top[0]?.icon||'🚀'}</span>
+                             <span style={{fontSize:'14px',marginBottom:'2px'}}>{top[0]?.icon||'Ã°Å¸Å¡â‚¬'}</span>
                              <span style={{fontSize:'9px',fontWeight:800,color:'#94a3b8'}}>{top[0]?.city||'Area'}</span>
                              <span style={{fontSize:'14px',fontWeight:900,color:'#10b981'}}>+{(top[0]?.value/2).toFixed(0)} Baru</span>
                            </div>
@@ -1826,14 +1830,14 @@ export default function PerformanceAnalytics() {
                    {(() => { 
                      // Group activity orders by area
                      const areaSoCounts: Record<string, number> = {};
-                     activities.filter(a => a.tipe_aksi === 'Order').forEach(a => {
+                     (activities as any[]).filter((a: any) => a.tipe_aksi === 'Order').forEach((a: any) => {
                         // Priority: 1. Activity Geotag, 2. Target Area (Customer/Prospek)
                         let area = (a as any).geotagging?.area;
                         
                         if (!area) {
                           // Fallback to customer/prospek data
-                          const target = realCustomers.find(c => c.id === a.target_id) || 
-                                         realProspek.find(p => p.id === a.target_id);
+                          const target = realCustomers.find((c: any) => c.id === a.target_id) || 
+                                         realProspek.find((p: any) => p.id === a.target_id);
                           area = target?.area;
                         }
                         
@@ -1842,7 +1846,7 @@ export default function PerformanceAnalytics() {
                      });
                      
                      const soAreasUnsorted = Object.entries(areaSoCounts).map(([city, val]) => {
-                       const staticData = mapDataPois.find(p => p.city === city) || { icon: '🏢', color: '#10b981' };
+                       const staticData = mapDataPois.find(p => p.city === city) || { icon: 'Ã°Å¸ÂÂ¢', color: '#10b981' };
                        return { city, so_val: val, icon: staticData.icon, color: staticData.color };
                      });
                      
@@ -1854,7 +1858,7 @@ export default function PerformanceAnalytics() {
                        <>
                         <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px'}}>
                           <div style={{fontSize:'12px',fontWeight:800,color:'#475569'}}>Top Area Order (SO)</div>
-                          <span style={{fontSize:'12px',color:'#cbd5e1'}}>•••</span>
+                          <span style={{fontSize:'12px',color:'#cbd5e1'}}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
                         </div>
                         <div style={{fontSize:'20px',fontWeight:900,color:'#1e293b',marginBottom:'2px'}}>{totalSO} Order</div>
                         <div style={{fontSize:'9px',fontWeight:800,color:'#10b981',display:'flex',alignItems:'center',gap:'4px'}}>

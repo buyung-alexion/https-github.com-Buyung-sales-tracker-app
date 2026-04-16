@@ -4,7 +4,6 @@ import { MessageCircle, Phone, Search, MapPin, Edit3, X, Plus, Camera, Filter, U
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Customer } from '../../types';
-import { AREAS, CATEGORIES } from '../../constants';
 
 interface Props { salesId: string; }
 
@@ -15,7 +14,7 @@ function daysDiff(dateStr: string): number {
 }
 
 export default function CustomerMaintenance({ salesId }: Props) {
-  const { customers = [], refresh } = useSalesData() || {};
+  const { customers = [], masterAreas = [], masterCategories = [], refresh } = useSalesData() || {};
   
   // Dynamic Options
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +124,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getAreaName = (id: string) => AREAS.find(a => a.id === id || a.name === id)?.name || id;
+  const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
 
   const getAccentColor = (kategori: string = 'K001') => {
     switch (kategori) {
@@ -164,7 +163,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setEditForm({ id: '', nama_toko: '', no_wa: '', area: AREAS[0].id, link_map: '', kategori: CATEGORIES[0].id, rating: 0, foto_profil: '' });
+        setEditForm({ id: '', nama_toko: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -204,7 +203,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setAddModal(false);
         setSaveSuccess(false);
-        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: AREAS[0].id, link_map: '', kategori: CATEGORIES[0].id, rating: 0, foto_profil: '' });
+        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -472,32 +471,18 @@ export default function CustomerMaintenance({ salesId }: Props) {
               
               <div className="form-group">
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Area</label>
-                <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.area} onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Enter New Area:');
-                    if (val && val.trim()) setEditForm({ ...editForm, area: val.trim() });
-                  } else {
-                    setEditForm({ ...editForm, area: e.target.value });
-                  }
-                }}>
-                  {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                  <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+                <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })}>
+                  <option value="">-- Pilih Area --</option>
+                  {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
               </div>
 
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Category</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Enter New Category:');
-                      if (val && val.trim()) setEditForm({ ...editForm, kategori: val.trim() });
-                    } else {
-                      setEditForm({ ...editForm, kategori: e.target.value });
-                    }
-                  }}>
-                    {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.kategori} onChange={e => setEditForm({ ...editForm, kategori: e.target.value })}>
+                    <option value="">-- Pilih Kategori --</option>
+                    {masterCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -547,32 +532,16 @@ export default function CustomerMaintenance({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.area} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Area Baru:');
-                      if (val && val.trim()) setAddForm({ ...addForm, area: val.trim() });
-                    } else {
-                      setAddForm({...addForm, area: e.target.value});
-                    }
-                  }}>
-                    {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                    {addForm.area && !AREAS.find(a => a.id === addForm.area) && <option value={addForm.area}>{addForm.area}</option>}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.area} onChange={e => setAddForm({...addForm, area: e.target.value})}>
+                    <option value="">-- Pilih Area --</option>
+                    {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
                    <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
-                   <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.kategori} onChange={e => {
-                     if (e.target.value === 'ADD_NEW') {
-                       const val = prompt('Masukkan Kategori Baru:');
-                       if (val && val.trim()) setAddForm({ ...addForm, kategori: val.trim() });
-                     } else {
-                       setAddForm({...addForm, kategori: e.target.value});
-                     }
-                   }}>
-                     {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
-                     {addForm.kategori && !CATEGORIES.find(k => k.id === addForm.kategori) && <option value={addForm.kategori}>{addForm.kategori}</option>}
-                     <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+                   <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.kategori} onChange={e => setAddForm({...addForm, kategori: e.target.value})}>
+                     <option value="">-- Pilih Kategori --</option>
+                     {masterCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                    </select>
                 </div>
               </div>
@@ -639,19 +608,19 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wilayah Area</label>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['All', 'Sepaku', 'Gerogot', 'Kota'].map(a => (
+                  {[{id: 'All', name: 'Semua'}, ...masterAreas].map(a => (
                     <button 
-                      key={a}
-                      onClick={() => setFilterArea(a)}
+                      key={a.id}
+                      onClick={() => setFilterArea(a.id)}
                       style={{ 
                         padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                        background: filterArea === a ? '#111827' : '#F8FAFC',
-                        color: filterArea === a ? '#FFCC00' : '#64748b',
-                        border: filterArea === a ? 'none' : '1px solid #f1f5f9',
+                        background: filterArea === a.id ? '#111827' : '#F8FAFC',
+                        color: filterArea === a.id ? '#FFCC00' : '#64748b',
+                        border: filterArea === a.id ? 'none' : '1px solid #f1f5f9',
                         transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
-                      {a === 'All' ? 'Semua' : a === 'Gerogot' ? 'Grogot' : a}
+                      {a.name}
                     </button>
                   ))}
                 </div>
@@ -664,19 +633,19 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori Toko</label>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  {['All', 'Retail', 'Grosir', 'Distributor', 'Horeca'].map(k => (
+                  {[{id: 'All', name: 'Semua'}, ...masterCategories].map(k => (
                     <button 
-                      key={k}
-                      onClick={() => setFilterKategori(k)}
+                      key={k.id}
+                      onClick={() => setFilterKategori(k.id)}
                       style={{ 
                         padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                        background: filterKategori === k ? '#111827' : '#F8FAFC',
-                        color: filterKategori === k ? '#FFCC00' : '#64748b',
-                        border: filterKategori === k ? 'none' : '1px solid #f1f5f9',
+                        background: filterKategori === k.id ? '#111827' : '#F8FAFC',
+                        color: filterKategori === k.id ? '#FFCC00' : '#64748b',
+                        border: filterKategori === k.id ? 'none' : '1px solid #f1f5f9',
                         transition: 'all 0.2s', textAlign: 'center'
                       }}
                     >
-                      {k === 'All' ? 'Semua' : k}
+                      {k.name}
                     </button>
                   ))}
                 </div>

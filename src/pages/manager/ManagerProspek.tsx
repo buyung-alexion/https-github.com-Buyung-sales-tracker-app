@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { AREAS } from '../../constants';
 import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, Plus, X, ChevronRight } from 'lucide-react';
-import { CATEGORIES } from '../../constants';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -71,7 +69,7 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
 
 
 export default function ManagerProspek() {
-  const { prospek, customers, sales, activities, refresh } = useSalesData();
+  const { prospek, customers, sales, activities, masterAreas, masterCategories, masterChannels, refresh } = useSalesData();
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -98,16 +96,31 @@ export default function ManagerProspek() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const [form, setForm] = useState({
+  const [addForm, setAddForm] = useState({
     nama_toko: '',
     nama_pic: '',
     no_wa: '',
-    area: 'SMD',
-    kategori: 'Retail',
-    status: 'Cold' as const,
+    area: '',
+    status: 'Cold' as any,
     link_map: '',
-    rating: 3,
-    foto_profil: ''
+    kategori: '',
+    rating: 5,
+    foto_profil: '',
+    channel: ''
+  });
+
+  const [editForm, setEditForm] = useState({
+    id: '',
+    nama_toko: '',
+    nama_pic: '',
+    no_wa: '',
+    area: '',
+    status: 'Cold' as any,
+    link_map: '',
+    kategori: '',
+    rating: 5,
+    foto_profil: '',
+    channel: ''
   });
 
   // Pagination State
@@ -206,16 +219,17 @@ export default function ManagerProspek() {
   }, [sortedFiltered, viewAll]);
 
   const handleOpenAdd = () => {
-    setForm({
+    setAddForm({
       nama_toko: '',
       nama_pic: '',
       no_wa: '',
       area: 'SMD',
-      kategori: 'Retail',
       status: 'Cold',
       link_map: '',
-      rating: 3,
-      foto_profil: ''
+      kategori: 'Retail',
+      rating: 5,
+      foto_profil: '',
+      channel: 'Canvasing'
     });
     setSaveError(null);
     setSaveSuccess(false);
@@ -223,16 +237,18 @@ export default function ManagerProspek() {
   };
 
   const handleOpenEdit = (p: any) => {
-    setForm({
+    setEditForm({
+      id: p.id,
       nama_toko: p.nama_toko || '',
       nama_pic: p.nama_pic || '',
       no_wa: p.no_wa || '',
-      area: p.area || AREAS[0].id,
-      kategori: p.kategori || CATEGORIES[0].id,
+      area: p.area || 'SMD',
       status: p.status || 'Cold',
       link_map: p.link_map || '',
-      rating: p.rating || 3,
-      foto_profil: p.foto_profil || ''
+      kategori: p.kategori || 'Retail',
+      rating: p.rating || 5,
+      foto_profil: p.foto_profil || '',
+      channel: p.channel || 'Canvasing'
     });
     setSaveError(null);
     setSaveSuccess(false);
@@ -245,17 +261,17 @@ export default function ManagerProspek() {
     setIsSubmitting(true);
     setSaveError(null);
 
+    const payload = editModal ? editForm : addForm;
+
     try {
       let error;
       if (editModal) {
-        const { error: err } = await store.updateProspek(editModal.id, form);
-        error = err;
+        ({ error } = await store.updateProspek(editModal.id, payload));
       } else {
-        const { error: err } = await store.addProspek({ 
-          ...form, 
+        ({ error } = await store.addProspek({
+          ...payload,
           sales_owner: filterSales === 'All' ? 'm001' : filterSales
-        });
-        error = err;
+        }));
       }
 
       if (error) throw error;
@@ -326,7 +342,7 @@ export default function ManagerProspek() {
               style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="All">Semua Wilayah</option>
-              {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+              {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 
@@ -650,19 +666,22 @@ export default function ManagerProspek() {
         isOpen={addModal || !!editModal}
         onClose={() => { setAddModal(false); setEditModal(null); }}
         prospect={editModal}
-        form={form}
-        setForm={setForm}
+        form={editModal ? editForm : addForm}
+        setForm={editModal ? setEditForm : setAddForm}
         onSave={handleSave}
         isSubmitting={isSubmitting}
         saveError={saveError}
         saveSuccess={saveSuccess}
+        masterAreas={masterAreas}
+        masterCategories={masterCategories}
+        masterChannels={masterChannels}
       />
     </div>
   );
 }
 
 // Add/Edit Prospect Modal
-function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSubmitting, saveError, saveSuccess }: any) {
+function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [], masterChannels = [] }: any) {
   if (!isOpen) return null;
 
   return (
@@ -719,42 +738,22 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
               <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Area</label>
               <select 
                 value={form.area}
-                onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Area Baru:');
-                    if (val && val.trim()) setForm({ ...form, area: val.trim() });
-                  } else {
-                    setForm({ ...form, area: e.target.value });
-                  }
-                }}
-                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
+                onChange={e => setForm({ ...form, area: e.target.value })}
+                style={{ flex: 1, padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
-                {AREAS.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-                {form.area && !AREAS.find(a => a.id === form.area) && (
-                  <option value={form.area}>{form.area}</option>
-                )}
-                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+                <option value="">-- Pilih Area --</option>
+                {masterAreas.map((a: any) => <option key={a.id} value={a.id}>{a.name}</option>)}
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Channel</label>
+              <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Kategori</label>
               <select 
                 value={form.kategori}
-                onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Kategori Baru:');
-                    if (val && val.trim()) setForm({ ...form, kategori: val.trim() });
-                  } else {
-                    setForm({ ...form, kategori: e.target.value });
-                  }
-                }}
-                style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
+                onChange={e => setForm({ ...form, kategori: e.target.value })}
+                style={{ flex: 1, padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
               >
-                {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                {form.kategori && !CATEGORIES.find(k => k.id === form.kategori) && (
-                  <option value={form.kategori}>{form.kategori}</option>
-                )}
-                <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
+                <option value="">-- Pilih Kategori --</option>
+                {masterCategories.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
           </div>
@@ -779,6 +778,18 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
                 </button>
               ))}
             </div>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <label style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Sumber Prospek</label>
+            <select 
+              value={form.channel}
+              onChange={e => setForm({ ...form, channel: e.target.value })}
+              style={{ width: '100%', padding: '14px 18px', borderRadius: '16px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 700, outline: 'none', background: '#fff' }}
+            >
+              <option value="">-- Pilih Sumber --</option>
+              {masterChannels.map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
           </div>
 
           {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 800, textAlign: 'center' }}>{saveError}</div>}

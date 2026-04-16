@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, CheckSquare, ShoppingCart, MessageSquare, Award, Save } from 'lucide-react';
+import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { supabase } from '../../lib/supabase';
+import { useSalesData } from '../../hooks/useSalesData';
 
 export default function DataManagement() {
-  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target'>('role');
+  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'channel'>('role');
   const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -59,7 +60,10 @@ export default function DataManagement() {
   const tabs = [
     { id: 'role', label: 'Role Team', icon: <Shield size={16} /> },
     { id: 'team', label: 'Team Management', icon: <Users size={16} /> },
-    { id: 'target', label: 'Target', icon: <Target size={16} /> },
+    { id: 'target', label: 'Target & Bobot', icon: <Target size={16} /> },
+    { id: 'area', label: 'Area / Wilayah', icon: <MapPin size={16} /> },
+    { id: 'category', label: 'Kategori Bisnis', icon: <ShoppingCart size={16} /> },
+    { id: 'channel', label: 'Sumber / Channel', icon: <TrendingUp size={16} /> },
   ];
 
   // --- MODAL STATES ---
@@ -67,15 +71,13 @@ export default function DataManagement() {
   const [roleForm, setRoleForm] = useState({ role: 'Sales', akses: 'Mobile App, Limited Analytics' });
 
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
-  const [teamForm, setTeamForm] = useState({ 
-    id: '', 
-    nama: '', 
-    username: '', 
-    pass: '', 
-    role: '', 
-    foto_profil: '', 
-    no_wa: ''
-  });
+  const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '' });
+
+  const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | null; data: any}>({isOpen: false, type: null, data: null});
+  const [masterForm, setMasterForm] = useState({ name: '' });
+
+
+  // Wait, I should use useSalesData hook for the data lists to benefit from context
 
   // --- ROLE ACTIONS ---
   const openRoleModal = (existingData?: any) => {
@@ -174,23 +176,54 @@ export default function DataManagement() {
     }
   };
 
-  const handleSaveTargets = async () => {
-    setIsLoading(true);
+
+
+  // --- MASTER DATA ACTIONS ---
+  const { masterAreas, masterCategories, masterChannels, refresh: refreshGlobal } = useSalesData();
+
+  const openMasterModal = (type: 'area' | 'category' | 'channel', existingData?: any) => {
+    setMasterForm({ name: existingData ? existingData.name : '' });
+    setMasterModal({ isOpen: true, type, data: existingData });
+  };
+
+  const handleSaveMaster = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const type = masterModal.type;
+    const name = masterForm.name.trim();
+    if (!name) return;
+
     try {
-      await store.updateSystemTargets({
-        ind_poin: data.targets.indPoin,
-        b_visit: data.targets.bVisit,
-        b_prospek: data.targets.bProspek,
-        b_closing: data.targets.bClosing,
-        b_order: data.targets.bOrder,
-        b_chat: data.targets.bChat
-      });
-      window.alert('Pengaturan Global Target & Bobot Poin telah disimpan!');
-    } catch (err) {
-      console.error(err);
-      alert('Gagal menyimpan target');
-    } finally {
-      setIsLoading(false);
+      if (type === 'area') {
+        if (masterModal.data) {
+           // update is complex if ID changes, so we just restrict to newly added for now
+           // For simplicity, we only allow ADD and DELETE in master data to avoid consistency issues
+           alert('Update Wilayah tidak tersedia, silakan hapus dan tambah baru.');
+        } else {
+           await store.addMasterArea(name);
+        }
+      } else if (type === 'category') {
+        if (masterModal.data) alert('Update Kategori tidak tersedia.');
+        else await store.addMasterCategory(name);
+      } else if (type === 'channel') {
+        if (masterModal.data) alert('Update Sumber tidak tersedia.');
+        else await store.addMasterChannel(name);
+      }
+      setMasterModal({ isOpen: false, type: null, data: null });
+      await refreshGlobal();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  const handleDeleteMaster = async (type: 'area' | 'category' | 'channel', id: string) => {
+    if (!window.confirm(`Hapus ${type} ini?`)) return;
+    try {
+      if (type === 'area') await store.deleteMasterArea(id);
+      else if (type === 'category') await store.deleteMasterCategory(id);
+      else if (type === 'channel') await store.deleteMasterChannel(id);
+      await refreshGlobal();
+    } catch (err: any) {
+      alert(err.message);
     }
   };
 
@@ -395,187 +428,79 @@ export default function DataManagement() {
             </div>
           )}
 
-          {/* TARGET TAB - ABSOLUTE VISUAL HARMONY */}
-          {activeTab === 'target' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '48px' }}>
-              
-              {/* HEADER SECTION */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '2px solid #f1f5f9', paddingBottom: '20px' }}>
+          {/* MASTER DATA TABS (Area, Category, Channel) */}
+          {(activeTab === 'area' || activeTab === 'category' || activeTab === 'channel') && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div style={{ 
+                background: '#fff', padding: '32px', borderRadius: '32px', 
+                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
                 <div>
-                  <h3 style={{ fontSize: '28px', fontWeight: 900, color: '#0f172a', margin: 0, letterSpacing: '-0.02em' }}>Kontrol Target & KPI</h3>
-                  <p style={{ color: '#64748b', fontSize: '15px', margin: '4px 0 0 0', fontWeight: 500 }}>Konfigurasi target bulanan dan pembobotan poin kinerja tim.</p>
+                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>
+                    {activeTab === 'area' ? 'Manajemen Wilayah' : activeTab === 'category' ? 'Kategori Bisnis' : 'Sumber / Channel'}
+                  </h3>
+                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>DATA MASTER SISTEM</p>
                 </div>
-                <div style={{ 
-                  background: '#f8fafc', 
-                  padding: '10px 20px', 
-                  borderRadius: '12px', 
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', animation: 'pulse 2s infinite' }}></div>
-                  <span style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase' }}>Mode Konfigurasi Aktif</span>
-                </div>
-              </div>
-
-              {/* 1. STANDAR MINIMAL POIN (Hero Module) */}
-              <div style={{ 
-                background: '#fff', 
-                padding: '24px 32px', 
-                borderRadius: '24px', 
-                border: '1px solid #e2e8f0', 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '32px',
-                boxShadow: '0 4px 12px -2px rgba(0,0,0,0.03)',
-                position: 'relative',
-                overflow: 'hidden'
-              }}>
-                <div style={{ position: 'absolute', right: '-20px', top: '-20px', opacity: 0.05 }}><Award size={180} color="#F59E0B" /></div>
-                
-                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #fef9c3 0%, #fde047 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Award size={28} color="#92400e" strokeWidth={2.5} />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h4 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#1e293b' }}>Standar Poin Minimal</h4>
-                    <span style={{ fontSize: '11px', fontWeight: 800, background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>Target KPI</span>
-                  </div>
-                  <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#64748b', fontWeight: 500 }}>Target wajib per sales untuk mencapai performa 100%.</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <input 
-                    type="number" 
-                    value={data.targets.indPoin} 
-                    onChange={e => setData((d: any) => ({...d, targets: {...d.targets, indPoin: +e.target.value}}))}
-                    style={{ 
-                      width: '110px', 
-                      height: '56px',
-                      padding: '0 12px', 
-                      borderRadius: '16px', 
-                      border: '2px solid #f1f5f9',
-                      textAlign: 'center', 
-                      fontSize: '24px', 
-                      fontWeight: 900, 
-                      color: '#0f172a', 
-                      background: '#f8fafc',
-                      transition: 'all 0.2s',
-                      appearance: 'textfield'
-                    }}
-                  />
-                  <span style={{ fontWeight: 900, color: '#94a3b8', fontSize: '14px', letterSpacing: '0.05em' }}>PTS</span>
-                </div>
-              </div>
-
-              {/* 2 & 3. ACTIVITY WEIGHTS MODULE (NOW PRIMARY) */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-                
-                {/* COLUMN: ACTIVITY WEIGHTS */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 8px' }}>
-                    <div style={{ padding: '8px', borderRadius: '10px', background: '#f5f3ff' }}><Shield size={18} color="#8b5cf6" /></div>
-                    <span style={{ fontSize: '14px', fontWeight: 900, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pengali Bobot Aktivitas</span>
-                  </div>
-                  
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {[
-                      { key: 'bVisit', label: 'Visit / Kunjungan', icon: MapPin, color: '#f59e0b', bg: '#fffbeb', desc: 'Poin visit per toko' },
-                      { key: 'bProspek', label: 'New Prospek', icon: TrendingUp, color: '#10b981', bg: '#ecfdf5', desc: 'Poin input prospek baru' },
-                      { key: 'bClosing', label: 'Closing Deal', icon: CheckSquare, color: '#3b82f6', bg: '#eff6ff', desc: 'Poin konversi customer' },
-                      { key: 'bOrder', label: 'Sales Order (SO)', icon: ShoppingCart, color: '#8b5cf6', bg: '#f5f3ff', desc: 'Poin per input order' },
-                      { key: 'bChat', label: 'Followup (WA/Call)', icon: MessageSquare, color: '#ec4899', bg: '#fdf2f8', desc: 'Poin followup client' },
-                    ].map(field => {
-                      const Icon = field.icon;
-                      return (
-                        <div key={field.key} style={{ 
-                          background: '#fff', 
-                          padding: '12px 24px', 
-                          borderRadius: '20px', 
-                          border: '1px solid #f1f5f9', 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          justifyContent: 'space-between',
-                          minHeight: '88px',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.01)'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: field.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Icon size={20} color={field.color} strokeWidth={2.5} />
-                            </div>
-                            <div>
-                              <div style={{ fontSize: '14px', fontWeight: 800, color: '#334155' }}>{field.label}</div>
-                              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '1px' }}>{field.desc}</div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <input 
-                              type="number" 
-                              value={data.targets[field.key]} 
-                              onChange={e => setData((d: any) => ({...d, targets: {...d.targets, [field.key]: +e.target.value}}))}
-                              style={{ 
-                                width: '60px', 
-                                height: '42px',
-                                padding: '0 10px', 
-                                borderRadius: '12px', 
-                                border: '1px solid #e2e8f0', 
-                                textAlign: 'center', 
-                                fontWeight: 900, 
-                                color: field.color, 
-                                background: '#fcfdfd',
-                                appearance: 'textfield'
-                              }}
-                            />
-                            <span style={{ fontSize: '11px', fontWeight: 900, color: '#cbd5e1' }}>PTS</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* FOOTER BUTTON */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                borderTop: '2px solid #f1f5f9', 
-                paddingTop: '40px',
-                marginTop: '16px'
-              }}>
                 <button 
-                  onClick={handleSaveTargets} 
-                  style={{ 
-                    background: 'var(--brand-yellow)', 
-                    color: '#111827', 
-                    padding: '16px 80px', 
-                    fontSize: '15px', 
-                    borderRadius: '24px', 
-                    border: 'none', 
-                    fontWeight: 900, 
-                    cursor: 'pointer', 
-                    boxShadow: '0 10px 25px rgba(250,204,21,0.4)', 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-                  }}
-                  onMouseOver={e => {
-                    e.currentTarget.style.transform = 'scale(1.02)';
-                    e.currentTarget.style.background = '#facc15';
-                  }}
-                  onMouseOut={e => {
-                    e.currentTarget.style.transform = 'scale(1)';
-                    e.currentTarget.style.background = 'var(--brand-yellow)';
-                  }}
+                  onClick={() => openMasterModal(activeTab as any)} 
+                  style={{ background: 'var(--brand-yellow)', color: '#111827', padding: '14px 28px', fontSize: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)' }}
                 >
-                  <Save size={20} color="#111827" strokeWidth={3} /> Simpan Perubahan Performa
+                  <Plus size={18} strokeWidth={3} /> TAMBAH {activeTab.toUpperCase()}
                 </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                {(activeTab === 'area' ? masterAreas : activeTab === 'category' ? masterCategories : masterChannels).map((m: any) => (
+                  <div key={m.id} style={{ 
+                    background: '#fff', borderRadius: '24px', padding: '20px 24px', 
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.02)', border: '1px solid #f1f5f9',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div style={{ 
+                        width: '40px', height: '40px', borderRadius: '12px', 
+                        background: activeTab === 'area' ? '#f0f9ff' : activeTab === 'category' ? '#fff7ed' : '#f0fdf4',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        {activeTab === 'area' ? <MapPin size={20} color="#0ea5e9" /> : activeTab === 'category' ? <ShoppingCart size={20} color="#f97316" /> : <TrendingUp size={20} color="#22c55e" />}
+                      </div>
+                      <div style={{ fontWeight: 800, color: '#1e293b', fontSize: '15px' }}>{m.name}</div>
+                    </div>
+                    <button 
+                      onClick={() => handleDeleteMaster(activeTab as any, m.id)} 
+                      style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fef2f2', color: '#ef4444', border: '1px solid #fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* --- MASTER DATA MODAL --- */}
+      {masterModal.isOpen && (
+        <div style={overlayStyle}>
+          <div style={modalStyle}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontWeight: 800, fontSize: '18px', color: '#0f172a' }}>Tambah {masterModal.type?.toUpperCase()} Baru</h3>
+              <button onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
+            </div>
+            <form onSubmit={handleSaveMaster}>
+              <label style={labelStyle}>Nama {masterModal.type}</label>
+              <input required style={inputStyle} value={masterForm.name} onChange={e => setMasterForm({ name: e.target.value })} placeholder={`Contoh: ${masterModal.type === 'area' ? 'Jakarta' : 'Retail'}`} />
+              
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button type="button" onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Batal</button>
+                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* --- MODALS --- */}
       {roleModal.isOpen && (

@@ -258,4 +258,53 @@ export const store = {
     const { error } = await supabase.from('system_targets').upsert({ id: 1, ...targetsData });
     if (error) console.error('updateSystemTargets error:', error);
   },
+
+  // ─── MASTER DATA ────────────────────────────────────────
+  async fetchMasterAreas() {
+    const { data, error } = await supabase.from('master_areas').select('*').order('name');
+    if (error) console.error('fetchMasterAreas error:', error);
+    return data || [];
+  },
+  async addMasterArea(name: string) {
+    const { data, error } = await supabase.from('master_areas').insert([{ id: name, name }]).select();
+    if (error) console.error('addMasterArea error:', error);
+    return { data, error };
+  },
+  async deleteMasterArea(id: string) {
+    const { error } = await supabase.from('master_areas').delete().eq('id', id);
+    if (error) console.error('deleteMasterArea error:', error);
+    return { error };
+  },
+
+  async fetchMasterCategories() {
+    const { data, error } = await supabase.from('master_categories').select('*').order('name');
+    if (error) console.error('fetchMasterCategories error:', error);
+    return data || [];
+  },
+  async addMasterCategory(name: string) {
+    const { data, error } = await supabase.from('master_categories').insert([{ id: name, name }]).select();
+    if (error) console.error('addMasterCategory error:', error);
+    return { data, error };
+  },
+  async deleteMasterCategory(id: string) {
+    const { error } = await supabase.from('master_categories').delete().eq('id', id);
+    if (error) console.error('deleteMasterCategory error:', error);
+    return { error };
+  },
+
+  async fetchMasterChannels() {
+    const { data, error } = await supabase.from('master_channels').select('*').order('name');
+    if (error) console.error('fetchMasterChannels error:', error);
+    return data || [];
+  },
+  async addMasterChannel(name: string) {
+    const { data, error } = await supabase.from('master_channels').insert([{ id: name, name }]).select();
+    if (error) console.error('addMasterChannel error:', error);
+    return { data, error };
+  },
+  async deleteMasterChannel(id: string) {
+    const { error } = await supabase.from('master_channels').delete().eq('id', id);
+    if (error) console.error('deleteMasterChannel error:', error);
+    return { error };
+  },
 };

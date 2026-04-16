@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MapPin, CheckCircle, Camera, AlertTriangle, Crosshair, Loader2, Users } from 'lucide-react';
-import { store } from '../../store/dataStore';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { AREAS } from '../../constants';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { Camera, Users, Loader2, MapPin, CheckCircle, Crosshair, AlertTriangle } from 'lucide-react';
+import { store } from '../../store/dataStore';
 
 interface Props { salesId: string; }
 
@@ -41,7 +40,7 @@ const iconBlue = createIcon('#3b82f6');
 // MapUpdater is deprecated in favor of mapRef
 
 export default function CheckInVisit({ salesId }: Props) {
-  const { activities, customers, prospek, refresh } = useSalesData();
+  const { activities, customers, prospek, masterAreas, refresh } = useSalesData();
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [catatan, setCatatan] = useState('');
   const [success, setSuccess] = useState(false);
@@ -275,18 +274,10 @@ export default function CheckInVisit({ salesId }: Props) {
             className="form-input" 
             style={{ width: '100%', background: '#F8FAFC', border: '2px solid #E2E8F0', borderRadius: '16px', padding: '14px', fontSize: '14px', fontWeight: 700, color: '#1e293b', outline: 'none' }} 
             value={selectedArea || ''} 
-            onChange={e => {
-              if (e.target.value === 'ADD_NEW') {
-                const newArea = prompt('Masukkan nama area baru:');
-                if (newArea && newArea.trim() !== '') setSelectedArea(newArea.trim());
-              } else {
-                setSelectedArea(e.target.value);
-              }
-            }}
+            onChange={e => setSelectedArea(e.target.value)}
           >
              <option value="">-- Deteksi Area Otomatis --</option>
-             {AREAS.map(a => <option key={a.id} value={a.id}>{a.id} - {a.name}</option>)}
-             <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+             {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
           </select>
         </div>
 

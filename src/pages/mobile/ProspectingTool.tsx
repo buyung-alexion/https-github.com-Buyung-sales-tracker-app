@@ -1,20 +1,17 @@
 import { useState, useEffect, useRef } from 'react';
+import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, CheckCheck, Search, Filter, Plus, X, MapPin, Edit3, PhoneCall, Camera, Users, Activity, FileText, Loader2, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { store } from '../../store/dataStore';
+import { getAreaName } from '../../constants';
 import { useSalesData } from '../../hooks/useSalesData';
-import type { Prospek, StatusProspek } from '../../types';
-import { AREAS, CATEGORIES, getAreaName } from '../../constants';
-import { getUniqueOptions } from '../../utils/formHelpers';
+
 
 interface Props { salesId: string; }
 
 export default function ProspectingTool({ salesId }: Props) {
-  const { prospek = [], refresh } = useSalesData() || {};
+  const { prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], refresh } = useSalesData() || {};
   
-  // Dynamic Options
-  const dynamicAreas = getUniqueOptions(prospek, 'area', AREAS.map(a => a.id));
-  const dynamicChannels = getUniqueOptions(prospek, 'channel', ['Referensi', 'Canvasing', 'Scraping', 'Kontak Sendiri']);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
@@ -33,7 +30,7 @@ export default function ProspectingTool({ salesId }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  const [newForm, setNewForm] = useState({ 
+  const [addForm, setAddForm] = useState({ 
     nama_toko: '', 
     nama_pic: '', 
     no_wa: '', 
@@ -44,6 +41,20 @@ export default function ProspectingTool({ salesId }: Props) {
     rating: 0, 
     foto_profil: '', 
     channel: 'Canvasing' 
+  });
+
+  const [editForm, setEditForm] = useState({ 
+    id: '',
+    nama_toko: '', 
+    nama_pic: '', 
+    no_wa: '', 
+    area: '', 
+    status: 'Cold' as StatusProspek, 
+    link_map: '', 
+    kategori: '', 
+    rating: 0, 
+    foto_profil: '', 
+    channel: '' 
   });
 
   useEffect(() => {
@@ -100,11 +111,11 @@ export default function ProspectingTool({ salesId }: Props) {
   };
 
   const handleAddProspek = async () => {
-    if (isSubmitting || !newForm.nama_toko || !newForm.no_wa) return;
+    if (isSubmitting || !addForm.nama_toko || !addForm.no_wa) return;
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      const { error } = await store.addProspek({ ...newForm, sales_owner: salesId });
+      const { error } = await store.addProspek({ ...addForm, sales_owner: salesId });
       if (error) {
         alert('Supabase Error (Add Prospect): ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal menyimpan prospek baru.');
@@ -115,7 +126,7 @@ export default function ProspectingTool({ salesId }: Props) {
       setTimeout(() => {
         setAddModal(false);
         setSaveSuccess(false);
-        setNewForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
+        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
       }, 1500);
     } catch (err) {
       setSaveError('Kesalahan sistem.');
@@ -129,17 +140,17 @@ export default function ProspectingTool({ salesId }: Props) {
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      const { error } = await store.updateProspek(editModal.id, {
-        nama_toko: newForm.nama_toko,
-        nama_pic: newForm.nama_pic,
-        no_wa: newForm.no_wa,
-        area: newForm.area,
-        status: newForm.status,
-        link_map: newForm.link_map,
-        kategori: newForm.kategori,
-        rating: newForm.rating,
-        foto_profil: newForm.foto_profil,
-        channel: newForm.channel,
+      const { error } = await store.updateProspek(editForm.id, {
+        nama_toko: editForm.nama_toko,
+        nama_pic: editForm.nama_pic,
+        no_wa: editForm.no_wa,
+        area: editForm.area,
+        status: editForm.status,
+        link_map: editForm.link_map,
+        kategori: editForm.kategori,
+        rating: editForm.rating,
+        foto_profil: editForm.foto_profil,
+        channel: addForm.channel,
       });
 
       if (error) {
@@ -153,7 +164,7 @@ export default function ProspectingTool({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setNewForm({ 
+        setAddForm({ 
           nama_toko: '', 
           nama_pic: '', 
           no_wa: '', 
@@ -173,20 +184,28 @@ export default function ProspectingTool({ salesId }: Props) {
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, isEdit: boolean) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const result = ev.target?.result;
-      if (typeof result !== 'string') return;
+      const result = ev.target?.result as string;
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const scale = img.width > 800 ? 800 / img.width : 1;
-        canvas.width = img.width * scale; canvas.height = img.height * scale;
-        canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
-        setNewForm(prev => ({ ...prev, foto_profil: canvas.toDataURL('image/jpeg', 0.6) }));
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const base64 = canvas.toDataURL('image/jpeg', 0.6);
+        
+        if (isEdit) {
+          setEditForm(prev => ({ ...prev, foto_profil: base64 }));
+        } else {
+          setAddForm(prev => ({ ...prev, foto_profil: base64 }));
+        }
       };
       img.src = result;
     };
@@ -387,17 +406,18 @@ export default function ProspectingTool({ salesId }: Props) {
                         onClick={(e) => { 
                           e.stopPropagation(); 
                           setEditModal(p); 
-                          setNewForm({ 
+                          setEditForm({ 
+                            id: p.id,
                             nama_toko: p.nama_toko, 
-                            nama_pic: p.nama_pic, 
+                            nama_pic: p.nama_pic || '',
                             no_wa: p.no_wa, 
-                            area: p.area as string, 
+                            area: p.area, 
                             status: p.status, 
                             link_map: p.link_map || '', 
-                            kategori: (p.kategori || 'Retail') as string, 
+                            kategori: p.kategori || '', 
                             rating: p.rating || 0, 
-                            foto_profil: p.foto_profil || '', 
-                            channel: p.channel || 'Canvasing' 
+                            foto_profil: p.foto_profil || '',
+                            channel: p.channel || 'Canvasing'
                           }); 
                         }}
                       >
@@ -486,23 +506,23 @@ export default function ProspectingTool({ salesId }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
               <div className="form-group">
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label>
-                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama Toko..." value={newForm.nama_toko} onChange={e => setNewForm({ ...newForm, nama_toko: e.target.value })} />
+                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama Toko..." value={addForm.nama_toko} onChange={e => setAddForm({ ...addForm, nama_toko: e.target.value })} />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC</label>
-                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama PIC..." value={newForm.nama_pic} onChange={e => setNewForm({ ...newForm, nama_pic: e.target.value })} />
+                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Nama PIC..." value={addForm.nama_pic} onChange={e => setAddForm({ ...addForm, nama_pic: e.target.value })} />
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>No WA *</label>
-                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="628..." value={newForm.no_wa} onChange={e => setNewForm({ ...newForm, no_wa: e.target.value })} />
+                  <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="628..." value={addForm.no_wa} onChange={e => setAddForm({ ...addForm, no_wa: e.target.value })} />
                 </div>
               </div>
 
               <div className="form-group">
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label>
-                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps..." value={newForm.link_map || ''} onChange={e => setNewForm({ ...newForm, link_map: e.target.value })} />
+                <input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps..." value={addForm.link_map || ''} onChange={e => setAddForm({ ...addForm, link_map: e.target.value })} />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -525,12 +545,12 @@ export default function ProspectingTool({ salesId }: Props) {
                     <span>Galeri</span>
                   </button>
                 </div>
-                <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
-                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
-                {newForm.foto_profil && (
+                <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, false)} />
+                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, false)} />
+                {addForm.foto_profil && (
                   <div className="animate-scale" style={{ position: 'relative', width: '80px', height: '80px', marginTop: '4px' }}>
-                    <img src={newForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
-                    <button onClick={() => setNewForm({...newForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={addForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
+                    <button onClick={() => setAddForm({...addForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <X size={12} />
                     </button>
                   </div>
@@ -540,49 +560,30 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Kategori</label>
-                    <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={newForm.kategori} onChange={e => {
-                      if (e.target.value === 'ADD_NEW') {
-                        const val = prompt('Masukkan Kategori Baru:');
-                        if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
-                      } else {
-                        setNewForm({ ...newForm, kategori: e.target.value as string });
-                      }
-                    }}>
-                      {CATEGORIES.map(k => (
-                        <option key={k.id} value={k.id}>{k.name}</option>
-                      ))}
-                      {newForm.kategori && !CATEGORIES.find(k => k.id === newForm.kategori) && (
-                        <option value={newForm.kategori}>{newForm.kategori}</option>
-                      )}
-                      <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
-                    </select>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px', background: '#fff' }} value={addForm.kategori} onChange={e => setAddForm({ ...addForm, kategori: e.target.value })}>
+                    <option value="">-- Pilih Kategori --</option>
+                    {masterCategories.map(k => (
+                      <option key={k.id} value={k.id}>{k.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
-                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.rating} onChange={e => setNewForm({ ...newForm, rating: parseInt(e.target.value) || 0 })} />
+                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={addForm.rating} onChange={e => setAddForm({ ...addForm, rating: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => setNewForm({ ...newForm, area: e.target.value })}>
-                      <option value="">-- Pilih Area --</option>
-                      {dynamicAreas.map(a => <option key={a} value={a}>{a}</option>)}
-                      {newForm.area && !dynamicAreas.includes(newForm.area) && (
-                        <option value={newForm.area}>{newForm.area}</option>
-                      )}
-                    </select>
-                    <button type="button" onClick={() => {
-                        const val = prompt('Masukkan Nama Area Baru:');
-                        if (val?.trim()) setNewForm({ ...newForm, area: val.trim() });
-                    }} style={{ padding: '0 12px', background: '#f1f5f9', borderRadius: '12px', fontWeight: 800 }}>+</button>
-                  </div>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={addForm.area} onChange={e => setAddForm({ ...addForm, area: e.target.value })}>
+                    <option value="">-- Pilih Area --</option>
+                    {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.status} onChange={e => setNewForm({ ...newForm, status: e.target.value as StatusProspek })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={addForm.status} onChange={e => setAddForm({ ...addForm, status: e.target.value as StatusProspek })}>
                     <option>Cold</option><option>Warm</option><option>Hot</option>
                   </select>
                 </div>
@@ -590,19 +591,10 @@ export default function ProspectingTool({ salesId }: Props) {
 
               <div className="form-group">
                 <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Sumber Prospek</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select className="form-input" style={{ flex: 1, borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.channel} onChange={e => setNewForm({ ...newForm, channel: e.target.value })}>
-                    <option value="">-- Pilih Sumber --</option>
-                    {dynamicChannels.map(c => <option key={c} value={c}>{c}</option>)}
-                    {newForm.channel && !dynamicChannels.includes(newForm.channel) && (
-                      <option value={newForm.channel}>{newForm.channel}</option>
-                    )}
-                  </select>
-                  <button type="button" onClick={() => {
-                      const val = prompt('Masukkan Sumber Baru:');
-                      if (val?.trim()) setNewForm({ ...newForm, channel: val.trim() });
-                  }} style={{ padding: '0 12px', background: '#f1f5f9', borderRadius: '12px', fontWeight: 800 }}>+</button>
-                </div>
+                <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={addForm.channel} onChange={e => setAddForm({ ...addForm, channel: e.target.value })}>
+                  <option value="">-- Pilih Sumber --</option>
+                  {masterChannels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                </select>
               </div>
 
               {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>{saveError}</div>}
@@ -610,7 +602,7 @@ export default function ProspectingTool({ salesId }: Props) {
                 <button className="tap-active" style={{ flex: 1, padding: '18px', borderRadius: '20px', background: '#F1F5F9', color: '#64748B', fontWeight: 900, border: 'none' }} onClick={() => setAddModal(false)} disabled={isSubmitting}>Batal</button>
                 <button 
                   className="tap-active" 
-                  disabled={!newForm.nama_toko || !newForm.no_wa || isSubmitting}
+                  disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}
                   style={{ 
                     flex: 2, padding: '18px', borderRadius: '20px', 
                     background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-yellow)', 
@@ -639,10 +631,10 @@ export default function ProspectingTool({ salesId }: Props) {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.nama_toko} onChange={e => setNewForm({ ...newForm, nama_toko: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama PIC</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.nama_pic} onChange={e => setNewForm({ ...newForm, nama_pic: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nomor WA *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={newForm.no_wa} onChange={e => setNewForm({ ...newForm, no_wa: e.target.value })} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={newForm.link_map || ''} onChange={e => setNewForm({ ...newForm, link_map: e.target.value })} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama Toko *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_toko} onChange={e => setEditForm({ ...editForm, nama_toko: e.target.value })} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nama PIC</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="Bpk/Ibu" value={editForm.nama_pic} onChange={e => setEditForm({ ...editForm, nama_pic: e.target.value })} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Nomor WA *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.no_wa} onChange={e => setEditForm({ ...editForm, no_wa: e.target.value })} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={editForm.link_map || ''} onChange={e => setEditForm({ ...editForm, link_map: e.target.value })} /></div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b' }}>Foto Toko / Profil</label>
@@ -664,12 +656,12 @@ export default function ProspectingTool({ salesId }: Props) {
                     <span>Galeri</span>
                   </button>
                 </div>
-                <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={handleFileChange} />
-                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={handleFileChange} />
-                {newForm.foto_profil && (
+                <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, true)} />
+                <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, true)} />
+                {editForm.foto_profil && (
                   <div className="animate-scale" style={{ position: 'relative', width: '80px', height: '80px', marginTop: '4px' }}>
-                    <img src={newForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
-                    <button onClick={() => setNewForm({...newForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <img src={editForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
+                    <button onClick={() => setEditForm({...editForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <X size={12} />
                     </button>
                   </div>
@@ -679,46 +671,30 @@ export default function ProspectingTool({ salesId }: Props) {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Kategori</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.kategori} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Kategori Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, kategori: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, kategori: e.target.value as string });
-                    }
-                  }}>
-                    {CATEGORIES.map(k => (
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.kategori} onChange={e => setEditForm({ ...editForm, kategori: e.target.value })}>
+                    <option value="">-- Pilih Kategori --</option>
+                    {masterCategories.map(k => (
                       <option key={k.id} value={k.id}>{k.name}</option>
                     ))}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Kategori Baru</option>
                   </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Rating (0-5)</label>
-                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.rating} onChange={e => setNewForm({ ...newForm, rating: parseInt(e.target.value) || 0 })} />
+                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.rating} onChange={e => setEditForm({ ...editForm, rating: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Wilayah Area</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.area} onChange={e => {
-                    if (e.target.value === 'ADD_NEW') {
-                      const val = prompt('Masukkan Area Baru:');
-                      if (val && val.trim()) setNewForm({ ...newForm, area: val.trim() });
-                    } else {
-                      setNewForm({ ...newForm, area: e.target.value as string });
-                    }
-                  }}>
-                    {AREAS.map(a => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                    <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#B45309' }}>+ Tambah Area Baru</option>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })}>
+                    <option value="">-- Pilih Area --</option>
+                    {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.status} onChange={e => setNewForm({ ...newForm, status: e.target.value as StatusProspek })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value as StatusProspek })}>
                     <option>Cold</option><option>Warm</option><option>Hot</option>
                   </select>
                 </div>
@@ -726,20 +702,9 @@ export default function ProspectingTool({ salesId }: Props) {
 
               <div className="form-group">
                 <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Sumber Prospek</label>
-                <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={newForm.channel} onChange={e => {
-                  if (e.target.value === 'ADD_NEW') {
-                    const val = prompt('Masukkan Sumber Baru:');
-                    if (val && val.trim()) setNewForm({ ...newForm, channel: val.trim() });
-                  } else {
-                    setNewForm({ ...newForm, channel: e.target.value });
-                  }
-                }}>
-                  <option value="Referensi">Referensi</option>
-                  <option value="Canvasing">Canvasing</option>
-                  <option value="Scraping">Scraping</option>
-                  <option value="Kontak Sendiri">Kontak Sendiri</option>
-                  {!['Referensi','Canvasing','Scraping','Kontak Sendiri'].includes(newForm.channel || '') && newForm.channel && <option value={newForm.channel}>{newForm.channel}</option>}
-                  <option value="ADD_NEW" style={{ fontWeight: 'bold', color: '#F59E0B' }}>+ Tambah Sumber</option>
+                <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.channel} onChange={e => setEditForm({ ...editForm, channel: e.target.value })}>
+                  <option value="">-- Pilih Sumber --</option>
+                  {masterChannels.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 
@@ -748,7 +713,7 @@ export default function ProspectingTool({ salesId }: Props) {
                 <button className="tap-active" style={{ flex: 1, padding: '18px', borderRadius: '20px', background: '#F1F5F9', color: '#64748B', fontWeight: 900, border: 'none' }} onClick={() => setEditModal(null)} disabled={isSubmitting}>Batal</button>
                 <button 
                   className="tap-active" 
-                  disabled={!newForm.nama_toko || !newForm.no_wa || isSubmitting}
+                  disabled={!editForm.nama_toko || !editForm.no_wa || isSubmitting}
                   style={{ 
                     flex: 2, padding: '18px', borderRadius: '20px', 
                     background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-yellow)', 
@@ -819,7 +784,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   >
                     Semua
                   </button>
-                  {AREAS.map(a => (
+                  {masterAreas.map(a => (
                     <button 
                       key={a.id}
                       onClick={() => setFilterArea(a.id)}
@@ -856,7 +821,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   >
                     Semua
                   </button>
-                  {CATEGORIES.map(k => (
+                  {masterCategories.map(k => (
                     <button 
                       key={k.id}
                       onClick={() => setFilterKategori(k.id)}
