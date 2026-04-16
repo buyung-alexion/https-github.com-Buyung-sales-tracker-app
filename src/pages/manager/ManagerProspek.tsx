@@ -123,6 +123,8 @@ export default function ManagerProspek() {
     channel: ''
   });
 
+  const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
+
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
 
@@ -624,8 +626,16 @@ export default function ManagerProspek() {
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                         {p.lastActivity?.geotagging?.photo ? (
                           <div 
-                            style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }} 
-                            onClick={() => window.open(p.lastActivity!.geotagging!.photo, '_blank')}
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'all 0.2s' }} 
+                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onClick={() => setSelectedImage({
+                              url: p.lastActivity!.geotagging!.photo!,
+                              sales: p.salesName,
+                              store: p.nama_toko,
+                              timestamp: p.lastActivity!.timestamp,
+                              note: p.lastActivity!.catatan_hasil
+                            })}
                           >
                             <img src={p.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           </div>
@@ -676,6 +686,98 @@ export default function ManagerProspek() {
         masterCategories={masterCategories}
         masterChannels={masterChannels}
       />
+
+      {/* PHOTO VIEWER MODAL - PREMIUM */}
+      {selectedImage && (
+        <div 
+          style={{ 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 99999, animation: 'fade-in 0.3s ease', padding: '40px'
+          }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            style={{ 
+              background: '#fff', 
+              width: '100%', maxWidth: '1000px', 
+              borderRadius: '32px', 
+              overflow: 'hidden', 
+              display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 350px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+              animation: 'scale-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              position: 'relative',
+              maxHeight: '90vh'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedImage(null)}
+              style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(15,23,42,0.1)', border: 'none', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}
+            >
+              <X size={20} />
+            </button>
+
+            {/* Image Side */}
+            <div style={{ background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
+               <img 
+                 src={selectedImage.url} 
+                 alt="Bukti Lapangan" 
+                 style={{ width: '100%', height: 'auto', maxHeight: '90vh', objectFit: 'contain' }} 
+               />
+            </div>
+
+            {/* Content Side */}
+            <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Log Aktivitas Prospek</div>
+                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#facc15', color: '#1e293b', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={16} />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{selectedImage.sales}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>Field Salesman</div>
+                    </div>
+                  </div>
+               </div>
+
+               <div style={{ width: '100%', height: '1px', background: '#f1f5f9' }} />
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       <MapPin size={14} color="#3b82f6" />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Waktu Pelaporan</div>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#475569' }}>
+                        {new Date(selectedImage.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })} • {new Date(selectedImage.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Catatan Lapangan</div>
+                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9', fontSize: '13px', lineHeight: 1.6, color: '#475569', fontWeight: 600 }}>
+                    {selectedImage.note || 'Tidak ada catatan hasil survey.'}
+                  </div>
+               </div>
+
+               <button 
+                 onClick={() => setSelectedImage(null)}
+                 style={{ background: '#1e293b', border: 'none', borderRadius: '16px', padding: '16px', color: '#fff', fontWeight: 900, fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(30,41,59,0.1)' }}
+               >
+                 TUTUP
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -13,6 +13,7 @@ export interface PointsResult {
     newProspek: number;
   };
   filteredActs: Activity[];
+  filteredProspek: Prospek[];
 }
 
 /**
@@ -54,8 +55,8 @@ export function calculateSalesPoints(
   };
 
   // Filter Data by Sales and Time Range
-  let filteredActs = activities.filter(a => a.id_sales === salesId && isInRange(a.timestamp));
-  let filteredProspek = prospek.filter(p => p.sales_owner === salesId && isInRange(p.created_at));
+  let filteredActs = activities.filter(a => (salesId === 'all' ? true : a.id_sales === salesId) && isInRange(a.timestamp));
+  let filteredProspek = prospek.filter(p => (salesId === 'all' ? true : p.sales_owner === salesId) && isInRange(p.created_at));
 
   // Additional Filters (Area, Category)
   if (filters?.area && filters.area !== 'all') {
@@ -109,6 +110,7 @@ export function calculateSalesPoints(
       closing: closingCount,
       newProspek: prospekCount
     },
-    filteredActs
+    filteredActs,
+    filteredProspek
   };
 }

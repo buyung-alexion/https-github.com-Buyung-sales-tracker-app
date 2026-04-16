@@ -2,52 +2,32 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { useCurrentSales, useSalesData } from '../../hooks/useSalesData';
+import { calculateSalesPoints } from '../../utils/points';
+import type { FilterType } from '../../utils/points';
 
 export default function MobileLeaderboard() {
   const navigate = useNavigate();
   const { currentSalesId } = useCurrentSales();
   const { sales, activities, prospek, systemTargets } = useSalesData();
-  const [filterDate, setFilterDate] = useState<string>('month');
+  const [filterDate, setFilterDate] = useState<FilterType>('month');
 
   const leaderboardData = useMemo(() => {
-    const now = new Date();
-    const todayMs = new Date(now.setHours(0,0,0,0)).getTime();
-    const weekMs = todayMs - (7 * 86400000);
-    const monthMs = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
-
     return sales.map(s => {
-      const targetPoin = systemTargets?.ind_poin ?? 150;
-      const sActs = activities.filter(a => a.id_sales === s.id);
-      const sProspek = prospek.filter(p => p.sales_owner === s.id);
-
-      let thresholdStart = 0;
-
-      if (filterDate === 'today') thresholdStart = todayMs;
-      else if (filterDate === 'week') thresholdStart = weekMs;
-      else if (filterDate === 'month') thresholdStart = monthMs;
-
-      const currentActs = filterDate === 'all' ? sActs : sActs.filter(a => new Date(a.timestamp).getTime() >= thresholdStart);
-      const currentProspek = filterDate === 'all' ? sProspek : sProspek.filter(p => new Date(p.created_at).getTime() >= thresholdStart);
-
-      const closingCount = currentActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
-      const maintenanceCount = currentActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
-      const totalVisit = currentActs.filter(a => a.tipe_aksi === 'Visit').length;
-      const totalProspek = currentProspek.length;
-      const totalSO = currentActs.filter(a => a.tipe_aksi === 'Order').length;
-      const totalChat = currentActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
-
-      const scale = systemTargets || { b_visit: 5, b_closing: 15, b_prospek: 5, b_maint: 5, b_order: 20, b_chat: 5 };
-      const actualPoints = 
-        (totalVisit * (scale.b_visit ?? 5)) +
-        (closingCount * (scale.b_closing ?? 15)) +
-        (totalProspek * (scale.b_prospek ?? 5)) +
-        (maintenanceCount * (scale.b_maint ?? 5)) +
-        (totalSO * (scale.b_order ?? 20)) +
-        (totalChat * (scale.b_chat ?? 5));
-
-      const percent = targetPoin > 0 ? Math.min(100, Math.round((actualPoints / targetPoin) * 100)) : 0;
-
-      return { ...s, actualPoints, percent, totalVisit, closingCount };
+      const { totalActual, breakdown } = calculateSalesPoints(
+        s.id, 
+        activities, 
+        prospek, 
+        systemTargets, 
+        filterDate
+      );
+      
+      return { 
+        ...s, 
+        actualPoints: totalActual, 
+        percent: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100)),
+        totalVisit: breakdown.visitProspek + breakdown.visitCustomer, 
+        closingCount: breakdown.closing
+      };
     }).sort((a, b) => b.actualPoints - a.actualPoints);
   }, [sales, activities, prospek, systemTargets, filterDate]);
 
@@ -97,7 +77,7 @@ export default function MobileLeaderboard() {
          
          {/* Filter Pilihan Waktu */}
          <div style={{ position: 'relative', zIndex: 5, display: 'flex', background: 'rgba(17,24,39,0.1)', borderRadius: '16px', padding: '4px', marginBottom: '40px', border: '1px solid rgba(17,24,39,0.05)' }}>
-           {['today', 'week', 'month'].map(opt => (
+           {(['today', 'week', 'month'] as FilterType[]).map(opt => (
              <button 
                key={opt}
                onClick={() => setFilterDate(opt)}

@@ -6,6 +6,11 @@ import {
   ResponsiveContainer, 
   PieChart, Pie, Cell
 } from 'recharts';
+import { 
+  Calendar, User, MapPin, Wrench, Target, Users, CheckCircle, FileText, Zap, 
+  TrendingUp, TrendingDown, Flame, Snowflake, 
+  CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X 
+} from 'lucide-react';
 
 
 
@@ -17,6 +22,7 @@ export default function PerformanceAnalytics() {
   const [selectedSales, setSelectedSales] = useState<string>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
 
   // Set Shell Title on Mount
   useEffect(() => {
@@ -31,60 +37,46 @@ export default function PerformanceAnalytics() {
   // Use a stable reference for "now" to avoid re-calculating everything on every render
   const [now] = useState(new Date());
   
-  // Filtering Engine
-  const { activities, prospek, customers } = useMemo(() => {
-    let a = [...realActivities];
-    let p = [...realProspek];
-    let c = [...realCustomers];
+  // --- DATA SOURCES ---
+  // Now we use masterStats as the primary source of truth for filtered data
+  const masterStats = useMemo(() => {
+    return calculateSalesPoints(
+      selectedSales,
+      realActivities,
+      realProspek,
+      systemTargets,
+      selectedPeriod,
+      {
+        area: selectedArea,
+        category: selectedCategory
+      }
+    );
+  }, [selectedSales, realActivities, realProspek, systemTargets, selectedPeriod, selectedArea, selectedCategory]);
 
-    // 1. Filter by Date Period (Activities and Prospek only)
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const startOfWeek = new Date(now.getTime() - 7 * 86400000).getTime();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+  // Derived filtered arrays to keep the rest of the logic clean and synchronized
+  const activities = masterStats.filteredActs;
+  const prospek = masterStats.filteredProspek;
+  const customers = useMemo(() => {
+    return realCustomers.filter(c => {
+      // Respect Sales and Area filters for customers
+      if (selectedSales !== 'all' && c.sales_pic !== selectedSales) return false;
+      if (selectedArea !== 'all' && c.area !== selectedArea) return false;
+      
+      // If period filter is applied, we usually only filter NEW customers joined in that period
+      if (selectedPeriod === 'all') return true;
+      
+      const ts = new Date(c.tanggal_join || c.created_at || 0).getTime();
+      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+      const startOfWeek = new Date(now.getTime() - 7 * 86400000).getTime();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
-    let filteredA = [...a];
-    let filteredP = [...p];
-    let filteredNewC = [...c];
-
-    if (selectedPeriod === 'today') {
-      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfToday);
-      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfToday);
-      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfToday && x.is_from_prospek !== false);
-    } else if (selectedPeriod === 'week') {
-      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfWeek);
-      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfWeek);
-      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfWeek && x.is_from_prospek !== false);
-    } else if (selectedPeriod === 'month') {
-      filteredA = a.filter(x => new Date(x.timestamp || 0).getTime() >= startOfMonth);
-      filteredP = p.filter(x => new Date(x.created_at || 0).getTime() >= startOfMonth);
-      c = c.filter(x => new Date(x.tanggal_join || x.created_at || 0).getTime() >= startOfMonth && x.is_from_prospek !== false);
-    }
-
-    // 2. Filter by Salesman (Applies to ALL)
-    if (selectedSales !== 'all') {
-      filteredA = filteredA.filter(x => x.id_sales === selectedSales);
-      filteredP = filteredP.filter(x => x.sales_owner === selectedSales);
-      c = c.filter(x => x.sales_pic === selectedSales);
-      filteredNewC = filteredNewC.filter(x => x.sales_pic === selectedSales);
-    }
-
-    // 3. Filter by Area (Applies to ALL)
-    if (selectedArea !== 'all') {
-      filteredA = filteredA.filter(x => (x as any).geotagging?.area === selectedArea);
-      filteredP = filteredP.filter(x => x.area === selectedArea);
-      c = c.filter(x => x.area === selectedArea);
-      filteredNewC = filteredNewC.filter(x => x.area === selectedArea);
-    }
-
-    // 4. Filter by Category (Activities only)
-    if (selectedCategory !== 'all') {
-      if (selectedCategory === 'Visit') filteredA = filteredA.filter(x => x.tipe_aksi === 'Visit');
-      else if (selectedCategory === 'Closing') filteredA = filteredA.filter(x => x.catatan_hasil.toLowerCase().includes('closing'));
-      else if (selectedCategory === 'Order') filteredA = filteredA.filter(x => x.tipe_aksi === 'Order');
-    }
-
-    return { activities: filteredA, prospek: filteredP, customers: c };
-  }, [realActivities, realProspek, realCustomers, selectedPeriod, selectedSales, selectedArea, selectedCategory]);
+      if (selectedPeriod === 'today') return ts >= startOfToday;
+      if (selectedPeriod === 'week') return ts >= startOfWeek;
+      if (selectedPeriod === 'month') return ts >= startOfMonth;
+      
+      return true;
+    });
+  }, [realCustomers, selectedSales, selectedArea, selectedPeriod, now]);
 
   const areas = useMemo(() => {
     return masterAreas;
@@ -138,15 +130,11 @@ export default function PerformanceAnalytics() {
     }).sort((a,b) => b.points - a.points);
   }, [sales, realActivities, realProspek, systemTargets, selectedPeriod, selectedArea, selectedCategory, realCustomers]);
 
-  // Master Aggregation for KPI Cards (Filtered by period, salesman, area)
-  const totalProspekCount = prospek.length; // Choice A: Active only
+  // Master Aggregation for KPI Cards
+  const totalProspekCount = masterStats.breakdown.newProspek;
   const totalCustomer = customers.length;
-  
-  // Refined Closing Logic: Count customers who match filters AND came from prospects (is_from_prospek !== false)
-  // Note: 'customers' is already filtered by sales/area in the useMemo above.
-  const totalUniqueClosing = customers.filter(c => c.is_from_prospek !== false).length; 
-  
-  const totalSO = activities.filter(a => a.tipe_aksi === 'Order').length;
+  const totalUniqueClosing = masterStats.breakdown.closing;
+  const totalSO = masterStats.breakdown.order;
   const totalActivityCount = activities.length;
 
 
@@ -168,22 +156,37 @@ export default function PerformanceAnalytics() {
   const sevenDaysAgo = new Date(nowTime - 7 * 86400000);
   const fourteenDaysAgo = new Date(nowTime - 14 * 86400000);
 
-  const trends = {
-    prospek: calculateTrend(getCountInPeriod(prospek, 'created_at', sevenDaysAgo, now), getCountInPeriod(prospek, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
-    customer: calculateTrend(getCountInPeriod(customers, 'created_at', sevenDaysAgo, now), getCountInPeriod(customers, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
-    closing: calculateTrend(
-      customers.filter(c => c.is_from_prospek !== false && new Date(c.tanggal_join || c.created_at || now.toISOString()) >= sevenDaysAgo).length,
-      customers.filter(c => c.is_from_prospek !== false && new Date(c.tanggal_join || c.created_at || now.toISOString()) >= fourteenDaysAgo && new Date(c.tanggal_join || c.created_at || now.toISOString()) < sevenDaysAgo).length
-    ),
-    so: calculateTrend(
-      activities.filter(a => a.tipe_aksi === 'Order' && new Date(a.timestamp) >= sevenDaysAgo).length,
-      activities.filter(a => a.tipe_aksi === 'Order' && new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
-    ),
-    activity: calculateTrend(
-      activities.filter(a => new Date(a.timestamp) >= sevenDaysAgo).length,
-      activities.filter(a => new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
-    )
-  };
+  const trends = useMemo(() => {
+    const fProspek = realProspek.filter(p => (selectedSales === 'all' || p.sales_owner === selectedSales) && (selectedArea === 'all' || p.area === selectedArea));
+    const fCustomers = realCustomers.filter(c => (selectedSales === 'all' || c.sales_pic === selectedSales) && (selectedArea === 'all' || c.area === selectedArea));
+    const fActivities = realActivities.filter(a => {
+      if (selectedSales !== 'all' && a.id_sales !== selectedSales) return false;
+      if (selectedArea !== 'all' && (a as any).geotagging?.area !== selectedArea) return false;
+      if (selectedCategory !== 'all') {
+        if (selectedCategory === 'Visit' && a.tipe_aksi !== 'Visit') return false;
+        if (selectedCategory === 'Order' && a.tipe_aksi !== 'Order') return false;
+        if (selectedCategory === 'Closing' && !a.catatan_hasil.toLowerCase().includes('closing')) return false;
+      }
+      return true;
+    });
+
+    return {
+      prospek: calculateTrend(getCountInPeriod(fProspek, 'created_at', sevenDaysAgo, now), getCountInPeriod(fProspek, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
+      customer: calculateTrend(getCountInPeriod(fCustomers, 'created_at', sevenDaysAgo, now), getCountInPeriod(fCustomers, 'created_at', fourteenDaysAgo, sevenDaysAgo)),
+      closing: calculateTrend(
+        fActivities.filter(a => a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp) >= sevenDaysAgo).length,
+        fActivities.filter(a => a.catatan_hasil.toLowerCase().includes('closing') && new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
+      ),
+      so: calculateTrend(
+        fActivities.filter(a => a.tipe_aksi === 'Order' && new Date(a.timestamp) >= sevenDaysAgo).length,
+        fActivities.filter(a => a.tipe_aksi === 'Order' && new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
+      ),
+      activity: calculateTrend(
+        fActivities.filter(a => new Date(a.timestamp) >= sevenDaysAgo).length,
+        fActivities.filter(a => new Date(a.timestamp) >= fourteenDaysAgo && new Date(a.timestamp) < sevenDaysAgo).length
+      )
+    };
+  }, [realActivities, realProspek, realCustomers, selectedSales, selectedArea, selectedCategory, sevenDaysAgo, fourteenDaysAgo, now]);
 
   // Pie Data for Status Distribution Gauge
   // Pie Data for Status Distribution Gauge
@@ -205,21 +208,51 @@ export default function PerformanceAnalytics() {
       const year = d.getFullYear();
       const month = d.getMonth();
       const label = d.toLocaleDateString('id-ID', { month: 'short' });
+      
       const filterByMonth = (dateStr: string | undefined) => {
         if (!dateStr) return false;
         const date = new Date(dateStr);
         return date.getFullYear() === year && date.getMonth() === month;
       };
-      const mProspek = realProspek.filter(p => filterByMonth(p.created_at)).length;
-      const mCustomer = realCustomers.filter(c => filterByMonth(c.tanggal_join || c.created_at)).length;
-      const mActivities = realActivities.filter(a => filterByMonth(a.timestamp));
-      const mVisit = mActivities.filter(a => a.tipe_aksi === 'Visit').length;
-      const mFollowup = mActivities.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length;
-      const mOrder = mActivities.filter(a => a.tipe_aksi === 'Order').length;
-      const total = mProspek + mCustomer + mOrder;
-      return { label, mProspek, mCustomer, mVisit, mFollowup, mOrder, total };
+
+      // Filter by selection
+      const mP = realProspek.filter(p => {
+        if (selectedSales !== 'all' && p.sales_owner !== selectedSales) return false;
+        if (selectedArea !== 'all' && p.area !== selectedArea) return false;
+        return filterByMonth(p.created_at);
+      }).length;
+
+      const mC = realCustomers.filter(c => {
+        if (selectedSales !== 'all' && c.sales_pic !== selectedSales) return false;
+        if (selectedArea !== 'all' && c.area !== selectedArea) return false;
+        return filterByMonth(c.tanggal_join || c.created_at);
+      }).length;
+
+      const mActs = realActivities.filter(a => {
+        if (selectedSales !== 'all' && a.id_sales !== selectedSales) return false;
+        if (selectedArea !== 'all' && (a as any).geotagging?.area !== selectedArea) return false;
+        if (selectedCategory !== 'all') {
+          if (selectedCategory === 'Visit' && a.tipe_aksi !== 'Visit') return false;
+          if (selectedCategory === 'Order' && a.tipe_aksi !== 'Order') return false;
+          if (selectedCategory === 'Closing' && !a.catatan_hasil.toLowerCase().includes('closing')) return false;
+        }
+        return filterByMonth(a.timestamp);
+      });
+
+      const mOrder = mActs.filter(a => a.tipe_aksi === 'Order').length;
+      const total = mP + mC + mOrder;
+
+      return { 
+        label, 
+        mProspek: mP, 
+        mCustomer: mC, 
+        mVisit: mActs.filter(a => a.tipe_aksi === 'Visit').length, 
+        mFollowup: mActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, 
+        mOrder, 
+        total 
+      };
     });
-  }, [now, realActivities, realCustomers, realProspek]);
+  }, [now, realActivities, realCustomers, realProspek, selectedSales, selectedArea]);
 
 
 
@@ -227,20 +260,58 @@ export default function PerformanceAnalytics() {
   const pointTrendsData = useMemo(() => {
     const days = [];
     let cumulativePoints = 0;
-    const sortedActs = [...realActivities].sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    
+    // Filter base activities for trend
+    const baseActs = realActivities.filter(a => {
+      if (selectedSales !== 'all' && a.id_sales !== selectedSales) return false;
+      if (selectedArea !== 'all' && (a as any).geotagging?.area !== selectedArea) return false;
+      return true;
+    }).sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+
+    // Filter base prospek for trend points
+    const baseProspek = realProspek.filter(p => {
+       if (selectedSales !== 'all' && p.sales_owner !== selectedSales) return false;
+       if (selectedArea !== 'all' && p.area !== selectedArea) return false;
+       return true;
+    });
+
+    const weights = {
+      chat: systemTargets?.b_chat ?? 1,
+      order: systemTargets?.b_order ?? 5,
+      visit: systemTargets?.b_visit ?? 5,
+      maint: systemTargets?.b_maint ?? 5,
+      closing: systemTargets?.b_closing ?? 20,
+      prospek: systemTargets?.b_prospek ?? 5,
+    };
+
     for (let i = 29; i >= 0; i--) {
       const d = new Date(now);
+      d.setHours(0,0,0,0);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      const dayActs = sortedActs.filter(a => a.timestamp.startsWith(dateStr));
-      let dayPoints = 0;
-      dayActs.forEach(a => {
-        if (a.tipe_aksi === 'Visit') dayPoints += (systemTargets?.b_visit ?? 5);
-        else if (a.tipe_aksi === 'WA') dayPoints += (systemTargets?.b_chat ?? 5);
-        else if (a.tipe_aksi === 'Call') dayPoints += (systemTargets?.b_chat ?? 5);
-        else if (a.tipe_aksi === 'Order') dayPoints += (systemTargets?.b_order ?? 20);
-        if (a.catatan_hasil.toLowerCase().includes('closing')) dayPoints += (systemTargets?.b_closing ?? 15);
+      const startDay = d.getTime();
+      const endDay = d.getTime() + 86400000;
+
+      const dayActs = baseActs.filter(a => {
+        const ts = new Date(a.timestamp).getTime();
+        return ts >= startDay && ts < endDay;
       });
+
+      const dayPros = baseProspek.filter(p => {
+        const ts = new Date(p.created_at).getTime();
+        return ts >= startDay && ts < endDay;
+      }).length;
+
+      let dayPoints = dayPros * weights.prospek;
+      dayActs.forEach(a => {
+        if (a.tipe_aksi === 'Visit') {
+          dayPoints += (a.target_type === 'customer' ? weights.maint : weights.visit);
+        }
+        else if (a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call') dayPoints += weights.chat;
+        else if (a.tipe_aksi === 'Order') dayPoints += weights.order;
+        
+        if (a.catatan_hasil.toLowerCase().includes('closing')) dayPoints += weights.closing;
+      });
+
       cumulativePoints += dayPoints;
       days.push({
         date: d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
@@ -249,7 +320,7 @@ export default function PerformanceAnalytics() {
       });
     }
     return days;
-  }, [realActivities, now, systemTargets]);
+  }, [realActivities, realProspek, now, systemTargets, selectedSales, selectedArea]);
 
   const retentionAnalysis = useMemo(() => {
     const last30Days = 30 * 24 * 60 * 60 * 1000;
@@ -349,7 +420,7 @@ export default function PerformanceAnalytics() {
         boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>Ã°Å¸â€œâ€¦</span>
+          <Calendar size={18} color="#94a3b8" />
           <select 
             value={selectedPeriod} 
             onChange={(e) => setSelectedPeriod(e.target.value as any)}
@@ -365,7 +436,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>Ã°Å¸â€˜Â¤</span>
+          <User size={18} color="#94a3b8" />
           <select 
             value={selectedSales} 
             onChange={(e) => setSelectedSales(e.target.value)}
@@ -379,7 +450,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>Ã°Å¸â€œÂ</span>
+          <MapPin size={18} color="#94a3b8" />
           <select 
             value={selectedArea} 
             onChange={(e) => setSelectedArea(e.target.value)}
@@ -393,7 +464,7 @@ export default function PerformanceAnalytics() {
         <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '18px' }}>Ã°Å¸â€ºÂ Ã¯Â¸Â</span>
+          <Wrench size={18} color="#94a3b8" />
           <select 
             value={selectedCategory} 
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -441,11 +512,11 @@ export default function PerformanceAnalytics() {
         padding: '0 2px'
       }}>
         {[
-          { label: 'Total Prospek', value: totalProspekCount, from: '#a855f7', to: '#7c3aed', icon: 'ÃŽÂ£', shadow: 'rgba(168, 85, 247, 0.3)', trend: trends.prospek },
-          { label: 'Total Customer', value: totalCustomer, from: '#6366f1', to: '#4f46e5', icon: 'Ã°Å¸â€˜Â¤', shadow: 'rgba(99, 102, 241, 0.3)', trend: trends.customer },
-          { label: 'Total Closing', value: totalUniqueClosing, from: '#10b981', to: '#059669', icon: 'Ã¢Å“â€œ', shadow: 'rgba(16, 185, 129, 0.3)', trend: trends.closing },
-          { label: 'Total Sales Order', value: totalSO, from: '#f59e0b', to: '#d97706', icon: 'Ã°Å¸â€œâ€ž', shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
-          { label: 'Total Activity', value: totalActivityCount, from: '#3b82f6', to: '#2563eb', icon: 'Ã¢Å¡Â¡', shadow: 'rgba(59, 130, 246, 0.3)', trend: trends.activity }
+          { label: 'Total Prospek', value: totalProspekCount, from: '#a855f7', to: '#7c3aed', icon: <Target size={26} />, shadow: 'rgba(168, 85, 247, 0.3)', trend: trends.prospek },
+          { label: 'Total Customer', value: totalCustomer, from: '#6366f1', to: '#4f46e5', icon: <Users size={26} />, shadow: 'rgba(99, 102, 241, 0.3)', trend: trends.customer },
+          { label: 'Total Closing', value: totalUniqueClosing, from: '#10b981', to: '#059669', icon: <CheckCircle size={26} />, shadow: 'rgba(16, 185, 129, 0.3)', trend: trends.closing },
+          { label: 'Total Sales Order', value: totalSO, from: '#f59e0b', to: '#d97706', icon: <FileText size={26} />, shadow: 'rgba(245, 158, 11, 0.3)', trend: trends.so },
+          { label: 'Total Activity', value: totalActivityCount, from: '#3b82f6', to: '#2563eb', icon: <Zap size={26} />, shadow: 'rgba(59, 130, 246, 0.3)', trend: trends.activity }
         ].map((item: any, i) => (
           <div key={i} style={{ 
             background: `linear-gradient(135deg, ${item.from}, ${item.to})`, 
@@ -501,7 +572,9 @@ export default function PerformanceAnalytics() {
                     color: '#fff',
                     border: '1px solid rgba(255,255,255,0.1)'
                   }}>
-                    {item.trend >= 0 ? '+' : ''}{item.trend}% {item.trend >= 0 ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      {item.trend >= 0 ? '+' : ''}{item.trend}% {item.trend >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
+                    </div>
                   </div>
                   {item.achieve !== undefined && (
                     <div style={{ 
@@ -600,7 +673,7 @@ export default function PerformanceAnalytics() {
                         padding: '2px 4px',
                         borderRadius: '4px'
                       }}>
-                        {growthPerc >= 0 ? '+' : ''}{growthPerc}% {growthPerc >= 0 ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
+                        {growthPerc >= 0 ? '+' : ''}{growthPerc}% {growthPerc >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                       </div>
                     )}
                     
@@ -881,10 +954,10 @@ export default function PerformanceAnalytics() {
 
               <div className="vertical-progress-container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#f8fafc', borderRadius: '24px' }}>
                 {[
-                  { label: 'Prospek', val: 100, color: 'linear-gradient(to top, #6366f1, #818cf8)', icon: 'Ã°Å¸Å½Â¯' },
-                  { label: 'Cold', val: Math.round((fStatusColdNum / fTotal) * 100), color: 'linear-gradient(to top, #3b82f6, #60a5fa)', icon: 'Ã¢Ââ€žÃ¯Â¸Â' },
-                  { label: 'Hot', val: Math.round((fStatusHotNum / fTotal) * 100), color: 'linear-gradient(to top, #f59e0b, #fbbf24)', icon: 'Ã°Å¸â€Â¥' },
-                  { label: 'Clos.', val: Math.round((fClosedNum / fTotal) * 100), color: 'linear-gradient(to top, #10b981, #34d399)', icon: 'Ã¢Å“â€¦' }
+                  { label: 'Prospek', val: 100, color: 'linear-gradient(to top, #6366f1, #818cf8)', icon: <Target size={14} /> },
+                  { label: 'Cold', val: Math.round((fStatusColdNum / fTotal) * 100), color: 'linear-gradient(to top, #3b82f6, #60a5fa)', icon: <Snowflake size={14} /> },
+                  { label: 'Hot', val: Math.round((fStatusHotNum / fTotal) * 100), color: 'linear-gradient(to top, #f59e0b, #fbbf24)', icon: <Flame size={14} /> },
+                  { label: 'Clos.', val: Math.round((fClosedNum / fTotal) * 100), color: 'linear-gradient(to top, #10b981, #34d399)', icon: <CheckCircle size={14} /> }
                 ].map((bar, i) => (
                   <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '48px' }}>
                     <span style={{ fontSize: '11px', fontWeight: 900, color: '#1e293b' }}>{bar.val}%</span>
@@ -975,7 +1048,7 @@ export default function PerformanceAnalytics() {
                <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                  <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                    <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Growth Top</div>
-                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
+                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
                  </div>
                  <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                    {(() => {
@@ -1005,7 +1078,7 @@ export default function PerformanceAnalytics() {
                      <>
                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                          <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Status Prospek</div>
-                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
+                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
                        </div>
                        <div style={{ fontSize: '8px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '6px' }}>
                          <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
@@ -1086,7 +1159,7 @@ export default function PerformanceAnalytics() {
                 </PieChart>
               </ResponsiveContainer>
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '28px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>
-                Ã¢ÂÂ¤Ã¯Â¸Â
+                ❤️
               </div>
             </div>
 
@@ -1104,9 +1177,9 @@ export default function PerformanceAnalytics() {
               marginBottom: '16px' 
             }}>
               {[
-                { label: 'TOTAL', val: customers.length, color: '#1e293b', icon: 'Ã°Å¸â€˜Â¥' },
-                { label: 'ACTIVE', val: retentionAnalysis.activeCount, color: '#10b981', icon: 'Ã¢Å“â€¦' },
-                { label: 'DORMANT', val: retentionAnalysis.dormantCount, color: '#ef4444', icon: 'Ã¢Å¡Â Ã¯Â¸Â' }
+                { label: 'TOTAL', val: customers.length, color: '#1e293b', icon: <Users size={14} /> },
+                { label: 'ACTIVE', val: retentionAnalysis.activeCount, color: '#10b981', icon: <CheckCircle size={14} /> },
+                { label: 'DORMANT', val: retentionAnalysis.dormantCount, color: '#ef4444', icon: <AlertTriangle size={14} /> }
               ].map(m => (
                 <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
                    <span style={{ fontSize: '14px' }}>{m.icon}</span>
@@ -1134,7 +1207,7 @@ export default function PerformanceAnalytics() {
                 gap: '8px'
               }}>
                <span>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
-               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Ã¢Å“Â¨' : 'Ã¢Å¡Â¡'}</span>
+               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
             </button>
           </div>
         </div>
@@ -1148,7 +1221,7 @@ export default function PerformanceAnalytics() {
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '32px' }}>
             <div>
               <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Sales Activity Field Report</div>
-              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>Distribusi aktivitas lapangan per salesman Ã¢â‚¬â€ Bulan Ini</div>
+              <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600, marginTop: '4px' }}>Distribusi aktivitas lapangan per salesman — Bulan Ini</div>
             </div>
             {/* Legend */}
             <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
@@ -1251,7 +1324,7 @@ export default function PerformanceAnalytics() {
             </div>
           </div>
 
-          {/* Bottom: Keaktifan Sales Metrics Ã¢â‚¬â€ clean horizontal strip */}
+          {/* Bottom: Keaktifan Sales Metrics — clean horizontal strip */}
           {(() => {
             const n = statsPerSales.length || 1;
             const DAYS = 30;
@@ -1265,15 +1338,15 @@ export default function PerformanceAnalytics() {
             const leastActive = [...(statsPerSales as any[])].sort((a: any, b: any) => a.totalActs - b.totalActs)[0];
 
             const metrics = [
-              { icon: 'Ã¢Å¡Â¡', color: '#6366f1', value: avgActsPerDay.toFixed(1),  unit: 'akt/hari',   label: 'Avg. Aktivitas / Hari',  sub: 'Rata-rata activity harian' },
-              { icon: 'Ã°Å¸â€™Â¬', color: '#f43f5e', value: avgFollowupDay.toFixed(1), unit: 'chat/hari',  label: 'Avg. Followup / Hari',   sub: 'WA + Call per hari' },
-              { icon: 'Ã°Å¸Å½Â¯', color: '#10b981', value: avgClosingRate.toFixed(0) + '%', unit: '',     label: 'Avg. Closing Rate',      sub: 'Dari total aktivitas' },
-              { icon: 'Ã°Å¸â€œâ€¹', color: '#f59e0b', value: avgSOPerDay.toFixed(1),    unit: 'SO/hari',    label: 'Avg. Sales Order / Hari', sub: 'Rata-rata order harian' },
+              { icon: <Zap size={16} />, color: '#6366f1', value: avgActsPerDay.toFixed(1),  unit: 'akt/hari',   label: 'Avg. Aktivitas / Hari',  sub: 'Rata-rata activity harian' },
+              { icon: <MessageCircle size={16} />, color: '#f43f5e', value: avgFollowupDay.toFixed(1), unit: 'chat/hari',  label: 'Avg. Followup / Hari',   sub: 'WA + Call per hari' },
+              { icon: <Target size={16} />, color: '#10b981', value: avgClosingRate.toFixed(0) + '%', unit: '',     label: 'Avg. Closing Rate',      sub: 'Dari total aktivitas' },
+              { icon: <ClipboardList size={16} />, color: '#f59e0b', value: avgSOPerDay.toFixed(1),    unit: 'SO/hari',    label: 'Avg. Sales Order / Hari', sub: 'Rata-rata order harian' },
               {
-                icon: 'Ã°Å¸Ââ€ ', color: '#3b82f6',
+                icon: <Award size={16} />, color: '#3b82f6',
                 value: mostActive?.nama?.split(' ')[0] || '-', unit: '',
                 label: 'Salesman Teraktif',
-                sub: leastActive?.id !== mostActive?.id ? `Perlu boost: ${leastActive?.nama?.split(' ')[0] || '-'}` : 'Semua merata Ã°Å¸â€˜Â',
+                sub: leastActive?.id !== mostActive?.id ? `Perlu boost: ${leastActive?.nama?.split(' ')[0] || '-'}` : 'Semua merata 👋',
               },
             ];
 
@@ -1360,11 +1433,11 @@ export default function PerformanceAnalytics() {
 
             // Sort to find the most dominant
             const domActs = [
-              { label: 'Followup', value: totals.Followup, prevValue: prevTotals.Followup, color: '#f43f5e', icon: 'Ã°Å¸â€™Â¬' },
-              { label: 'Visit',    value: totals.Visit,    prevValue: prevTotals.Visit,    color: '#3b82f6', icon: 'Ã°Å¸ÂÆ’' },
-              { label: 'Prospek',  value: totals.Prospek,  prevValue: prevTotals.Prospek,  color: '#6366f1', icon: 'Ã°Å¸Å½Â¯' },
-              { label: 'Closing',  value: totals.Closing,  prevValue: prevTotals.Closing,  color: '#10b981', icon: 'Ã°Å¸Â¤Â' },
-              { label: 'SO',       value: totals.SO,       prevValue: prevTotals.SO,       color: '#f59e0b', icon: 'Ã°Å¸â€œâ€¹' },
+              { label: 'Followup', value: totals.Followup, prevValue: prevTotals.Followup, color: '#f43f5e', icon: <MessageCircle size={16} /> },
+              { label: 'Visit',    value: totals.Visit,    prevValue: prevTotals.Visit,    color: '#3b82f6', icon: <MapPin size={16} /> },
+              { label: 'Prospek',  value: totals.Prospek,  prevValue: prevTotals.Prospek,  color: '#6366f1', icon: <Target size={16} /> },
+              { label: 'Closing',  value: totals.Closing,  prevValue: prevTotals.Closing,  color: '#10b981', icon: <CheckSquare size={16} /> },
+              { label: 'SO',       value: totals.SO,       prevValue: prevTotals.SO,       color: '#f59e0b', icon: <ClipboardList size={16} /> },
             ].sort((a: any, b: any) => (b.value as number) - (a.value as number));
 
              return (
@@ -1432,7 +1505,7 @@ export default function PerformanceAnalytics() {
                                 color: isUp ? '#059669' : '#dc2626',
                                 fontSize: '10px', fontWeight: 900,
                               }}>
-                                {isUp ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}{Math.abs(trendVal)}%
+                                {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}{Math.abs(trendVal)}%
                               </div>
                             </div>
                           </div>
@@ -1542,7 +1615,7 @@ export default function PerformanceAnalytics() {
                             color: isUp ? '#10b981' : '#ef4444',
                             fontSize: '12px', fontWeight: 900,
                          }}>
-                            {isUp ? 'Ã¢â€ â€˜' : 'Ã¢â€ â€œ'}
+                            {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
                          </div>
                        </div>
                      </div>
@@ -1667,7 +1740,7 @@ export default function PerformanceAnalytics() {
                 y: targetDot.y,
                 value: count,
                 color: COLORS[finalPois.length % COLORS.length],
-                icon: 'Ã°Å¸ÂÂ¢', // Building icon for new cities as requested
+                icon: <Rocket size={14} />, // Building icon for new cities as requested
                 isDynamic: true
               });
             }
@@ -1784,7 +1857,7 @@ export default function PerformanceAnalytics() {
                   <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                       <div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Distribusi Kota</div>
-                      <span style={{ fontSize: '12px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
+                      <span style={{ fontSize: '12px', color: '#cbd5e1' }}>•••</span>
                     </div>
                     {mapDataPois.slice(0, 4).map(area => {
                       const pct = totalMapCust > 0 ? Math.round((area.value / totalMapCust) * 100) : 0;
@@ -1802,7 +1875,7 @@ export default function PerformanceAnalytics() {
                     })}
                   </div>
                  <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                   <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Top 5 Growth</div><span style={{ fontSize: '12px', color: '#cbd5e1' }}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span></div>
+                   <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}><div style={{ fontSize: '12px', fontWeight: 800, color: '#475569' }}>Top 5 Growth</div><span style={{ fontSize: '12px', color: '#cbd5e1' }}>•••</span></div>
                    <div style={{ position: 'relative', width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 'auto', marginBottom: 'auto' }}>
                      {(() => { 
                        const top = [...mapDataPois].sort((a,b) => b.value - a.value).slice(0, 5); 
@@ -1817,7 +1890,7 @@ export default function PerformanceAnalytics() {
                              })}
                            </svg>
                            <div style={{position:'absolute',display:'flex',flexDirection:'column',alignItems:'center'}}>
-                             <span style={{fontSize:'14px',marginBottom:'2px'}}>{top[0]?.icon||'Ã°Å¸Å¡â‚¬'}</span>
+                             <span style={{fontSize:'14px',marginBottom:'2px'}}>{top[0]?.icon || <Rocket size={14} />}</span>
                              <span style={{fontSize:'9px',fontWeight:800,color:'#94a3b8'}}>{top[0]?.city||'Area'}</span>
                              <span style={{fontSize:'14px',fontWeight:900,color:'#10b981'}}>+{(top[0]?.value/2).toFixed(0)} Baru</span>
                            </div>
@@ -1846,7 +1919,7 @@ export default function PerformanceAnalytics() {
                      });
                      
                      const soAreasUnsorted = Object.entries(areaSoCounts).map(([city, val]) => {
-                       const staticData = mapDataPois.find(p => p.city === city) || { icon: 'Ã°Å¸ÂÂ¢', color: '#10b981' };
+                       const staticData = mapDataPois.find(p => p.city === city) || { icon: <Rocket size={14} />, color: '#10b981' };
                        return { city, so_val: val, icon: staticData.icon, color: staticData.color };
                      });
                      
@@ -1858,7 +1931,7 @@ export default function PerformanceAnalytics() {
                        <>
                         <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px'}}>
                           <div style={{fontSize:'12px',fontWeight:800,color:'#475569'}}>Top Area Order (SO)</div>
-                          <span style={{fontSize:'12px',color:'#cbd5e1'}}>Ã¢â‚¬Â¢Ã¢â‚¬Â¢Ã¢â‚¬Â¢</span>
+                          <span style={{fontSize:'12px',color:'#cbd5e1'}}>•••</span>
                         </div>
                         <div style={{fontSize:'20px',fontWeight:900,color:'#1e293b',marginBottom:'2px'}}>{totalSO} Order</div>
                         <div style={{fontSize:'9px',fontWeight:800,color:'#10b981',display:'flex',alignItems:'center',gap:'4px'}}>
@@ -1891,6 +1964,170 @@ export default function PerformanceAnalytics() {
           );
         })()}
       </div>
+
+      {/* LIVE FIELD GALLERY - NEW SECTION */}
+      <div style={{ marginTop: '40px', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '4px', height: '24px', background: 'linear-gradient(to bottom, #d946ef, #a855f7)', borderRadius: '4px' }} />
+            <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: 0 }}>Geleri Aktivitas Lapangan</h2>
+          </div>
+          <div style={{ fontSize: '13px', fontWeight: 800, color: '#94a3b8', background: '#f8fafc', padding: '6px 16px', borderRadius: '100px', border: '1px solid #f1f5f9' }}>
+            {activities.filter(a => a.geotagging?.photo).length} FOTO TERSEDIA
+          </div>
+        </div>
+
+        <div style={{ 
+          display: 'flex', 
+          gap: '20px', 
+          overflowX: 'auto', 
+          padding: '10px 0 30px 0',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}>
+          {activities.filter(a => a.geotagging?.photo).sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 20).map((act, i) => {
+            const sName = sales.find(s => s.id === act.id_sales)?.nama || 'Unknown';
+            return (
+              <div 
+                key={i}
+                onClick={() => setSelectedImage({
+                  url: act.geotagging!.photo!,
+                  sales: sName,
+                  store: act.target_nama,
+                  timestamp: act.timestamp,
+                  note: act.catatan_hasil
+                })}
+                style={{ 
+                  flexShrink: 0, 
+                  width: '240px', 
+                  height: '320px', 
+                  borderRadius: '24px', 
+                  position: 'relative', 
+                  overflow: 'hidden', 
+                  cursor: 'pointer',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                  transition: 'all 0.3s ease',
+                  border: '1px solid #f1f5f9'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)'; e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.15)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0) scale(1)'; e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1)'; }}
+              >
+                <img src={act.geotagging!.photo} alt="Bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                
+                {/* Overlay Info */}
+                <div style={{ 
+                  position: 'absolute', inset: 0, 
+                  background: 'linear-gradient(to top, rgba(15,23,42,0.9) 0%, rgba(15,23,42,0.4) 40%, transparent 100%)',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+                  padding: '20px'
+                }}>
+                  <div style={{ color: '#fff', fontSize: '14px', fontWeight: 950, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{act.target_nama}</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', background: '#facc15', color: '#1e293b', fontSize: '9px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {sName.charAt(0)}
+                    </div>
+                    <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', fontWeight: 700 }}>{sName}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          {activities.filter(a => a.geotagging?.photo).length === 0 && (
+            <div style={{ width: '100%', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', borderRadius: '24px', border: '2px dashed #e2e8f0', color: '#94a3b8', fontSize: '14px', fontWeight: 600 }}>
+              Belum ada foto aktivitas lapangan pada periode ini
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* PHOTO VIEWER MODAL - PREMIUM */}
+      {selectedImage && (
+        <div 
+          style={{ 
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, 
+            background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, animation: 'fade-in 0.3s ease', padding: '40px'
+          }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <div 
+            style={{ 
+              background: '#fff', 
+              width: '100%', maxWidth: '1000px', 
+              borderRadius: '32px', 
+              overflow: 'hidden', 
+              display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 350px',
+              boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+              animation: 'scale-up 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+              position: 'relative',
+              maxHeight: '90vh'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedImage(null)}
+              style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(15,23,42,0.1)', border: 'none', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', zIndex: 10 }}
+            >
+              <X size={20} />
+            </button>
+
+            {/* Image Side */}
+            <div style={{ background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0' }}>
+               <img 
+                 src={selectedImage.url} 
+                 alt="Bukti Lapangan" 
+                 style={{ width: '100%', height: 'auto', maxHeight: '90vh', objectFit: 'contain' }} 
+               />
+            </div>
+
+            {/* Content Side */}
+            <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+               <div>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Detail Aktivitas</div>
+                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#facc15', color: '#1e293b', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {selectedImage.sales.charAt(0)}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{selectedImage.sales}</div>
+                      <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>Field Salesman</div>
+                    </div>
+                  </div>
+               </div>
+
+               <div style={{ width: '100%', height: '1px', background: '#f1f5f9' }} />
+
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '13px', fontWeight: 750 }}>
+                    <Calendar size={16} /> 
+                    {new Date(selectedImage.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#64748b', fontSize: '13px', fontWeight: 750 }}>
+                    <Zap size={16} color="#facc15" /> 
+                    {new Date(selectedImage.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+               </div>
+
+               <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Catatan Hasil</div>
+                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9', fontSize: '14px', lineHeight: 1.6, color: '#475569', fontWeight: 600 }}>
+                    {selectedImage.note || 'Tidak ada catatan aktivitas.'}
+                  </div>
+               </div>
+
+               <button 
+                 onClick={() => setSelectedImage(null)}
+                 style={{ background: '#1e293b', border: 'none', borderRadius: '16px', padding: '16px', color: '#fff', fontWeight: 900, fontSize: '14px', cursor: 'pointer', boxShadow: '0 10px 20px rgba(30,41,59,0.1)' }}
+               >
+                 TUTUP
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

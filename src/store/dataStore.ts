@@ -210,9 +210,13 @@ export const store = {
     return `S${nextNum.toString().padStart(3, '0')}`;
   },
 
-  async addSales(sales: Omit<Sales, 'id'>) {
-    const nextId = await this.generateNextSalesId();
-    const { data, error } = await supabase.from('sales').insert([{ ...sales, id: nextId }]).select();
+  async addSales(salesData: Partial<Sales>) {
+    let finalId = (salesData as any).id;
+    if (!finalId) {
+      finalId = await this.generateNextSalesId();
+    }
+    
+    const { data, error } = await supabase.from('sales').insert([{ ...salesData, id: finalId }]).select();
     if (error) console.error('addSales error:', error);
     return { data, error };
   },

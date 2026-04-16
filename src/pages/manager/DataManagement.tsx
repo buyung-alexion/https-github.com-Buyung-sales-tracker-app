@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart } from 'lucide-react';
+import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart, Loader2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { supabase } from '../../lib/supabase';
 import { useSalesData } from '../../hooks/useSalesData';
@@ -78,6 +78,10 @@ export default function DataManagement() {
   const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
   const [masterForm, setMasterForm] = useState({ name: '' });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
 
   // Wait, I should use useSalesData hook for the data lists to benefit from context
 
@@ -129,46 +133,93 @@ export default function DataManagement() {
       setTeamForm({ id: nextId, nama: '', username: '', pass: '', role: '', foto_profil: '', no_wa: '' });
       setTeamModal({ isOpen: true, data: null });
     }
+    setFormError(null);
   };
 
   const handleSaveTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (teamModal.data) {
-       await store.updateSales(teamModal.data.id, {
-         nama: teamForm.nama,
-         username: teamForm.username,
-         password: teamForm.pass,
-         role: teamForm.role,
-         foto_profil: teamForm.foto_profil,
-         no_wa: teamForm.no_wa
-       });
-    } else {
-       if(data.teams.some((t:any) => t.id === teamForm.id)) {
-           alert('ID Karyawan sudah digunakan!');
-           return;
-       }
-       await store.addSales({
-         id: teamForm.id,
-         nama: teamForm.nama,
-         username: teamForm.username,
-         password: teamForm.pass,
-         role: teamForm.role,
-         foto_profil: teamForm.foto_profil,
-         no_wa: teamForm.no_wa
-       } as any);
+    setIsSubmitting(true);
+    setFormError(null);
+
+    try {
+      if (teamModal.data) {
+        const { error } = await store.updateSales(teamModal.data.id, {
+          nama: teamForm.nama,
+          username: teamForm.username,
+          password: teamForm.pass,
+          role: teamForm.role,
+          foto_profil: teamForm.foto_profil,
+          no_wa: teamForm.no_wa
+        });
+        if (error) throw error;
+      } else {
+        if(data.teams.some((t:any) => t.id === teamForm.id)) {
+            setFormError(`ID Karyawan ${teamForm.id} sudah digunakan!`);
+            setIsSubmitting(false);
+            return;
+        }
+        const { error } = await store.addSales({
+          id: teamForm.id,
+          nama: teamForm.nama,
+          username: teamForm.username,
+          password: teamForm.pass,
+          role: teamForm.role,
+          foto_profil: teamForm.foto_profil,
+          no_wa: teamForm.no_wa
+        } as any);
+        if (error) {
+          if (error.code === '23505') {
+            throw new Error('Username sudah digunakan oleh karyawan lain.');
+          }
+          throw error;
+        }
+      }
+      
+      setTeamModal({isOpen: false, data: null});
+      const { data: sales } = await supabase.from('sales').select('*');
+      setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
+        id: s.id, 
+        nama: s.nama, 
+        username: s.username, 
+        pass: s.password, 
+        role: s.role,
+        foto_profil: s.foto_profil,
+        no_wa: s.no_wa
+      }))}));
+    } catch (err: any) {
+      console.error('Save team error:', err);
+      setFormError(err.message || 'Gagal menyimpan data karyawan.');
+    } finally {
+      setIsSubmitting(false);
     }
-    setTeamModal({isOpen: false, data: null});
-    const { data: sales } = await supabase.from('sales').select('*');
-    setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
-      id: s.id, 
-      nama: s.nama, 
-      username: s.username, 
-      pass: s.password, 
-      role: s.role,
-      foto_profil: s.foto_profil,
-      no_wa: s.no_wa
-    }))}));
   };
+
+  const handleSaveTargets = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSaveSuccess(false);
+
+    try {
+      const payload = {
+        ind_poin: data.targets.indPoin,
+        b_visit: data.targets.bVisit,
+        b_prospek: data.targets.bProspek,
+        b_closing: data.targets.bClosing,
+        b_order: data.targets.bOrder,
+        b_chat: data.targets.bChat,
+        b_maint: data.targets.bVisit // Fallback or sync b_maint to b_visit if not separated
+      };
+      
+      await store.updateSystemTargets(payload);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (err: any) {
+      alert('Gagal menyimpan target: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   const handleDeleteTeam = async (id: string) => {
     if (window.confirm('Hapus kredensial tim ini?')) {
@@ -407,13 +458,13 @@ export default function DataManagement() {
                             padding: '3px 10px', borderRadius: '8px', textTransform: 'uppercase' 
                           }}>{u.role || '-'}</span>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
-                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>ID: <span style={{ color: '#1e293b' }}>{u.id}</span></div>
-                          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
-                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>USER: <span style={{ color: '#1e293b', fontFamily: 'monospace' }}>{u.username}</span></div>
-                          <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
-                          <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>PWD: <span style={{ color: '#cbd5e1', letterSpacing: '2px' }}>••••••</span></div>
-                        </div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px' }}>
+                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>ID Karyawan: <span style={{ color: '#1e293b' }}>{u.id}</span></div>
+                           <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
+                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>USER: <span style={{ color: '#1e293b' }}>{u.username}</span></div>
+                           <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
+                           <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800 }}>PWD: <span style={{ color: '#cbd5e1', letterSpacing: '4px' }}>••••••</span></div>
+                         </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '12px' }}>
@@ -434,6 +485,125 @@ export default function DataManagement() {
                 ))}
                 {data.teams.length === 0 && <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', fontSize: '14px', fontWeight: 700 }}>Belum ada data tim.</div>}
               </div>
+            </div>
+          )}
+          
+          {/* TARGET & BOBOT TAB */}
+          {activeTab === 'target' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+              <div style={{ 
+                background: '#fff', padding: '32px', borderRadius: '32px', 
+                boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}>
+                <div>
+                  <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>Target & Bobot Poin</h3>
+                  <p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', marginTop: '6px', letterSpacing: '0.05em' }}>KONFIGURASI INDIKATOR KINERJA</p>
+                </div>
+                {saveSuccess && (
+                  <div style={{ background: '#f0fdf4', color: '#16a34a', padding: '12px 24px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, border: '1px solid #dcfce7', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    ✅ Berhasil Disimpan!
+                  </div>
+                )}
+              </div>
+
+              <form onSubmit={handleSaveTargets} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                   {/* TARGET INDEKS */}
+                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255, 204, 0, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <Target size={20} color="#FFCC00" strokeWidth={3} />
+                        </div>
+                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Indikator Target</h4>
+                      </div>
+                      <label style={{ ...labelStyle, margin: '0 0 8px' }}>Poin Target Bulanan</label>
+                      <input 
+                        type="number" 
+                        style={inputStyle} 
+                        value={data.targets.indPoin} 
+                        onChange={e => setData(d => ({...d, targets: {...d.targets, indPoin: parseInt(e.target.value) || 0}}))}
+                      />
+                      <p style={{ fontSize: '12px', color: '#94a3b8', marginTop: '10px', fontWeight: 600 }}>Total poin yang harus dicapai sales untuk mencapai status 100%.</p>
+                   </div>
+
+                   {/* BOBOT SALES */}
+                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f0fdf4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <ShoppingCart size={20} color="#22c55e" strokeWidth={3} />
+                        </div>
+                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Bobot Akun & Order</h4>
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Closing (Akun)</label>
+                          <input type="number" style={inputStyle} value={data.targets.bClosing} onChange={e => setData(d => ({...d, targets: {...d.targets, bClosing: parseInt(e.target.value) || 0}}))} />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Sales Order</label>
+                          <input type="number" style={inputStyle} value={data.targets.bOrder} onChange={e => setData(d => ({...d, targets: {...d.targets, bOrder: parseInt(e.target.value) || 0}}))} />
+                        </div>
+                      </div>
+                   </div>
+
+                   {/* BOBOT AKTIVITAS */}
+                   <div style={{ background: '#fff', borderRadius: '24px', padding: '28px', border: '1px solid #f1f5f9', boxShadow: '0 8px 30px rgba(0,0,0,0.02)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f0f9ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                           <Users size={20} color="#0ea5e9" strokeWidth={3} />
+                        </div>
+                        <h4 style={{ margin: 0, fontWeight: 800, color: '#1e293b' }}>Bobot Aktivitas</h4>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                        <div>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Visit</label>
+                          <input type="number" style={inputStyle} value={data.targets.bVisit} onChange={e => setData(d => ({...d, targets: {...d.targets, bVisit: parseInt(e.target.value) || 0}}))} />
+                        </div>
+                        <div>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Prospek Baru</label>
+                          <input type="number" style={inputStyle} value={data.targets.bProspek} onChange={e => setData(d => ({...d, targets: {...d.targets, bProspek: parseInt(e.target.value) || 0}}))} />
+                        </div>
+                        <div>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Followup/Chat</label>
+                          <input type="number" style={inputStyle} value={data.targets.bChat} onChange={e => setData(d => ({...d, targets: {...d.targets, bChat: parseInt(e.target.value) || 0}}))} />
+                        </div>
+                        <div>
+                          <label style={{ ...labelStyle, margin: '0 0 8px' }}>Maintenance</label>
+                          <input type="number" disabled style={{ ...inputStyle, background: '#f8fafc' }} value={data.targets.bVisit} />
+                        </div>
+                      </div>
+                   </div>
+                </div>
+
+                <div style={{ 
+                  background: '#1e293b', padding: '24px 32px', borderRadius: '24px', 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                       <Shield size={24} color="#FFCC00" />
+                    </div>
+                    <div>
+                      <div style={{ color: '#fff', fontWeight: 800, fontSize: '15px' }}>Konfirmasi Perubahan</div>
+                      <div style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 600 }}>Perubahan bobot akan berpengaruh pada seluruh perhitungan poin tim.</div>
+                    </div>
+                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={isSubmitting}
+                    style={{ 
+                      background: 'var(--brand-yellow)', color: '#111827', padding: '16px 40px', 
+                      borderRadius: '16px', fontWeight: 900, border: 'none', cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                      fontSize: '14px', letterSpacing: '0.02em', boxShadow: '0 10px 20px rgba(250, 204, 21, 0.3)',
+                      display: 'flex', alignItems: 'center', gap: '10px'
+                    }}
+                  >
+                    {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> MENYIMPAN...</> : 'UPDATE BOBOT SISTEM'}
+                  </button>
+                </div>
+              </form>
             </div>
           )}
 
@@ -576,6 +746,11 @@ export default function DataManagement() {
               <button onClick={() => setTeamModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSaveTeam}>
+              {formError && (
+                <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', padding: '12px', borderRadius: '12px', fontSize: '13px', fontWeight: 700, marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <X size={16} /> {formError}
+                </div>
+              )}
               <label style={labelStyle}>ID Karyawan</label>
               <input required disabled={!!teamModal.data} style={{...inputStyle, background: teamModal.data ? '#f1f5f9' : '#fff' }} value={teamForm.id} onChange={e => setTeamForm({...teamForm, id: e.target.value})} placeholder="Contoh: S003" />
 
@@ -629,8 +804,10 @@ export default function DataManagement() {
               </div>
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
-                <button type="button" onClick={() => setTeamModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: 'pointer' }}>Batal</button>
-                <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: 'pointer' }}>Simpan Data</button>
+                <button type="button" disabled={isSubmitting} onClick={() => setTeamModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700, cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.6 : 1 }}>Batal</button>
+                <button type="submit" className="btn-primary" disabled={isSubmitting} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', fontWeight: 800, cursor: isSubmitting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  {isSubmitting ? <><Loader2 size={18} className="animate-spin" /> Menyimpan...</> : 'Simpan Data'}
+                </button>
               </div>
             </form>
           </div>
