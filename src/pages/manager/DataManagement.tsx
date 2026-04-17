@@ -136,11 +136,21 @@ export default function DataManagement() {
     setFormError(null);
     try {
       if (teamModal.data) {
+        const isRenaming = teamForm.id !== teamModal.data.id;
+        if (isRenaming) {
+          if (!window.confirm(`PERINGATAN: Anda mengubah ID Karyawan dari "${teamModal.data.id}" menjadi "${teamForm.id}". \n\nSemua riwayat (absensi, visit, dll) akan ikut berpindah ke ID baru. Lanjutkan?`)) {
+            setIsSubmitting(false); return;
+          }
+        }
+
         console.log('DEBUG: Updating team', teamModal.data.id, teamForm);
-        const { error, data: updatedData } = await store.updateSales(teamModal.data.id, {
+        const updates: any = {
           nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
           role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
-        });
+        };
+        if (isRenaming) updates.id = teamForm.id;
+
+        const { error, data: updatedData } = await store.updateSales(teamModal.data.id, updates);
         if (error) {
           console.error('DEBUG: Update error', error);
           throw error;
@@ -413,13 +423,17 @@ export default function DataManagement() {
         <div style={overlayStyle}>
           <div style={modalStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: 900 }}>{teamModal.data ? 'Edit Tim' : 'Tambah Tim'}</h3>
+              <div>
+                <h3 style={{ margin: 0, fontWeight: 900 }}>{teamModal.data ? 'Edit Tim' : 'Tambah Tim'}</h3>
+                {teamModal.data && <p style={{ margin: 0, fontSize: '11px', color: '#94a3b8' }}>SEDANG MENGUBAH DATA <span style={{ color: '#1e293b', fontWeight: 900 }}>{teamModal.data.id}</span></p>}
+              </div>
               <button onClick={() => setTeamModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
             </div>
             <form onSubmit={handleSaveTeam}>
-              {formError && <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '12px' }}>{formError}</div>}
+              {formError && <div style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', fontSize: '13px', padding: '12px', borderRadius: '12px', marginBottom: '20px', fontWeight: 700 }}>⚠️ {formError}</div>}
               <label style={labelStyle}>ID Karyawan</label>
-              <input required style={inputStyle} value={teamForm.id} onChange={e => setTeamForm({...teamForm, id: e.target.value})} />
+              <input required style={{...inputStyle, background: teamModal.data ? '#fff9db' : '#fff'}} value={teamForm.id} onChange={e => setTeamForm({...teamForm, id: e.target.value.toUpperCase()})} placeholder="Contoh: S001" />
+              {teamModal.data && <p style={{ marginTop: '6px', fontSize: '11px', color: '#856404', fontWeight: 700 }}>💡 Mengubah ID akan memindahkan seluruh riwayat kerja.</p>}
               <label style={labelStyle}>Nama</label>
               <input required style={inputStyle} value={teamForm.nama} onChange={e => setTeamForm({...teamForm, nama: e.target.value})} />
               <label style={labelStyle}>Role</label>
