@@ -3,6 +3,8 @@ import { useSalesData } from '../../hooks/useSalesData';
 
 
 import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+
 
 
 const ACT_ICON: Record<string, React.ReactNode> = {
@@ -78,7 +80,7 @@ export default function LiveActivityFeed() {
         getSalesName(a.id_sales).toLowerCase().includes(search.toLowerCase())
       );
   }, [activities, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs]);
-
+  
   const filteredProspek = useMemo(() => {
     if (selectedCategory !== 'all' && selectedCategory !== 'Prospek') return [];
     
@@ -95,10 +97,19 @@ export default function LiveActivityFeed() {
       .filter(p => selectedArea === 'all' || p.area === selectedArea)
       .filter(p => 
         (p.nama_toko || '').toLowerCase().includes(search.toLowerCase()) ||
-        getSalesName(p.sales_owner).toLowerCase().includes(search.toLowerCase())
+        (sales.find(s => s.id === p.sales_owner)?.nama || '').toLowerCase().includes(search.toLowerCase())
       );
-  }, [allProspek, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs]);
+  }, [allProspek, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs, sales]);
 
+  // Pie Chart Data for Activity Breakdown
+  const pieData = useMemo(() => [
+    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: '#f472b6' },
+    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: '#fbbf24' },
+    { name: 'Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: '#f87171' },
+    { name: 'Prospek', value: filteredProspek.length, color: '#818cf8' },
+  ], [filtered, filteredProspek]);
+  
+  const totalActs = useMemo(() => pieData.reduce((acc, curr) => acc + curr.value, 0), [pieData]);
   
   
   
@@ -343,7 +354,120 @@ export default function LiveActivityFeed() {
               ))}
             </div>
           </div>
+
+          {/* RIGHT COLUMN WRAPPER */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            
+            {/* Activity Breakdown (Radial Gauge) */}
+            <div style={{ 
+              background: 'white', 
+              borderRadius: '32px', 
+              padding: '32px', 
+              boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+              border: '1px solid #f1f5f9',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              flex: 1,
+              minHeight: '450px'
+            }}>
+               <div style={{ marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Summary Aktivitas</h3>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>KOMPOSISI TIPE AKSI</p>
+               </div>
+
+               <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ResponsiveContainer width="100%" height={260}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={105}
+                        paddingAngle={8}
+                        dataKey="value"
+                        stroke="none"
+                        cornerRadius={10}
+                        animationBegin={0}
+                        animationDuration={1500}
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 800 }} 
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  
+                  <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '36px', fontWeight: 950, color: '#1e293b', lineHeight: 1 }}>{totalActs}</span>
+                    <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Total Acts</span>
+                  </div>
+               </div>
+
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '20px' }}>
+                  {pieData.map(d => {
+                    const pct = totalActs > 0 ? Math.round((d.value / totalActs) * 100) : 0;
+                    return (
+                      <div key={d.name} style={{ background: '#f8fafc', padding: '12px', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: d.color }}></div>
+                          <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{d.name}</span>
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{pct}%</div>
+                      </div>
+                    );
+                  })}
+               </div>
+            </div>
+
+            {/* Top Sales Performance Section */}
+            <div style={{ 
+              background: '#fff', 
+              borderRadius: '32px', 
+              padding: '24px', 
+              border: '1px solid #f1f5f9',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.03)'
+            }}>
+               <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#1e293b', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Sales Performance</h3>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {salesPerformanceData.slice(0, 3).map((sales, i) => (
+                    <div key={sales.id} style={{ 
+                      background: '#f8fafc', 
+                      borderRadius: '20px', 
+                      padding: '16px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px',
+                      border: '1px solid #f1f5f9'
+                    }}>
+                      <div style={{ 
+                        width: 40, height: 40, borderRadius: '12px', 
+                        background: i === 0 ? '#facc15' : i === 1 ? '#e2e8f0' : '#fed7aa',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        fontSize: '18px', fontWeight: 900, color: i === 0 ? '#854d0e' : '#475569' 
+                      }}>
+                        {i === 0 ? '🏆' : i === 1 ? '🥈' : '🥉'}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{sales.name}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8' }}>{sales.total} Activities</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '9px', fontWeight: 900, color: '#3b82f6', background: '#eff6ff', padding: '2px 8px', borderRadius: '8px' }}>
+                          #{i+1}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+               </div>
+            </div>
+          </div>
         </div>
+
 
 
 
