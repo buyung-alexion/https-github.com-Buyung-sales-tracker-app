@@ -9,7 +9,9 @@ import { useSalesData } from '../../hooks/useSalesData';
 interface Props { salesId: string; }
 
 export default function ProspectingTool({ salesId }: Props) {
-  const { prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], masterStatuses = [], refresh } = useSalesData() || {};
+  const { sales = [], prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], masterStatuses = [], refresh } = useSalesData() || {};
+  const currentSales = sales.find(s => s.id === salesId);
+  const salesName = currentSales?.nama;
   
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -19,7 +21,6 @@ export default function ProspectingTool({ salesId }: Props) {
   const [filterKategori, setFilterKategori] = useState<string>('All');
   const [filterModalOpen, setFilterModalOpen] = useState(false);
   const [closingModal, setClosingModal] = useState<Prospek | null>(null);
-  const [orderInput, setOrderInput] = useState('');
   const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState<Prospek | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -73,7 +74,7 @@ export default function ProspectingTool({ salesId }: Props) {
     .filter(p => filterKategori === 'All' || p.kategori === filterKategori);
 
   const handleWA = async (p: Prospek) => {
-    await store.logWA(salesId, p.id, 'prospek', p.nama_toko, p.no_wa);
+    await store.logWA(salesId, p.id, 'prospek', p.nama_toko, p.no_wa, '', salesName);
     const cleanNum = p.no_wa.replace(/\D/g, '');
     window.open(`https://wa.me/${cleanNum}`, '_blank');
   };
@@ -81,16 +82,16 @@ export default function ProspectingTool({ salesId }: Props) {
   const handleNote = async (p: Prospek) => {
     const note = prompt(`Masukkan catatan untuk ${p.nama_toko}:`);
     if (!note) return;
-    await store.logNote(salesId, p.id, 'prospek', p.nama_toko, note);
+    await store.logNote(salesId, p.id, 'prospek', p.nama_toko, note, salesName);
     alert('Catatan berhasil tersimpan!');
   };
 
   const handleClosing = async () => {
-    if (isSubmitting || !closingModal || !orderInput) return;
+    if (isSubmitting || !closingModal) return;
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      const { error } = await store.convertToCustomer(closingModal, parseFloat(orderInput));
+      const { error } = await store.convertToCustomer(closingModal, salesName);
       if (error) {
         setSaveError(error.message || 'Gagal konversi ke customer.');
         return;
@@ -99,7 +100,6 @@ export default function ProspectingTool({ salesId }: Props) {
       await refresh();
       setTimeout(() => {
         setClosingModal(null);
-        setOrderInput('');
         setSaveSuccess(false);
       }, 1500);
     } catch (err) {
@@ -114,7 +114,7 @@ export default function ProspectingTool({ salesId }: Props) {
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      const { error } = await store.addProspek({ ...addForm, sales_owner: salesId });
+      const { error } = await store.addProspek({ ...addForm, sales_owner: salesId }, salesName);
       if (error) {
         alert('Supabase Error (Add Prospect): ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal menyimpan prospek baru.');
@@ -384,7 +384,7 @@ export default function ProspectingTool({ salesId }: Props) {
                         style={{ flex: 1, background: '#FFFBEB', color: '#D97706', border: '1.5px solid #FEF3C7', borderRadius: '12px', padding: '12px 0', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }} 
                         onClick={(e) => { 
                           e.stopPropagation(); 
-                          store.logCall(salesId, p.id, 'prospek', p.nama_toko, p.no_wa); 
+                          store.logCall(salesId, p.id, 'prospek', p.nama_toko, p.no_wa, '', salesName); 
                           const cleanNum = p.no_wa.replace(/\D/g, '');
                           window.open(`https://wa.me/${cleanNum}`, '_blank');
                         }}
@@ -469,10 +469,8 @@ export default function ProspectingTool({ salesId }: Props) {
               <h3>🤝 Deal Closing!</h3>
               <button onClick={() => setClosingModal(null)}><X size={20} /></button>
             </div>
-            <p className="modal-sub">Great! <strong>{closingModal.nama_toko}</strong> is ready to order. Enter initial order amount (kg):</p>
-            <div className="form-group">
-              <input type="number" placeholder="example: 25" value={orderInput} onChange={e => setOrderInput(e.target.value)} className="form-input" />
-            </div>
+            <p className="modal-sub">Luar biasa! <strong>{closingModal.nama_toko}</strong> resmi menjadi Customer. Konfirmasi data untuk memproses?</p>
+
             {saveError && <div style={{ color: '#ef4444', fontSize: '12px', fontWeight: 700, marginBottom: '8px', textAlign: 'center' }}>{saveError}</div>}
             <div className="modal-actions" style={{ display: 'flex', gap: '12px', width: '100%', marginTop: '16px' }}>
               <button className="btn-secondary" style={{ flex: 1, height: '52px', borderRadius: '18px', fontWeight: 800 }} onClick={() => setClosingModal(null)} disabled={isSubmitting}>Batal</button>
@@ -485,7 +483,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   boxShadow: '0 8px 20px rgba(0,0,0,0.1)'
                 }}
                 onClick={handleClosing} 
-                disabled={!orderInput || isSubmitting}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : saveSuccess ? <CheckCircle size={20} /> : 'Konfirmasi Closing'}
               </button>

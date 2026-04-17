@@ -11,7 +11,6 @@ export interface PointsResult {
     visitCustomer: number;
     closing: number;
     newProspek: number;
-    totalVolume: number;
   };
   filteredActs: Activity[];
   filteredProspek: Prospek[];
@@ -82,7 +81,6 @@ export function calculateSalesPoints(
   const maintCount = filteredActs.filter(a => a.tipe_aksi === 'Visit' && a.target_type === 'customer').length;
   const closingCount = filteredActs.filter(a => a.catatan_hasil.toLowerCase().includes('closing')).length;
   const prospekCount = filteredProspek.length;
-  const totalVolume = filteredActs.reduce((sum, a) => sum + (Number(a.sales_volume) || 0), 0);
 
   // Weighing (Standardized from SystemTargets / Defaults)
   const weights = {
@@ -110,8 +108,7 @@ export function calculateSalesPoints(
       visitProspek: visitCount,
       visitCustomer: maintCount,
       closing: closingCount,
-      newProspek: prospekCount,
-      totalVolume: totalVolume
+      newProspek: prospekCount
     },
     filteredActs,
     filteredProspek

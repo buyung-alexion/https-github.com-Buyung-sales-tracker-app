@@ -10,7 +10,9 @@ export default function ClientDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const { currentSalesId } = useCurrentSales();
-  const { prospek, customers, activities } = useSalesData();
+  const { prospek, customers, activities, sales = [] } = useSalesData();
+  const currentSales = sales.find(s => s.id === currentSalesId);
+  const salesName = currentSales?.nama;
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('history');
 
   // Find target data based on type
@@ -49,7 +51,7 @@ export default function ClientDetail() {
 
   const handleOrder = async () => {
     if (type !== 'customer') return;
-    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, 1);
+    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, salesName);
     window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
   };
 
@@ -62,7 +64,7 @@ export default function ClientDetail() {
       return;
     }
 
-    await store.logNote(currentSalesId, targetData.id, type as 'prospek' | 'customer', targetData.nama_toko, note);
+    await store.logNote(currentSalesId, targetData.id, type as 'prospek' | 'customer', targetData.nama_toko, note, salesName);
     alert('Catatan berhasil ditambahkan!');
   };
 
@@ -162,12 +164,7 @@ export default function ClientDetail() {
                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Prospek {targetData.status}</div>
                 </div>
               )}
-              {type === 'customer' && (
-                <div>
-                  <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '2px' }}>Total Order Volume</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>{targetData.total_order_volume} kg</div>
-                </div>
-              )}
+
               {targetData.link_map && (
                 <button onClick={() => window.open(targetData.link_map, '_blank')} className="btn-secondary" style={{ width: '100%', marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                   <MapPin size={16} /> Buka di Google Maps

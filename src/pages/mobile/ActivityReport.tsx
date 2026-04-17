@@ -40,7 +40,9 @@ const iconBlue = createIcon('#3b82f6');
 // MapUpdater is deprecated in favor of mapRef
 
 export default function ActivityReport({ salesId }: Props) {
-  const { activities, customers, prospek, masterAreas, refresh } = useSalesData();
+  const { activities, customers, prospek, masterAreas, sales = [], refresh } = useSalesData();
+  const currentSales = sales.find(s => s.id === salesId);
+  const salesName = currentSales?.nama;
   const [selectedArea, setSelectedArea] = useState<string | null>(null);
   const [catatan, setCatatan] = useState('');
   const [success, setSuccess] = useState(false);
@@ -52,7 +54,6 @@ export default function ActivityReport({ salesId }: Props) {
   const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tipeAksi, setTipeAksi] = useState<string>('Visit');
-  const [salesVolume, setSalesVolume] = useState<string>('');
   const mapRef = useRef<L.Map | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -174,8 +175,8 @@ export default function ActivityReport({ salesId }: Props) {
         target_type: targetType === 'General' ? 'area' : (targetType === 'Customer' ? 'customer' : 'prospek'),
         target_nama: tName, 
         tipe_aksi: tipeAksi as any,
+        sales_name: salesName,
         catatan_hasil: catatan || `${tipeAksi} di ${tName}`,
-        sales_volume: tipeAksi === 'Order' ? parseFloat(salesVolume) || 0 : 0,
         geotagging: { area: selectedArea, lat: location.lat, lng: location.lng, photo: photoBase64 }
       });
 
@@ -189,7 +190,7 @@ export default function ActivityReport({ salesId }: Props) {
       await refresh();
       setTimeout(() => {
           setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
-          setTipeAksi('Visit'); setSalesVolume('');
+          setTipeAksi('Visit');
           setIsSubmitting(false);
       }, 2000);
     } catch (err) {

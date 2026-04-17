@@ -7,7 +7,7 @@ import type { Sales, Prospek, Customer, Activity, Area } from '../types';
 
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
-  async addProspek(p: Omit<Prospek, 'id' | 'created_at'>) {
+  async addProspek(p: Omit<Prospek, 'id' | 'created_at'>, salesName?: string) {
     const prospekData = {
       id: crypto.randomUUID(),
       nama_toko: p.nama_toko,
@@ -16,6 +16,7 @@ export const store = {
       area: p.area,
       status: p.status,
       sales_owner: p.sales_owner,
+      sales_name: salesName,
       channel: p.channel,
       link_map: p.link_map,
       kategori: p.kategori,
@@ -46,7 +47,7 @@ export const store = {
   },
 
   // ─── CUSTOMER ───────────────────────────────────────────
-  async addCustomer(c: any) {
+  async addCustomer(c: any, salesName?: string) {
     const customerData = {
       id: crypto.randomUUID(),
       nama_toko: c.nama_toko,
@@ -54,7 +55,7 @@ export const store = {
       no_wa: c.no_wa,
       area: c.area,
       sales_pic: c.sales_pic,
-      total_order_volume: c.total_order_volume || 0,
+      sales_name: salesName,
       last_order_date: c.last_order_date || new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
       link_map: c.link_map,
@@ -75,15 +76,15 @@ export const store = {
   },
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
-  async convertToCustomer(prospek: Prospek, orderVolume: number) {
+  async convertToCustomer(prospek: Prospek, salesName?: string) {
     const customerData = {
       id: crypto.randomUUID(),
       nama_toko: prospek.nama_toko,
       nama_pic: prospek.nama_pic,
       no_wa: prospek.no_wa,
       area: prospek.area,
-      total_order_volume: orderVolume || 0,
       sales_pic: prospek.sales_owner,
+      sales_name: prospek.sales_name,
       last_order_date: new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
       link_map: prospek.link_map,
@@ -106,6 +107,7 @@ export const store = {
     // 3. Log Activity
     await this.logActivity({
       id_sales: prospek.sales_owner,
+      sales_name: salesName || prospek.sales_name,
       target_id: customerData.id,
       target_type: 'customer',
       target_nama: prospek.nama_toko,
@@ -121,13 +123,13 @@ export const store = {
     const activityData = {
       id: crypto.randomUUID(),
       id_sales: a.id_sales,
+      sales_name: a.sales_name,
       target_id: a.target_id,
       target_type: a.target_type,
       target_nama: a.target_nama,
       tipe_aksi: a.tipe_aksi,
       catatan_hasil: a.catatan_hasil,
       geotagging: (a as any).geotagging,
-      sales_volume: (a as any).sales_volume || 0,
       timestamp: new Date().toISOString()
     };
     const { error } = await supabase.from('activity').insert([activityData]);
@@ -135,9 +137,10 @@ export const store = {
     return { data: activityData as Activity, error };
   },
 
-  async logWA(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noWA: string, catatan = '') {
+  async logWA(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noWA: string, catatan = '', salesName?: string) {
     await this.logActivity({
       id_sales: salesId,
+      sales_name: salesName,
       target_id: targetId,
       target_type: targetType,
       target_nama: targetNama,
@@ -148,9 +151,10 @@ export const store = {
     window.open(`https://wa.me/${noWA}?text=${msg}`, '_blank');
   },
 
-  async logCall(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noTelp: string, catatan = '') {
+  async logCall(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noTelp: string, catatan = '', salesName?: string) {
     await this.logActivity({
       id_sales: salesId,
+      sales_name: salesName,
       target_id: targetId,
       target_type: targetType,
       target_nama: targetNama,
@@ -160,22 +164,22 @@ export const store = {
     window.open(`tel:${noTelp}`, '_self');
   },
 
-  async logOrder(salesId: string, targetId: string, targetNama: string, volume: number) {
+  async logOrder(salesId: string, targetId: string, targetNama: string, salesName?: string) {
     await this.logActivity({
       id_sales: salesId,
+      sales_name: salesName,
       target_id: targetId,
       target_type: 'customer',
       target_nama: targetNama,
       tipe_aksi: 'Order',
-      catatan_hasil: `SALES ORDER: ${volume}kg.`
+      catatan_hasil: `SALES ORDER CONFIRMED`
     });
-    // In a real app, this might also update customer.total_order_volume or create a record in an 'orders' table.
-    // For this mock, we just log the activity as requested.
   },
 
-  async logVisit(salesId: string, area: Area, catatan: string) {
+  async logVisit(salesId: string, area: Area, catatan: string, salesName?: string) {
     await this.logActivity({
       id_sales: salesId,
+      sales_name: salesName,
       target_id: salesId, // self target for general check-in if needed
       target_type: 'area', // changed from customer to area for clarity
       target_nama: `Antivitas Area ${area}`,
@@ -207,10 +211,11 @@ export const store = {
     return { data, error };
   },
 
-  async clockIn(salesId: string, loc: { lat: number, lng: number, area: string }, photo: string) {
+  async clockIn(salesId: string, loc: { lat: number, lng: number, area: string }, photo: string, salesName?: string) {
     const attendanceData = {
       id: crypto.randomUUID(),
       sales_id: salesId,
+      sales_name: salesName,
       check_in: new Date().toISOString(),
       loc_in: loc,
       photo_in: photo,
@@ -230,9 +235,10 @@ export const store = {
     return { error };
   },
 
-  async logNote(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, catatan: string) {
+  async logNote(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, catatan: string, salesName?: string) {
     await this.logActivity({
       id_sales: salesId,
+      sales_name: salesName,
       target_id: targetId,
       target_type: targetType,
       target_nama: targetNama,

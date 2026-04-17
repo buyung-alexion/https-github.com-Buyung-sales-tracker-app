@@ -451,8 +451,7 @@ export default function ManagerCustomer() {
           ({ error } = await store.addCustomer({ 
             ...payload, 
             sales_pic: filterSales === 'All' ? 'm001' : filterSales,
-            last_order_date: new Date().toISOString(),
-            total_order_volume: 0
+            last_order_date: new Date().toISOString()
           }));
         }
 

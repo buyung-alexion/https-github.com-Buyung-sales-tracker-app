@@ -14,7 +14,9 @@ function daysDiff(dateStr: string): number {
 }
 
 export default function CustomerMaintenance({ salesId }: Props) {
-  const { customers = [], masterAreas = [], masterCategories = [], refresh } = useSalesData() || {};
+  const { sales = [], customers = [], masterAreas = [], masterCategories = [], refresh } = useSalesData() || {};
+  const currentSales = sales.find(s => s.id === salesId);
+  const salesName = currentSales?.nama;
   
   // Dynamic Options
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,7 +70,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
     .sort((a, b) => daysDiff(a.last_order_date) - daysDiff(b.last_order_date) < 0 ? 1 : -1);
 
   const handleWA = async (c: Customer) => {
-    await store.logWA(salesId, c.id, 'customer', c.nama_toko, c.no_wa, 'Follow-up maintenance pelanggan.');
+    await store.logWA(salesId, c.id, 'customer', c.nama_toko, c.no_wa, 'Follow-up maintenance pelanggan.', salesName);
     const cleanNum = c.no_wa.replace(/\D/g, '');
     window.open(`https://wa.me/${cleanNum}`, '_blank');
   };
@@ -76,7 +78,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   const handleNote = async (c: Customer) => {
     const note = prompt(`Masukkan catatan untuk ${c.nama_toko}:`);
     if (!note) return;
-    await store.logNote(salesId, c.id, 'customer', c.nama_toko, note);
+    await store.logNote(salesId, c.id, 'customer', c.nama_toko, note, salesName);
     alert('Catatan berhasil tersimpan!');
   };
 
@@ -87,6 +89,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       target_type: 'customer', 
       target_nama: c.nama_toko, 
       tipe_aksi: 'Call', 
+      sales_name: salesName,
       catatan_hasil: 'Follow-up via WhatsApp.' 
     });
     const cleanNum = c.no_wa.replace(/\D/g, '');
@@ -187,14 +190,13 @@ export default function CustomerMaintenance({ salesId }: Props) {
         area: addForm.area,
         sales_pic: salesId,
         last_order_date: new Date().toISOString(),
-        total_order_volume: 0,
         link_map: addForm.link_map,
         kategori: addForm.kategori,
         rating: addForm.rating,
         foto_profil: addForm.foto_profil,
       };
       
-      const { error } = await store.addCustomer(newCustomer);
+      const { error } = await store.addCustomer(newCustomer, salesName);
       if (error) {
         alert('Supabase Error: ' + (error.message || JSON.stringify(error)));
         setSaveError(error.message || 'Gagal menyimpan data baru.');
@@ -325,7 +327,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
                         <div style={{ fontSize: '11px', fontWeight: 700, color: accent, marginTop: '2px' }}>👤 {c.nama_pic || 'No PIC'}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#334155' }}>📦 {c.total_order_volume}kg</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
@@ -356,7 +357,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       style={{ width: '100%', background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }} 
                       onClick={(e) => { 
                         e.stopPropagation(); 
-                        store.logOrder(salesId, c.id, c.nama_toko, 1);
+                        store.logOrder(salesId, c.id, c.nama_toko, salesName);
                         window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
                       }}
                     >

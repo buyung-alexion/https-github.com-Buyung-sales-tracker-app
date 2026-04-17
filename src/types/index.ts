@@ -10,6 +10,7 @@ export interface Prospek {
   area: Area;
   status: StatusProspek;
   sales_owner: string; // ID sales
+  sales_name?: string; // Denormalized name for Supabase UI
   channel?: string; // Lead source (e.g. Reference, Canvasing)
   foto_lokasi?: string;
   link_map?: string;
@@ -26,9 +27,9 @@ export interface Customer {
   no_wa: string;
   area: Area;
   tanggal_join?: string; // ISO string
-  total_order_volume: number; // kg
   last_order_date: string; // ISO string
   sales_pic: string; // ID sales
+  sales_name?: string; // Denormalized name for Supabase UI
   link_map?: string;
   status?: string;
   created_at?: string;
@@ -43,13 +44,13 @@ export interface Activity {
   id: string;
   timestamp: string; // ISO string
   id_sales: string;
+  sales_name?: string; // Denormalized name for Supabase UI
   target_id: string;
   target_type: 'prospek' | 'customer' | 'area';
   target_nama: string; // denormalized for display
   tipe_aksi: TipeAksi;
   catatan_hasil: string;
   geotagging?: { area: Area; lat?: number; lng?: number; photo?: string };
-  sales_volume?: number | string;
 }
 
 export interface Sales {

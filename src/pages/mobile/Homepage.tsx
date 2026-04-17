@@ -15,7 +15,8 @@ export default function Homepage({ salesId }: Props) {
   const { user } = useAuth();
   const { activities = [], prospek = [], customers = [], sales = [], systemTargets = null } = useSalesData() || {};
   const currentSales = sales.find(s => s.id === salesId) || (user as any);
-  const salesDisplayName = (user?.nama || currentSales?.nama)?.split(' ')[0] || 'Sales';
+  const salesName = user?.nama || currentSales?.nama;
+  const salesDisplayName = salesName?.split(' ')[0] || 'Sales';
   const navigate = useNavigate();
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
@@ -91,7 +92,7 @@ export default function Homepage({ salesId }: Props) {
     if (!selectedCust) return;
     setIsSubmittingOrder(true);
     try {
-      await store.logOrder(salesId, selectedCust.id, selectedCust.nama_toko, 1);
+      await store.logOrder(salesId, selectedCust.id, selectedCust.nama_toko, salesName);
       setOrderSuccess(true);
       
       // Pure Direct Launcher Intent

@@ -212,7 +212,7 @@ export default function LiveActivityFeed() {
   }, []);
 
   return (
-    <div className="mgr-page" style={{ padding: '0px 0 24px', minHeight: '800px' }}>
+    <div className="mgr-page" style={{ background: '#f4f7fa', padding: '0px 0 24px', minHeight: '100vh' }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* 1. TOP: MASTER FILTER BAR (Now Moved Above Grid) */}
@@ -345,8 +345,8 @@ export default function LiveActivityFeed() {
               display: 'flex', 
               gap: '24px', 
               overflowX: 'auto', 
-              padding: '0 48px 12px 0',
-              scrollbarWidth: 'none',
+              padding: '20px 48px 40px 20px',
+              scrollbarWidth: 'auto',
               marginTop: 'auto'
             }}>
               {salesPerformanceData.map(d => (
@@ -360,7 +360,7 @@ export default function LiveActivityFeed() {
             
             {/* Activity Breakdown (Radial Gauge) */}
             <div style={{ 
-              background: '#f8fafc', 
+              background: '#fff', 
               borderRadius: '32px', 
               padding: '32px', 
               boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
@@ -449,7 +449,6 @@ export default function LiveActivityFeed() {
                   <th>Target</th>
                   <th>Note</th>
                   <th>Area</th>
-                  <th style={{ textAlign: 'center' }}>Vol (KG)</th>
                   <th style={{ textAlign: 'center' }}>Bukti</th>
                 </tr>
               </thead>
@@ -476,9 +475,6 @@ export default function LiveActivityFeed() {
                           </td>
                           <td className="note-cell">{a.catatan_hasil}</td>
                           <td>{a.geotagging?.area || '—'}</td>
-                          <td style={{ textAlign: 'center', fontWeight: 900, color: '#f59e0b' }}>
-                            {a.sales_volume ? `${a.sales_volume} KG` : '—'}
-                          </td>
                           <td style={{ textAlign: 'center', width: '60px' }}>
                             {a.geotagging?.photo ? (
                               <button 
