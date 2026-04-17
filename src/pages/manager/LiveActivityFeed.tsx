@@ -424,47 +424,6 @@ export default function LiveActivityFeed() {
                </div>
             </div>
 
-            {/* Top Sales Performance Section */}
-            <div style={{ 
-              background: '#fff', 
-              borderRadius: '32px', 
-              padding: '24px', 
-              border: '1px solid #f1f5f9',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.03)'
-            }}>
-               <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#1e293b', marginBottom: '20px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Top Sales Performance</h3>
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {salesPerformanceData.slice(0, 3).map((sales, i) => (
-                    <div key={sales.id} style={{ 
-                      background: '#f8fafc', 
-                      borderRadius: '20px', 
-                      padding: '16px', 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '12px',
-                      border: '1px solid #f1f5f9'
-                    }}>
-                      <div style={{ 
-                        width: 40, height: 40, borderRadius: '12px', 
-                        background: i === 0 ? '#facc15' : i === 1 ? '#e2e8f0' : '#fed7aa',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                        fontSize: '18px', fontWeight: 900, color: i === 0 ? '#854d0e' : '#475569' 
-                      }}>
-                        {i === 0 ? '🏆' : i === 1 ? '🥈' : '🥉'}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{sales.name}</div>
-                        <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8' }}>{sales.total} Activities</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontSize: '9px', fontWeight: 900, color: '#3b82f6', background: '#eff6ff', padding: '2px 8px', borderRadius: '8px' }}>
-                          #{i+1}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-               </div>
-            </div>
           </div>
         </div>
 
