@@ -345,7 +345,7 @@ export default function LiveActivityFeed() {
               display: 'flex', 
               gap: '24px', 
               overflowX: 'auto', 
-              paddingBottom: '12px',
+              padding: '0 48px 12px 0',
               scrollbarWidth: 'none',
               marginTop: 'auto'
             }}>
@@ -360,11 +360,11 @@ export default function LiveActivityFeed() {
             
             {/* Activity Breakdown (Radial Gauge) */}
             <div style={{ 
-              background: 'white', 
+              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', 
               borderRadius: '32px', 
               padding: '32px', 
               boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-              border: '1px solid #f1f5f9',
+              border: '1px solid #e2e8f0',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
