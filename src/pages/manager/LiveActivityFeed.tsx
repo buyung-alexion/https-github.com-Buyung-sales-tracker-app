@@ -360,11 +360,11 @@ export default function LiveActivityFeed() {
             
             {/* Activity Breakdown (Radial Gauge) */}
             <div style={{ 
-              background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)', 
+              background: '#f8fafc', 
               borderRadius: '32px', 
               padding: '32px', 
               boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #f1f5f9',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
