@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { store } from '../../store/dataStore';
+
 
 import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X } from 'lucide-react';
 
