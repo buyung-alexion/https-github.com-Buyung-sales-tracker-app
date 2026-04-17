@@ -23,8 +23,8 @@ export default function App() {
   // Show a premium global loader during initial auth check
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0B0815', color: '#fff' }}>
-        <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid rgba(255,204,0,0.1)', borderTopColor: 'var(--brand-yellow)', borderRadius: '50%' }} />
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FFFFFF', color: '#111827' }}>
+        <div className="animate-spin" style={{ width: '40px', height: '40px', border: '4px solid #f1f5f9', borderTopColor: 'var(--brand-yellow)', borderRadius: '50%' }} />
       </div>
     );
   }

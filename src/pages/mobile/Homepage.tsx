@@ -511,7 +511,6 @@ export default function Homepage({ salesId }: Props) {
                     <Users size={32} style={{ opacity: 0.3, marginBottom: '8px' }} />
                     <div style={{ fontSize: '12px', fontWeight: 800 }}>Customer Tidak Ditemukan</div>
                   </div>
-                  </div>
                 )}
               </div>
 
