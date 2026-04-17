@@ -358,12 +358,12 @@ export default function LiveActivityFeed() {
           {/* RIGHT COLUMN WRAPPER */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             
-            {/* Activity Breakdown (Radial Gauge) */}
+            {/* Activity Breakdown (Radial Gauge) - Polished Contrast */}
             <div style={{ 
-              background: '#fff', 
+              background: '#f8fafc', // Light solid background for the container
               borderRadius: '32px', 
               padding: '32px', 
-              boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
               border: '1px solid #f1f5f9',
               display: 'flex',
               flexDirection: 'column',
@@ -376,7 +376,18 @@ export default function LiveActivityFeed() {
                   <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>KOMPOSISI TIPE AKSI</p>
                </div>
 
-               <div style={{ flex: 1, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+               <div style={{ 
+                 flex: 1, 
+                 position: 'relative', 
+                 display: 'flex', 
+                 alignItems: 'center', 
+                 justifyContent: 'center',
+                 background: '#fff', // White card for the chart
+                 borderRadius: '24px',
+                 margin: '0 0 24px',
+                 boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
+                 border: '1px solid #fff'
+               }}>
                   <ResponsiveContainer width="100%" height={260}>
                     <PieChart>
                       <Pie
@@ -408,11 +419,11 @@ export default function LiveActivityFeed() {
                   </div>
                </div>
 
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '20px' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   {pieData.map(d => {
                     const pct = totalActs > 0 ? Math.round((d.value / totalActs) * 100) : 0;
                     return (
-                      <div key={d.name} style={{ background: '#f8fafc', padding: '12px', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                      <div key={d.name} style={{ background: '#fff', padding: '12px', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: d.color }}></div>
                           <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{d.name}</span>

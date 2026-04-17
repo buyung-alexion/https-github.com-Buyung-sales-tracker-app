@@ -528,12 +528,21 @@ export default function Homepage({ salesId }: Props) {
                   {isSubmittingOrder ? <Loader2 className="animate-spin" size={24} /> : orderSuccess ? <><CheckCircle size={24} /> Order Berhasil!</> : 'Konfirmasi & Kirim Order'}
                 </button>
               </div>
-         </div>
             </div>
           </div>
         </div>
       )}
+      {/* Version info footer */}
+      <div style={{ 
+        padding: '24px 20px 48px', 
+        textAlign: 'center', 
+        fontSize: '11px', 
+        fontWeight: 800, 
+        color: '#CBD5E1', 
+        letterSpacing: '1px' 
+      }}>
+        vDeploy 1.0.24.0417
+      </div>
     </div>
-
   );
 }

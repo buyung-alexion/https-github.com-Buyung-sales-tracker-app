@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { User, Lock, ArrowRight, Loader2, CheckCircle2 } from 'lucide-react';
+import { User, Lock, CheckCircle2 } from 'lucide-react';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -24,9 +24,6 @@ export default function LoginPage() {
     
     if (res.success) {
       setIsSuccess(true);
-      // We don't need to manually navigate. 
-      // The state change in useAuth() will cause App.tsx to re-render 
-      // and redirect automatically.
     } else {
       setError(res.message || 'Login gagal');
       setIsSubmitting(false);
@@ -37,7 +34,7 @@ export default function LoginPage() {
     return (
       <div className="animate-fade-in" style={{ 
         minHeight: '100vh', display: 'flex', flexDirection: 'column', 
-        alignItems: 'center', justifyContent: 'center', background: '#0B0815' 
+        alignItems: 'center', justifyContent: 'center', background: '#FFFFFF' 
       }}>
         <div className="animate-scale" style={{ 
           width: '100px', height: '100px', borderRadius: '50%', background: 'var(--brand-yellow)',
@@ -46,138 +43,130 @@ export default function LoginPage() {
         }}>
           <CheckCircle2 size={60} color="#000" />
         </div>
-        <h2 style={{ color: '#fff', fontSize: '24px', fontWeight: 800 }}>Selamat Datang!</h2>
-        <p style={{ color: 'rgba(255, 255, 255, 0.5)', marginTop: '8px' }}>Mempersiapkan dashboard Anda...</p>
+        <h2 style={{ color: '#1E293B', fontSize: '24px', fontWeight: 800 }}>Selamat Datang!</h2>
+        <p style={{ color: '#64748B', marginTop: '8px' }}>Mempersiapkan dashboard Anda...</p>
       </div>
     );
   }
 
   return (
-    <div className="login-page" style={{ 
+    <div style={{ 
       minHeight: '100vh', 
       display: 'flex', 
+      flexDirection: 'column',
       alignItems: 'center', 
       justifyContent: 'center', 
-      background: '#0B0815',
+      background: '#FFFFFF',
       padding: '24px',
       position: 'relative',
       overflow: 'hidden'
     }}>
       {/* Background Orbs */}
-      <div style={{ position: 'absolute', top: '10%', left: '10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255, 204, 0, 0.15)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '250px', height: '250px', borderRadius: '50%', background: 'rgba(56, 189, 248, 0.1)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '10%', left: '10%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(255, 204, 0, 0.1)', filter: 'blur(80px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '10%', right: '10%', width: '250px', height: '250px', borderRadius: '50%', background: 'rgba(99, 102, 241, 0.05)', filter: 'blur(80px)', pointerEvents: 'none' }} />
 
-      <div className="login-container animate-scale shadow-premium" style={{ 
-        width: '100%', 
-        maxWidth: '420px', 
-        background: 'rgba(255, 255, 255, 0.03)', 
-        backdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        borderRadius: '40px',
-        padding: '48px 32px',
-        textAlign: 'center',
-        zIndex: 10
-      }}>
-        <div style={{ 
-          width: '120px', height: '120px', borderRadius: '32px', 
-          background: '#fff', margin: '0 auto 24px',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: '0 15px 45px rgba(0, 0, 0, 0.4)',
-          overflow: 'hidden',
-          padding: '10px'
-        }}>
-          <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+      <div className="login-card animate-fade-up" style={{ width: '100%', maxWidth: '400px', zIndex: 10, background: '#FFFFFF', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.08)', borderRadius: '32px', border: '1px solid #f1f5f9', padding: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <div style={{ 
+            width: '80px', height: '80px', background: '#fff', borderRadius: '24px', 
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
+            boxShadow: '0 12px 24px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9'
+          }}>
+            <img src="/assets/image/logo_ikt.png" alt="Logo IKT" style={{ width: '60px', height: '60px', objectFit: 'contain' }} />
+          </div>
+          <h1 style={{ fontSize: '28px', fontWeight: 950, color: '#1E293B', margin: 0, letterSpacing: '-1px' }}>Log Masuk</h1>
+          <p style={{ fontSize: '14px', color: '#64748B', marginTop: '8px', fontWeight: 600 }}>Smart Monitoring System — PT IKT</p>
         </div>
 
-        <h1 style={{ color: '#fff', fontSize: '24px', fontWeight: 950, letterSpacing: '-0.8px', marginBottom: '8px', lineHeight: 1.2 }}>
-          PT. Industri Keluarga Timur
-        </h1>
-        <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '15px', fontWeight: 500, marginBottom: '40px' }}>
-          Silakan masuk untuk melanjutkan
-        </p>
-
         {error && (
-          <div className="animate-fade-up" style={{ 
-            background: 'rgba(239, 68, 68, 0.1)', 
-            border: '1px solid rgba(239, 68, 68, 0.2)',
-            color: '#fca5a5', padding: '12px', borderRadius: '16px',
-            fontSize: '13px', fontWeight: 600, marginBottom: '24px'
-          }}>
-            {error}
+          <div className="animate-shake" style={{ background: '#FEF2F2', border: '1px solid #FEE2E2', color: '#EF4444', padding: '16px', borderRadius: '16px', marginBottom: '24px', fontSize: '13px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '16px' }}>⚠️</span> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ position: 'relative' }}>
-            <User size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)', zIndex: 1 }} />
-            <input 
-              type="text" 
-              placeholder="Username" 
-              value={username}
-              autoComplete="username"
-              onChange={(e) => setUsername(e.target.value)}
-              style={{ 
-                width: '100%', padding: '18px 20px 18px 52px', background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '20px', color: '#fff',
-                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s',
-                position: 'relative', zIndex: 0
-              }}
-              onFocus={(e) => e.target.style.borderColor = 'var(--brand-yellow)'}
-              onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-            />
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 800, color: '#475569', marginLeft: '4px' }}>Username</label>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <User size={18} strokeWidth={2.5} />
+              </div>
+              <input
+                type="text"
+                placeholder="Masukkan username anda"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                style={{ width: '100%', padding: '16px 16px 16px 48px', borderRadius: '16px', background: '#F8FAFC', border: '2px solid #F1F5F9', color: '#1E293B', fontWeight: 700, outline: 'none' }}
+                required
+              />
+            </div>
           </div>
 
-          <div style={{ position: 'relative' }}>
-            <Lock size={18} style={{ position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(255, 255, 255, 0.4)', zIndex: 1 }} />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              value={password}
-              autoComplete="current-password"
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ 
-                width: '100%', padding: '18px 20px 18px 52px', background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: '20px', color: '#fff',
-                fontSize: '16px', fontWeight: 600, outline: 'none', transition: 'all 0.2s',
-                position: 'relative', zIndex: 0
-              }}
-              onFocus={(e) => e.target.style.borderColor = 'var(--brand-yellow)'}
-              onBlur={(e) => e.target.style.borderColor = 'rgba(255, 255, 255, 0.1)'}
-            />
+          <div>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '13px', fontWeight: 800, color: '#475569', marginLeft: '4px' }}>Password</label>
+            <div style={{ position: 'relative' }}>
+              <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94A3B8' }}>
+                <Lock size={18} strokeWidth={2.5} />
+              </div>
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{ width: '100%', padding: '16px 16px 16px 48px', borderRadius: '16px', background: '#F8FAFC', border: '2px solid #F1F5F9', color: '#1E293B', fontWeight: 700, outline: 'none' }}
+                required
+              />
+            </div>
           </div>
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={isSubmitting}
             className="tap-active"
-            style={{ 
-              width: '100%', padding: '18px', background: 'var(--brand-yellow)',
-              borderRadius: '20px', color: '#000', fontSize: '16px', fontWeight: 800,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-              marginTop: '12px', boxShadow: '0 10px 20px rgba(255, 204, 0, 0.2)',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              border: 'none'
+            style={{
+              width: '100%',
+              background: 'var(--brand-yellow)',
+              color: '#111827',
+              border: 'none',
+              padding: '18px',
+              borderRadius: '20px',
+              fontSize: '16px',
+              fontWeight: 950,
+              cursor: 'pointer',
+              marginTop: '10px',
+              boxShadow: '0 12px 24px rgba(255, 204, 0, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '12px',
+              transition: 'all 0.3s'
             }}
           >
             {isSubmitting ? (
-              <Loader2 className="animate-spin" size={20} />
+              <div className="animate-spin" style={{ width: '20px', height: '20px', border: '3px solid rgba(17,24,39,0.15)', borderTopColor: '#111827', borderRadius: '50%' }} />
             ) : (
-              <>
-                <span>Masuk Sekarang</span>
-                <ArrowRight size={20} />
-              </>
+              'Masuk Sekarang'
             )}
           </button>
         </form>
 
-        <div style={{ marginTop: 'auto', paddingTop: '40px', textAlign: 'center' }}>
-          <p style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
-            Smart Monitoring System © 2026
+        <div style={{ marginTop: '32px', textAlign: 'center' }}>
+          <p style={{ fontSize: '12px', color: '#94A3B8', fontWeight: 600 }}>
+            Butuh bantuan? <span style={{ color: 'var(--brand-yellow)', fontWeight: 800 }}>Hubungi IT Support</span>
           </p>
-          <div style={{ marginTop: '8px', fontSize: '10px', color: 'rgba(255, 255, 255, 0.2)', fontWeight: 600 }}>
-            Powered by IKT System
-          </div>
         </div>
+      </div>
+
+      {/* Version Info Footer */}
+      <div style={{ 
+        marginTop: '40px', 
+        fontSize: '11px', 
+        fontWeight: 800, 
+        color: '#CBD5E1', 
+        letterSpacing: '1px',
+        textAlign: 'center'
+      }}>
+        vDeploy 1.0.24.0417
       </div>
     </div>
   );

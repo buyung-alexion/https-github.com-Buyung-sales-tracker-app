@@ -37,18 +37,24 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchData = useCallback(async () => {
     try {
+      // Parallel fetch but individual handling to prevent one failure from blocking others
       const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC] = await Promise.all([
         supabase.from('sales').select('*').order('id'),
         supabase.from('prospek').select('*').order('created_at', { ascending: false }),
         supabase.from('customer').select('*').order('tanggal_join', { ascending: false }),
         supabase.from('activity').select('*').order('timestamp', { ascending: false }),
-        supabase.from('system_targets').select('*').eq('id', 1).single(),
+        supabase.from('system_targets').select('*').eq('id', 1).maybeSingle(), // Use maybeSingle to avoid 406 errors if missing
         supabase.from('master_areas').select('*').order('name'),
         supabase.from('master_categories').select('*').order('name'),
         supabase.from('master_channels').select('*').order('name'),
         supabase.from('master_prospect_status').select('*').order('name'),
         supabase.from('master_actions').select('*').order('name')
       ]);
+
+      // Logging for diagnostics (useful during deployment validation)
+      if (resCustomer.error) console.error('Customer fetch error:', resCustomer.error);
+      if (resProspek.error) console.error('Prospek fetch error:', resProspek.error);
+      if (resActivity.error) console.error('Activity fetch error:', resActivity.error);
 
       const filteredSales = (resSales.data || []).filter(s => {
         const r = (s.role || '').toLowerCase();
@@ -65,6 +71,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setMasterChannels(resMCH.data || []);
       setMasterStatuses(resMS.data || []);
       setMasterActions(resMAC.data || []);
+
+      console.log(`[SalesDataContext] Initialized. Items: ${resCustomer.data?.length || 0} Customers, ${resProspek.data?.length || 0} Prospeks`);
     } catch (err) {
       console.error('Error fetching data central:', err);
     } finally {

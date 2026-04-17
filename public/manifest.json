@@ -4,8 +4,8 @@
   "description": "Smart Monitoring System — PT. Industri Keluarga Timur",
   "start_url": "/mobile",
   "display": "standalone",
-  "background_color": "#FFCC00",
-  "theme_color": "#FFCC00",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
   "orientation": "portrait",
   "icons": [
     {
