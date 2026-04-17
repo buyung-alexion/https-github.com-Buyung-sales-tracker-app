@@ -96,10 +96,7 @@ export default function ManagerShell() {
         </nav>
 
 
-        <div className="sidebar-footer">
-          <Users size={14} />
-          <a href="/mobile" target="_blank" rel="noopener noreferrer">Buka App Sales →</a>
-        </div>
+
       </aside>
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}

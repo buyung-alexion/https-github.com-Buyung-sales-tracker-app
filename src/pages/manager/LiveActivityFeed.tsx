@@ -27,7 +27,7 @@ export default function LiveActivityFeed() {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const [attendance, setAttendance] = useState<any[]>([]);
+
   const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
 
   // Pagination states
@@ -49,14 +49,7 @@ export default function LiveActivityFeed() {
     return Array.from(set).sort();
   }, [activities]);
 
-  const fetchAttendance = async () => {
-    const { data } = await store.fetchRecentAttendance();
-    setAttendance(data || []);
-  };
 
-  useEffect(() => {
-    fetchAttendance();
-  }, []);
 
   const filtered = useMemo(() => {
     const acts = activities || [];
@@ -352,43 +345,7 @@ export default function LiveActivityFeed() {
           </div>
         </div>
 
-        {/* 2.5 ATTENDANCE LOG (New Section) */}
-        <div style={{ 
-          background: 'white', 
-          borderRadius: '32px', 
-          padding: '32px', 
-          boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-          border: '1px solid #f1f5f9'
-        }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-             <div>
-                <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Attendance Log</h3>
-                <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>HARI INI</p>
-             </div>
-             <button onClick={fetchAttendance} style={{ padding: '8px 16px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '12px', fontWeight: 800 }}>Refresh</button>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {attendance.length > 0 ? attendance.map(att => (
-              <div key={att.id} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', background: '#f8fafc', borderRadius: '20px', border: '1px solid #f1f5f9' }}>
-                <img src={att.photo_in} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} alt="Sales In" />
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{getSalesName(att.id_sales)}</div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{att.location_in?.area || 'Area'} • {new Date(att.check_in).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-                <div style={{ 
-                  padding: '4px 10px', borderRadius: '8px', fontSize: '10px', fontWeight: 900,
-                  background: att.status === 'active' ? '#dcfce7' : '#f1f5f9',
-                  color: att.status === 'active' ? '#166534' : '#64748b'
-                }}>
-                  {att.status === 'active' ? 'WORKING' : 'FINISHED'}
-                </div>
-              </div>
-            )) : (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px', color: '#94a3b8', fontWeight: 800 }}>Belum ada sales yang Clock-in hari ini.</div>
-            )}
-          </div>
-        </div>
+
 
         {/* 3. BOTTOM: ACTIVITY TABLE */}
         <div style={{ 
