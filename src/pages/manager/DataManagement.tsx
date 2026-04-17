@@ -136,11 +136,18 @@ export default function DataManagement() {
     setFormError(null);
     try {
       if (teamModal.data) {
-        const { error } = await store.updateSales(teamModal.data.id, {
+        console.log('DEBUG: Updating team', teamModal.data.id, teamForm);
+        const { error, data: updatedData } = await store.updateSales(teamModal.data.id, {
           nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
           role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
         });
-        if (error) throw error;
+        if (error) {
+          console.error('DEBUG: Update error', error);
+          throw error;
+        }
+        if (!updatedData || (updatedData as any).length === 0) {
+          throw new Error('Data tidak berubah. Pastikan ID karyawan valid.');
+        }
       } else {
         if(data.teams.some((t:any) => t.id === teamForm.id)) {
             setFormError(`ID Karyawan ${teamForm.id} sudah digunakan!`);
@@ -153,12 +160,17 @@ export default function DataManagement() {
         if (error) throw error;
       }
       setTeamModal({isOpen: false, data: null});
-      const { data: sales } = await supabase.from('sales').select('*').order('nama');
+      // Force immediate refresh from DB
+      const { data: sales, error: fetchError } = await supabase.from('sales').select('*').order('nama');
+      if (fetchError) throw fetchError;
+      
       setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
         id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role, foto_profil: s.foto_profil, no_wa: s.no_wa
       }))}));
+      
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
+      console.log('DEBUG: Save process complete');
     } catch (err: any) {
       setFormError(err.message || 'Gagal menyimpan data karyawan.');
     } finally { setIsSubmitting(false); }
