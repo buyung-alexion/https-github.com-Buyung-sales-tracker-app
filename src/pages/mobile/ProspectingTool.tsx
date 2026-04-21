@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, CheckCheck, Search, Filter, Plus, X, MapPin, Edit3, PhoneCall, Camera, Users, Activity, FileText, Loader2, CheckCircle, Image as ImageIcon } from 'lucide-react';
+import { CheckCheck, Search, Filter, Phone, MessageCircle, FileText, X, Plus, Camera, Loader2, Users, MoreHorizontal, User, Tag, MapPin, Map } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
@@ -336,27 +336,40 @@ export default function ProspectingTool({ salesId }: Props) {
                     {getInitials(p.nama_toko)}
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.3, letterSpacing: '-0.3px' }}>{p.nama_toko}</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <h3 style={{ fontSize: '15.5px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.3px', flex: 1 }}>{p.nama_toko}</h3>
+                        {p.link_map && (
+                          <button 
+                            className="tap-active"
+                            onClick={(e) => { e.stopPropagation(); window.open(p.link_map, '_blank'); }}
+                            style={{ 
+                              background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '10px', 
+                              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)', flexShrink: 0, marginLeft: '8px' 
+                            }}
+                          >
+                            <Map size={16} strokeWidth={2.5} />
+                          </button>
+                        )}
+                      </div>
                       
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
-                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #E0E7FF', letterSpacing: '0.02em' }}>{p.id}</div>
-                        <div style={{ background: `${accent}15`, color: accent, fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{p.status}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '5px' }}>
+                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{p.id}</div>
+                        <div style={{ background: `${accent}15`, color: accent, fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{p.status}</div>
                         {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <CheckCheck size={11} strokeWidth={3.5} /> FOLLOW UP
+                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckCheck size={10} strokeWidth={3.5} /> FOLLOW UP
                           </div>
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b' }}>{p.no_wa}</span>
-                        </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1px' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{p.no_wa}</span>
                         <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <MapPin size={10} color="#94a3b8" strokeWidth={2.5} />
-                          <span style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>{getAreaName(p.area)}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                          <MapPin size={10} color="#94a3b8" />
+                          <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(p.area)}</span>
                         </div>
                       </div>
                     </div>
