@@ -9,7 +9,7 @@ import { useSalesData } from '../../hooks/useSalesData';
 interface Props { salesId: string; }
 
 export default function ProspectingTool({ salesId }: Props) {
-  const { sales = [], prospek = [], masterAreas = [], masterCategories = [], masterChannels = [], masterStatuses = [], refresh } = useSalesData() || {};
+  const { sales = [], prospek = [], activities = [], masterAreas = [], masterCategories = [], masterChannels = [], masterStatuses = [], refresh } = useSalesData() || {};
   const currentSales = sales.find(s => s.id === salesId);
   const salesName = currentSales?.nama;
   
@@ -301,6 +301,10 @@ export default function ProspectingTool({ salesId }: Props) {
           {myProspek.map(p => {
             const isExpanded = expandedId === p.id;
             const accent = getStatusColor(p.status);
+            const isFollowedUp = activities.some(act => 
+              act.target_id === p.id && 
+              (act.tipe_aksi === 'WA' || act.tipe_aksi === 'Call')
+            );
 
             return (
               <div 
@@ -334,8 +338,15 @@ export default function ProspectingTool({ salesId }: Props) {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{p.nama_toko}</h3>
-                      <div style={{ background: `${accent}15`, color: accent, fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
-                        {p.status}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {isFollowedUp && (
+                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '6px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckCheck size={10} strokeWidth={3} /> FOLLOW UP
+                          </div>
+                        )}
+                        <div style={{ background: `${accent}15`, color: accent, fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', textTransform: 'uppercase' }}>
+                          {p.status}
+                        </div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
@@ -732,69 +743,61 @@ export default function ProspectingTool({ salesId }: Props) {
         </div>
       )}
 
-      {/* Filter Modal - Premium Light Drawer */}
+      {/* Filter Modal - Compact Bottom Sheet */}
       {filterModalOpen && (
         <div className="modal-overlay" onClick={() => setFilterModalOpen(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
           <div 
             className="modal-card animate-fade-up" 
             onClick={e => e.stopPropagation()} 
             style={{ 
-              borderTopLeftRadius: '32px', 
-              borderTopRightRadius: '32px', 
-              padding: '24px 20px calc(110px + env(safe-area-inset-bottom))',
+              borderTopLeftRadius: '28px', 
+              borderTopRightRadius: '28px', 
+              padding: '20px 20px calc(90px + env(safe-area-inset-bottom))',
               background: '#fff',
               border: 'none',
-              boxShadow: '0 -10px 40px rgba(0,0,0,0.1)'
+              boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
+              maxHeight: '70vh',
+              overflowY: 'auto'
             }}
           >
             {/* Drawer Handle */}
-            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
+            <div style={{ width: '36px', height: '4px', background: '#e2e8f0', borderRadius: '10px', margin: '-6px auto 16px' }}></div>
 
-            <div className="modal-header" style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: '#FDE68A', color: '#B45309', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Filter size={20} strokeWidth={3} />
+            <div className="modal-header" style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: '#FDE68A', color: '#B45309', width: '32px', height: '32px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Filter size={15} strokeWidth={3} />
                 </div>
-                <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 900, color: '#111827', letterSpacing: '-0.5px' }}>Filter Prospek</h3>
+                <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 950, color: '#111827', letterSpacing: '-0.3px' }}>Filter Prospek</h3>
               </div>
               <button 
                 onClick={() => { setFilterArea('All'); setFilterKategori('All'); setFilterStatus('All'); }}
-                style={{ background: '#fef2f2', border: 'none', color: '#ef4444', fontWeight: 800, fontSize: '13px', padding: '6px 14px', borderRadius: '10px' }}
+                style={{ background: '#fef2f2', border: 'none', color: '#ef4444', fontWeight: 800, fontSize: '11px', padding: '6px 12px', borderRadius: '10px' }}
               >
-                Reset Semua
+                Reset
               </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {/* Area Filter */}
+              {/* Area Filter - Wrap Grid Chips */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <MapPin size={16} color="#94a3b8" />
-                  <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wilayah Area</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <MapPin size={12} color="#94a3b8" strokeWidth={2.5} />
+                  <label style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Wilayah Area</label>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  <button 
-                    onClick={() => setFilterArea('All')}
-                    style={{ 
-                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                      background: filterArea === 'All' ? '#111827' : '#F8FAFC',
-                      color: filterArea === 'All' ? '#FFCC00' : '#64748b',
-                      border: filterArea === 'All' ? 'none' : '1px solid #f1f5f9',
-                      transition: 'all 0.2s', textAlign: 'center'
-                    }}
-                  >
-                    Semua
-                  </button>
-                  {masterAreas.map(a => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {[{id: 'All', name: 'Semua'}, ...masterAreas].map(a => (
                     <button 
                       key={a.id}
                       onClick={() => setFilterArea(a.id)}
                       style={{ 
-                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                        padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 800,
+                        whiteSpace: 'nowrap',
                         background: filterArea === a.id ? '#111827' : '#F8FAFC',
-                        color: filterArea === a.id ? '#FFCC00' : '#64748b',
-                        border: filterArea === a.id ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s', textAlign: 'center'
+                        color: filterArea === a.id ? '#FFCC00' : '#475569',
+                        border: filterArea === a.id ? '1.5px solid #111827' : '1.5px solid #f1f5f9',
+                        boxShadow: filterArea === a.id ? '0 4px 10px rgba(0,0,0,0.08)' : 'none',
+                        transition: 'all 0.2s'
                       }}
                     >
                       {a.name}
@@ -803,35 +806,25 @@ export default function ProspectingTool({ salesId }: Props) {
                 </div>
               </div>
 
-              {/* Category Filter */}
+              {/* Category Filter - Wrap Grid Chips */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Users size={16} color="#94a3b8" />
-                  <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Kategori Toko</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <Users size={12} color="#94a3b8" strokeWidth={2.5} />
+                  <label style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Kategori Bisnis</label>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  <button 
-                    onClick={() => setFilterKategori('All')}
-                    style={{ 
-                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                      background: filterKategori === 'All' ? '#111827' : '#F8FAFC',
-                      color: filterKategori === 'All' ? '#FFCC00' : '#64748b',
-                      border: filterKategori === 'All' ? 'none' : '1px solid #f1f5f9',
-                      transition: 'all 0.2s', textAlign: 'center'
-                    }}
-                  >
-                    Semua
-                  </button>
-                  {masterCategories.map(k => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {[{id: 'All', name: 'Semua'}, ...masterCategories].map(k => (
                     <button 
                       key={k.id}
                       onClick={() => setFilterKategori(k.id)}
                       style={{ 
-                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                        padding: '7px 14px', borderRadius: '10px', fontSize: '12px', fontWeight: 800,
+                        whiteSpace: 'nowrap',
                         background: filterKategori === k.id ? '#111827' : '#F8FAFC',
-                        color: filterKategori === k.id ? '#FFCC00' : '#64748b',
-                        border: filterKategori === k.id ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s', textAlign: 'center'
+                        color: filterKategori === k.id ? '#FFCC00' : '#475569',
+                        border: filterKategori === k.id ? '1.5px solid #111827' : '1.5px solid #f1f5f9',
+                        boxShadow: filterKategori === k.id ? '0 4px 10px rgba(0,0,0,0.08)' : 'none',
+                        transition: 'all 0.2s'
                       }}
                     >
                       {k.name}
@@ -840,58 +833,51 @@ export default function ProspectingTool({ salesId }: Props) {
                 </div>
               </div>
 
-              {/* Status Filter */}
+              {/* Status Filter - Compact Horizontal Pills */}
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                  <Activity size={16} color="#94a3b8" />
-                  <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Level Prospek (Suhu)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                  <Activity size={12} color="#94a3b8" strokeWidth={2.5} />
+                  <label style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Status Suhu</label>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                  <button 
-                    onClick={() => setFilterStatus('All')}
-                    style={{ 
-                      padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
-                      background: filterStatus === 'All' ? '#111827' : '#F8FAFC',
-                      color: filterStatus === 'All' ? '#FFCC00' : '#64748b',
-                      border: filterStatus === 'All' ? 'none' : '1px solid #f1f5f9',
-                      transition: 'all 0.2s', textAlign: 'center'
-                    }}
-                  >
-                    Semua
-                  </button>
-                  {masterStatuses.map(s => (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {[
+                    { id: 'All', label: 'Semua', icon: '' },
+                    { id: 'Hot', label: '🔥 Hot', icon: '' },
+                    { id: 'Warm', label: '☀️ Warm', icon: '' },
+                    { id: 'Cold', label: '❄️ Cold', icon: '' }
+                  ].map(s => (
                     <button 
                       key={s.id}
                       onClick={() => setFilterStatus(s.id as any)}
                       style={{ 
-                        padding: '6px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 800,
+                        padding: '8px 16px', borderRadius: '10px', fontSize: '12px', fontWeight: 800,
                         background: filterStatus === s.id ? '#111827' : '#F8FAFC',
-                        color: filterStatus === s.id ? '#FFCC00' : '#64748b',
-                        border: filterStatus === s.id ? 'none' : '1px solid #f1f5f9',
-                        transition: 'all 0.2s', textAlign: 'center'
+                        color: filterStatus === s.id ? '#FFCC00' : '#475569',
+                        border: filterStatus === s.id ? '1.5px solid #111827' : '1.5px solid #f1f5f9',
+                        transition: 'all 0.2s'
                       }}
                     >
-                      {s.id === 'Hot' ? '🔥 ' : s.id === 'Warm' ? '☀️ ' : '❄️ '} {s.name}
+                      {s.label}
                     </button>
                   ))}
                 </div>
               </div>
             </div>
 
-            <div style={{ marginTop: '40px' }}>
+            <div style={{ marginTop: '20px' }}>
               <button 
                 className="tap-active" 
                 onClick={() => setFilterModalOpen(false)}
                 style={{ 
                   width: '100%', 
-                  height: '58px', 
-                  borderRadius: '20px', 
-                  fontSize: '16px', 
-                  fontWeight: 900, 
+                  height: '52px', 
+                  borderRadius: '16px', 
+                  fontSize: '15px', 
+                  fontWeight: 950, 
                   background: 'var(--brand-yellow)', 
                   color: '#111827',
                   border: 'none',
-                  boxShadow: '0 12px 24px rgba(255, 204, 0, 0.3)'
+                  boxShadow: '0 8px 20px rgba(255, 204, 0, 0.25)'
                 }}
               >
                 Terapkan Filter

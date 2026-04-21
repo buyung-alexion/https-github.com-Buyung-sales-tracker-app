@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from 'recharts';
-import { AlertCircle, Users } from 'lucide-react';
+import { AlertCircle, Users, Star } from 'lucide-react';
 import { calculateSalesPoints } from '../../utils/points';
 import type { FilterType } from '../../utils/points';
 
@@ -12,7 +12,7 @@ export default function DashboardTarget({ salesId }: Props) {
   
   const [filterType, setFilterType] = useState<FilterType>('month');
 
-  const { totalActual, breakdown, filteredActs } = useMemo(() => 
+  const { totalActual, rating, breakdown, filteredActs } = useMemo(() => 
     calculateSalesPoints(salesId, activities, prospek, systemTargets, filterType),
     [salesId, activities, prospek, systemTargets, filterType]
   );
@@ -118,7 +118,9 @@ export default function DashboardTarget({ salesId }: Props) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Analytics</h2>
-              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{totalActual.toLocaleString('id-ID')} POIN</div>
+              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <Star size={10} fill="#FFCC00" strokeWidth={3} /> {rating.toFixed(1)} STARS
+              </div>
             </div>
             <div className="hero-premium-subtitle">Performance & Goals</div>
           </div>

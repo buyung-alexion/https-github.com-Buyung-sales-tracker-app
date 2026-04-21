@@ -56,7 +56,6 @@ export const store = {
       area: c.area,
       sales_pic: c.sales_pic,
       sales_name: salesName,
-      last_order_date: c.last_order_date || new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
       link_map: c.link_map,
       kategori: c.kategori,
@@ -85,7 +84,6 @@ export const store = {
       area: prospek.area,
       sales_pic: prospek.sales_owner,
       sales_name: prospek.sales_name,
-      last_order_date: new Date().toISOString(),
       tanggal_join: new Date().toISOString(),
       link_map: prospek.link_map,
       kategori: prospek.kategori,
@@ -165,6 +163,7 @@ export const store = {
   },
 
   async logOrder(salesId: string, targetId: string, targetNama: string, salesName?: string) {
+    // 1. Log Activity
     await this.logActivity({
       id_sales: salesId,
       sales_name: salesName,
@@ -174,6 +173,9 @@ export const store = {
       tipe_aksi: 'Order',
       catatan_hasil: `SALES ORDER CONFIRMED`
     });
+
+    // 2. Update Customer Table
+    await supabase.from('customer').update({ last_order_date: new Date().toISOString() }).eq('id', targetId);
   },
 
   async logVisit(salesId: string, area: Area, catatan: string, salesName?: string) {

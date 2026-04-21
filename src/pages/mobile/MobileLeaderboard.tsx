@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Star } from 'lucide-react';
 import { useCurrentSales, useSalesData } from '../../hooks/useSalesData';
 import { calculateSalesPoints } from '../../utils/points';
 import type { FilterType } from '../../utils/points';
@@ -13,17 +13,11 @@ export default function MobileLeaderboard() {
 
   const leaderboardData = useMemo(() => {
     return sales.map(s => {
-      const { totalActual, breakdown } = calculateSalesPoints(
-        s.id, 
-        activities, 
-        prospek, 
-        systemTargets, 
-        filterDate
-      );
-      
+      const { totalActual, rating, breakdown } = calculateSalesPoints(s.id, activities, prospek, systemTargets, filterDate);
       return { 
         ...s, 
         actualPoints: totalActual, 
+        rating,
         percent: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100)),
         totalVisit: breakdown.visitProspek + breakdown.visitCustomer, 
         closingCount: breakdown.closing
@@ -105,6 +99,9 @@ export default function MobileLeaderboard() {
                   <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', background: '#94a3b8', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', fontSize: '13px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2.5px solid #fff', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>2</div>
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px' }}>{top3[1].nama}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginTop: '4px' }}>
+                  {[1,2,3,4,5].map(st => <Star key={st} size={8} fill={st <= top3[1].rating ? '#94a3b8' : 'transparent'} color="#94a3b8" />)}
+                </div>
                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569', background: 'rgba(255,255,255,0.4)', padding: '2px 8px', borderRadius: '12px', display: 'inline-block', marginTop: '4px' }}>{top3[1].actualPoints} Poin</div>
              </div>
            )}
@@ -116,8 +113,11 @@ export default function MobileLeaderboard() {
                   <img src="/assets/image/Rank 1.png" alt="Rank 1" style={{ width: '110px', height: '110px', objectFit: 'contain', filter: 'drop-shadow(0 20px 40px rgba(234,179,8,0.5))' }} />
                   <div style={{ position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)', background: '#eab308', color: '#fff', width: '32px', height: '32px', borderRadius: '50%', fontSize: '16px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3.5px solid #fff', boxShadow: '0 8px 16px rgba(234,179,8,0.3)' }}>1</div>
                 </div>
-                <div style={{ fontSize: '17px', fontWeight: 950, color: '#0f172a', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.3px' }}>{top3[0].nama}</div>
-                <div style={{ fontSize: '13px', fontWeight: 950, color: '#a16207', background: '#fef9c3', padding: '4px 14px', borderRadius: '24px', display: 'inline-block', marginTop: '8px', border: '1.5px solid #fde047', boxShadow: '0 4px 12px rgba(234,179,8,0.15)' }}>{top3[0].actualPoints} Poin</div>
+                 <div style={{ fontSize: '17px', fontWeight: 950, color: '#0f172a', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.3px' }}>{top3[0].nama}</div>
+                 <div style={{ display: 'flex', justifyContent: 'center', gap: '3px', marginTop: '4px' }}>
+                  {[1,2,3,4,5].map(st => <Star key={st} size={10} fill={st <= top3[0].rating ? '#eab308' : 'transparent'} color="#eab308" />)}
+                </div>
+                 <div style={{ fontSize: '13px', fontWeight: 950, color: '#a16207', background: '#fef9c3', padding: '4px 14px', borderRadius: '24px', display: 'inline-block', marginTop: '8px', border: '1.5px solid #fde047', boxShadow: '0 4px 12px rgba(234,179,8,0.15)' }}>{top3[0].actualPoints} Poin</div>
              </div>
            )}
 
@@ -129,6 +129,9 @@ export default function MobileLeaderboard() {
                   <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', background: '#b45309', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', fontSize: '13px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2.5px solid #fff', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>3</div>
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px' }}>{top3[2].nama}</div>
+                <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginTop: '4px' }}>
+                  {[1,2,3,4,5].map(st => <Star key={st} size={8} fill={st <= top3[2].rating ? '#b45309' : 'transparent'} color="#b45309" />)}
+                </div>
                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569', background: 'rgba(255,255,255,0.4)', padding: '2px 8px', borderRadius: '12px', display: 'inline-block', marginTop: '4px' }}>{top3[2].actualPoints} Poin</div>
              </div>
            )}
@@ -167,7 +170,12 @@ export default function MobileLeaderboard() {
                       </div>
                       <div style={{ flex: 1 }}>
                          <div style={{ fontSize: '15px', fontWeight: 800, color: '#111827' }}>{s.nama}</div>
-                         <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, marginTop: '2px' }}>{s.percent}% Capaian Target</div>
+                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                           <div style={{ display: 'flex', gap: '1px' }}>
+                             {[1,2,3,4,5].map(st => <Star key={st} size={10} fill={st <= s.rating ? '#FFCC00' : 'transparent'} color={st <= s.rating ? '#FFCC00' : '#e2e8f0'} />)}
+                           </div>
+                           <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700 }}>{s.percent}% Capaian</span>
+                         </div>
                       </div>
                       <div style={{ textAlign: 'right' }}>
                          <div style={{ fontSize: '16px', fontWeight: 950, color: '#111827' }}>{s.actualPoints}</div>

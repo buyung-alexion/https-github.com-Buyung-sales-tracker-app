@@ -3,7 +3,7 @@ import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -39,7 +39,12 @@ export default function Homepage({ salesId }: Props) {
   // Prospek & Customer (Lifetime / Unreset)
   const totalProspek = prospek.filter(p => p.sales_owner === salesId).length;
   const totalCustomer = customers.filter(c => c.sales_pic === salesId).length;
-  const overdueCustomers = customers.filter(c => c.sales_pic === salesId && (new Date().getTime() - new Date(c.last_order_date).getTime()) / 86400000 > 14).length;
+  const overdueCustomers = customers.filter(c => {
+    if (c.sales_pic !== salesId) return false;
+    if (!c.last_order_date) return true; // Never ordered = Overdue/Needs Contact
+    const diffDays = (new Date().getTime() - new Date(c.last_order_date).getTime()) / 86400000;
+    return diffDays > 14;
+  }).length;
   const overdueProspek = prospek.filter(p => p.sales_owner === salesId && (new Date().getTime() - new Date(p.created_at).getTime()) / 86400000 > 14).length;
 
   const uncontactedProspekCount = prospek.filter(p => 
@@ -52,7 +57,7 @@ export default function Homepage({ salesId }: Props) {
     !activities.some(act => act.target_id === c.id && (act.tipe_aksi === 'WA' || act.tipe_aksi === 'Call'))
   ).length;
 
-  const { totalActual: totalActualPoints, breakdown } = calculateSalesPoints(
+  const { totalActual: totalActualPoints, rating, breakdown } = calculateSalesPoints(
     salesId,
     activities,
     prospek,
@@ -60,7 +65,8 @@ export default function Homepage({ salesId }: Props) {
     'month'
   );
 
-  const { order: totalSO, visitProspek: totalVisit } = breakdown;
+  const totalSO = breakdown.order;
+  const totalVisit = breakdown.visitProspek + breakdown.visitCustomer;
 
   // Recent Activities
   const recentActs = activities
@@ -190,6 +196,22 @@ export default function Homepage({ salesId }: Props) {
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                 <span style={{ fontSize: '32px', fontWeight: 950, color: '#fff', letterSpacing: '-1.2px' }}>{totalActualPoints.toLocaleString('id-ID')}</span>
                 <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--brand-yellow)' }}>Poin</span>
+              </div>
+              
+              {/* Rating Stars - Premium Micro-Visual */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+                <div style={{ display: 'flex', gap: '2px' }}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star 
+                      key={star} 
+                      size={12} 
+                      fill={star <= Math.round(rating) ? 'var(--brand-yellow)' : 'transparent'} 
+                      color={star <= Math.round(rating) ? 'var(--brand-yellow)' : 'rgba(255,255,255,0.2)'} 
+                      strokeWidth={3}
+                    />
+                  ))}
+                </div>
+                <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', marginLeft: '4px' }}>{rating.toFixed(1)}</span>
               </div>
             </div>
             <div style={{ textAlign: 'right' }}>
@@ -534,14 +556,14 @@ export default function Homepage({ salesId }: Props) {
           </div>
         </div>
       )}
-      {/* Version info footer */}
       <div style={{ 
         padding: '24px 20px 48px', 
         textAlign: 'center', 
         fontSize: '11px', 
         fontWeight: 800, 
-        color: '#CBD5E1', 
-        letterSpacing: '1px' 
+        color: '#94a3b8', 
+        letterSpacing: '0.05em',
+        opacity: 0.8
       }}>
         vDeploy 1.0.24.0417
       </div>

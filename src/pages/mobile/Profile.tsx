@@ -4,11 +4,12 @@ import { ArrowLeft, Edit3, Camera, Target, LogOut, Check, User, Phone, Activity,
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { store } from '../../store/dataStore';
+import { calculateSalesPoints } from '../../utils/points';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, logout, updateUser } = useAuth();
-  const { activities } = useSalesData();
+  const { activities, prospek = [], systemTargets = null } = useSalesData();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const isEditing = searchParams.get('edit') === 'true';
@@ -34,11 +35,14 @@ export default function Profile() {
 
   if (!user) return null;
 
-  // Actual Stats
-  const actCount = activities.filter(a => a.id_sales === user.id).length;
-  // A rough estimate of total points achieved
-  const achievedPoints = activities.filter(a => a.id_sales === user.id && ['Visit', 'Call', 'WA', 'Order'].includes(a.tipe_aksi)).length * 5 
-    + (activities.filter(a => a.id_sales === user.id && a.tipe_aksi === 'Order').length * 45); // Order gets 50 total (5+45)
+  // === Accurate Stats using shared point system ===
+  const pointsResult = calculateSalesPoints(user.id, activities, prospek, systemTargets, 'month');
+  const achievedPoints = pointsResult.totalActual;
+  const salesRating = pointsResult.rating;
+  const displayRating = salesRating > 0 ? salesRating.toFixed(1) : '0';
+  
+  // Real visit count (monthly): Visit to prospek + Visit to customer
+  const visitCount = pointsResult.breakdown.visitProspek + pointsResult.breakdown.visitCustomer;
 
   const handleLogout = () => {
     if(window.confirm('Yakin ingin keluar?')) {
@@ -273,9 +277,9 @@ export default function Profile() {
           {/* Premium Stats Grid */}
           <div style={{ display: 'flex', justifyContent: 'space-between', margin: '32px 0 0', gap: '10px' }}>
             {[
-              { label: 'Visits', val: actCount, icon: Activity, color: '#10B981', bg: '#ECFDF5' },
+              { label: 'Visits', val: visitCount, icon: Activity, color: '#10B981', bg: '#ECFDF5' },
               { label: 'Points', val: achievedPoints.toLocaleString('id-ID'), icon: Target, color: '#F59E0B', bg: '#FFFBEB' },
-              { label: 'Rating', val: '5.0', icon: TrendingUp, color: '#3B82F6', bg: '#EFF6FF' }
+              { label: 'Rating', val: displayRating, icon: TrendingUp, color: '#3B82F6', bg: '#EFF6FF' }
             ].map((stat, i) => (
               <div key={i} style={{ flex: 1, background: stat.bg, borderRadius: '24px', padding: '16px 8px', border: '1px solid rgba(0,0,0,0.02)' }}>
                 <div style={{ color: stat.color, marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>

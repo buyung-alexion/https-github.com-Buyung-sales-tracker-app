@@ -159,12 +159,11 @@ export default function LoginPage() {
 
       {/* Version Info Footer */}
       <div style={{ 
-        marginTop: '40px', 
+        marginTop: '32px', 
         fontSize: '11px', 
         fontWeight: 800, 
-        color: '#CBD5E1', 
-        letterSpacing: '1px',
-        textAlign: 'center'
+        color: '#94a3b8', 
+        letterSpacing: '0.05em' 
       }}>
         vDeploy 1.0.24.0417
       </div>

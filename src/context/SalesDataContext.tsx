@@ -58,7 +58,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
 
       const filteredSales = (resSales.data || []).filter(s => {
         const r = (s.role || '').toLowerCase();
-        return r.includes('sales') || r.includes('salesman') || r.includes('marketing');
+        return r.includes('sales') || r.includes('salesman') || r.includes('marketing') || 
+               r.includes('manager') || r.includes('koordinator') || r.includes('supervisor') || r.includes('admin');
       });
       
       setSales(filteredSales);

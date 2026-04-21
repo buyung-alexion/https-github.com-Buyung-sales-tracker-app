@@ -4,6 +4,7 @@ export type FilterType = 'today' | 'week' | 'month' | 'last_month' | 'all';
 
 export interface PointsResult {
   totalActual: number;
+  rating: number;
   breakdown: {
     followup: number;
     order: number;
@@ -14,6 +15,17 @@ export interface PointsResult {
   };
   filteredActs: Activity[];
   filteredProspek: Prospek[];
+}
+
+/**
+ * Standardizes the 1-5 star rating based on achievement vs monthly target.
+ */
+export function calculateRating(achievedPoints: number, targetPoints: number = 150): number {
+  if (achievedPoints <= 0) return 0;
+  if (achievedPoints >= targetPoints) return 5.0;
+  const tierSize = targetPoints / 5;
+  // Rounds to 1 decimal place (e.g., 3.4)
+  return Math.min(5, Math.max(0.5, Math.round((achievedPoints / tierSize) * 10) / 10));
 }
 
 /**
@@ -100,8 +112,11 @@ export function calculateSalesPoints(
     (closingCount * weights.closing) +
     (prospekCount * weights.prospek);
 
+  const rating = calculateRating(totalActual, systemTargets?.ind_poin ?? 150);
+
   return {
     totalActual,
+    rating,
     breakdown: {
       followup: followupCount,
       order: soCount,

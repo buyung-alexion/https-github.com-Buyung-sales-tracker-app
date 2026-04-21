@@ -97,6 +97,12 @@ export default function ManagerShell() {
 
 
 
+
+        <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+          <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.05em', opacity: 0.8 }}>
+            vDeploy 1.0.24.0417
+          </div>
+        </div>
       </aside>
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
