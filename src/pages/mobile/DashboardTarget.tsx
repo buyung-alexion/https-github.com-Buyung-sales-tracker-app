@@ -413,21 +413,6 @@ export default function DashboardTarget({ salesId }: Props) {
             </BarChart>
           </ResponsiveContainer>
 
-          {/* Legend */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', marginTop: '8px', justifyContent: 'center' }}>
-            {[
-              { label: 'Followup', color: '#EC4899' },
-              { label: 'SO', color: '#8B5CF6' },
-              { label: 'Visit', color: '#F59E0B' },
-              { label: 'Closing', color: '#10B981' },
-              { label: 'Prospek', color: '#3B82F6' },
-            ].map(item => (
-              <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '3px', background: item.color }} />
-                <span style={{ fontSize: '11px', fontWeight: 600, color: '#64748b' }}>{item.label}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 

@@ -1,15 +1,15 @@
 import { supabase } from '../lib/supabase';
 import type { Sales, Prospek, Customer, Activity, Area } from '../types';
 
-// Internal helper for Area-based ID generation (e.g., BPN001) is removed 
-// because Supabase expects UUIDs for 'id' primary keys, not strings like "BPN001".
-// We will use crypto.randomUUID() instead.
+// Sequential ID generation for Prospects and Customers
+// Prefixes: P for Prospect, C for Customer, S for Sales
 
 export const store = {
   // ─── PROSPEK ────────────────────────────────────────────
   async addProspek(p: Omit<Prospek, 'id' | 'created_at'>, salesName?: string) {
+    const nextId = await this.generateNextProspekId();
     const prospekData = {
-      id: crypto.randomUUID(),
+      id: nextId,
       nama_toko: p.nama_toko,
       nama_pic: p.nama_pic || 'Bpk/Ibu',
       no_wa: p.no_wa,
@@ -48,8 +48,9 @@ export const store = {
 
   // ─── CUSTOMER ───────────────────────────────────────────
   async addCustomer(c: any, salesName?: string) {
+    const nextId = await this.generateNextCustomerId();
     const customerData = {
-      id: crypto.randomUUID(),
+      id: nextId,
       nama_toko: c.nama_toko,
       nama_pic: c.nama_pic || 'Bpk/Ibu',
       no_wa: c.no_wa,
@@ -76,8 +77,9 @@ export const store = {
 
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
   async convertToCustomer(prospek: Prospek, salesName?: string) {
+    const nextId = await this.generateNextCustomerId();
     const customerData = {
-      id: crypto.randomUUID(),
+      id: nextId,
       nama_toko: prospek.nama_toko,
       nama_pic: prospek.nama_pic,
       no_wa: prospek.no_wa,
@@ -119,7 +121,7 @@ export const store = {
   // ─── ACTIVITY ───────────────────────────────────────────
   async logActivity(a: Omit<Activity, 'id' | 'timestamp'>) {
     const activityData = {
-      id: crypto.randomUUID(),
+      id: crypto.randomUUID(), // Keeping UUID for activities for now as they are internal logs
       id_sales: a.id_sales,
       sales_name: a.sales_name,
       target_id: a.target_id,
@@ -249,7 +251,32 @@ export const store = {
     });
   },
 
+  // ─── ID GENERATORS ──────────────────────────────────────
+  async generateNextProspekId() {
+    const { data } = await supabase.from('prospek').select('id');
+    const existingIds = (data || [])
+      .map(p => p.id)
+      .filter(id => id && id.startsWith('P'))
+      .map(id => parseInt(id.substring(1)))
+      .filter(num => !isNaN(num))
+      .sort((a, b) => b - a);
+    
+    const nextNum = existingIds.length > 0 ? existingIds[0] + 1 : 1;
+    return `P${nextNum.toString().padStart(3, '0')}`;
+  },
 
+  async generateNextCustomerId() {
+    const { data } = await supabase.from('customer').select('id');
+    const existingIds = (data || [])
+      .map(c => c.id)
+      .filter(id => id && id.startsWith('C'))
+      .map(id => parseInt(id.substring(1)))
+      .filter(num => !isNaN(num))
+      .sort((a, b) => b - a);
+    
+    const nextNum = existingIds.length > 0 ? existingIds[0] + 1 : 1;
+    return `C${nextNum.toString().padStart(3, '0')}`;
+  },
 
   // ─── SALES CRUD ─────────────────────────────────────────
   async generateNextSalesId() {
