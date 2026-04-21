@@ -326,7 +326,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{c.nama_toko}</h3>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{c.nama_toko}</h3>
+                          <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #E0E7FF' }}>{c.id}</div>
+                        </div>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: accent, marginTop: '2px' }}>👤 {c.nama_pic || 'No PIC'}</div>
                       </div>
                       <div style={{ textAlign: 'right' }}>

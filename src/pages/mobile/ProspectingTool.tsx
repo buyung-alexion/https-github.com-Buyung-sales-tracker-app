@@ -337,7 +337,10 @@ export default function ProspectingTool({ salesId }: Props) {
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{p.nama_toko}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{p.nama_toko}</h3>
+                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #E0E7FF' }}>{p.id}</div>
+                      </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {isFollowedUp && (
                           <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '6px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
