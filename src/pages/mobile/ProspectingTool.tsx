@@ -1,7 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
-import { CheckCheck, Search, Filter, Phone, MessageCircle, FileText, X, Plus, Camera, Loader2, Users, MoreHorizontal, User, Tag, MapPin, Map } from 'lucide-react';
+import { 
+  CheckCheck, Search, Filter, MessageCircle, FileText, X, Plus, Camera, Loader2, 
+  Users, MapPin, Map, PhoneCall, Activity, Edit3, CheckCircle, 
+  Image as ImageIcon 
+} from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
