@@ -324,31 +324,29 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#1e293b', margin: 0 }}>{c.nama_toko}</h3>
-                          <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #E0E7FF' }}>{c.id}</div>
-                        </div>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: accent, marginTop: '2px' }}>👤 {c.nama_pic || 'No PIC'}</div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <h3 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.3, letterSpacing: '-0.3px' }}>{c.nama_toko}</h3>
+                      
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #E0E7FF', letterSpacing: '0.02em' }}>{c.id}</div>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '2px 8px', borderRadius: '6px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7' }}>
+                          {overdue ? `🚨 OVERDUE` : '✅ ACTIVE'}
+                        </span>
                         {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 6px', borderRadius: '6px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCircle size={10} strokeWidth={3} /> FOLLOW UP
+                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <CheckCircle size={11} strokeWidth={3.5} /> FOLLOW UP
                           </div>
                         )}
                       </div>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <MapPin size={10} color="#64748b" />
-                            <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>{getAreaName(c.area)}</div>
-                          </div>
-                      <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                      <span style={{ fontSize: '11px', fontWeight: 800, color: overdue ? '#ef4444' : '#10b981' }}>
-                        {overdue ? `🚨 Overdue ${days}d` : '✅ Active'}
-                      </span>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '2px' }}>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: accent }}>👤 {c.nama_pic || 'No PIC'}</div>
+                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <MapPin size={10} color="#94a3b8" strokeWidth={2.5} />
+                          <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>{getAreaName(c.area)}</div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
