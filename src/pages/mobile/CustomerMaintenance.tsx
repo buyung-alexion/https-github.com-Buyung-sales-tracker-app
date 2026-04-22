@@ -349,18 +349,24 @@ export default function CustomerMaintenance({ salesId }: Props) {
                         </span>
                         {isFollowedUp && (
                           <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCircle size={10} strokeWidth={3.5} /> FOLLOW UP
+                            <CheckCheck size={10} strokeWidth={3.5} /> FOLLOW UP
                           </div>
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '1px' }}>
-                        <div style={{ fontSize: '10.5px', fontWeight: 700, color: accent }}>👤 {c.nama_pic || 'No PIC'}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1px' }}>
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.no_wa}</span>
                         <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                           <MapPin size={10} color="#94a3b8" />
                           <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(c.area)}</div>
                         </div>
+                        {c.nama_pic && (
+                          <>
+                            <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                            <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.nama_pic}</div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
