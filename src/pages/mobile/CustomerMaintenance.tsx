@@ -324,25 +324,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '15.5px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.3px', flex: 1 }}>{c.nama_toko}</h3>
-                        {c.link_map && (
-                          <button 
-                            className="tap-active"
-                            onClick={(e) => { e.stopPropagation(); window.open(c.link_map, '_blank'); }}
-                            style={{ 
-                              background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '10px', 
-                              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)', flexShrink: 0, marginLeft: '8px' 
-                            }}
-                          >
-                            <Map size={16} strokeWidth={2.5} />
-                          </button>
-                        )}
-                      </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      <h3 style={{ fontSize: '15.5px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.3, letterSpacing: '-0.3px' }}>{c.nama_toko}</h3>
                       
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '6px' }}>
                         <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{c.id}</div>
                         <span style={{ fontSize: '9px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '2px 7px', borderRadius: '5px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7', textTransform: 'uppercase' }}>
                           {overdue ? `🚨 OVERDUE` : '✅ ACTIVE'}
@@ -351,6 +336,19 @@ export default function CustomerMaintenance({ salesId }: Props) {
                           <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <CheckCircle size={10} strokeWidth={3.5} /> FOLLOW UP
                           </div>
+                        )}
+                        {c.link_map && (
+                          <button 
+                            className="tap-active"
+                            onClick={(e) => { e.stopPropagation(); window.open(c.link_map, '_blank'); }}
+                            style={{ 
+                              background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '5px', 
+                              width: '22px', height: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                              boxShadow: '0 2px 6px rgba(59, 130, 246, 0.2)', transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <Map size={11} strokeWidth={3} />
+                          </button>
                         )}
                       </div>
 
