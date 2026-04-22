@@ -368,12 +368,17 @@ export default function ProspectingTool({ salesId }: Props) {
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1px' }}>
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{p.no_wa}</span>
-                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <MapPin size={10} color="#94a3b8" />
-                          <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(p.area)}</span>
+                      <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Phone size={10} color="#94a3b8" strokeWidth={2.5} />
+                            <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{p.no_wa}</span>
+                          </div>
+                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <MapPin size={10} color="#94a3b8" />
+                            <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(p.area)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>

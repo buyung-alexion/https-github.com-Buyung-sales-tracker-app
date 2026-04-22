@@ -354,18 +354,23 @@ export default function CustomerMaintenance({ salesId }: Props) {
                         )}
                       </div>
 
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '1px' }}>
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.no_wa}</span>
-                        <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                          <MapPin size={10} color="#94a3b8" />
-                          <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(c.area)}</div>
+                      <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Phone size={10} color="#94a3b8" strokeWidth={2.5} />
+                            <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.no_wa}</span>
+                          </div>
+                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <MapPin size={10} color="#94a3b8" />
+                            <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(c.area)}</div>
+                          </div>
                         </div>
                         {c.nama_pic && (
-                          <>
-                            <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                            <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.nama_pic}</div>
-                          </>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Users size={10} color="#6366F1" strokeWidth={2.5} />
+                            <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#6366F1' }}>{c.nama_pic}</div>
+                          </div>
                         )}
                       </div>
                     </div>
