@@ -3,7 +3,7 @@ import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCheck, Search, Filter, MessageCircle, FileText, X, Plus, Camera, Loader2, 
-  Users, MapPin, Map, PhoneCall, Activity, Edit3, CheckCircle, 
+  Users, MapPin, Map, PhoneCall, Activity, Edit3, CheckCircle, Phone, 
   Image as ImageIcon 
 } from 'lucide-react';
 import { store } from '../../store/dataStore';
