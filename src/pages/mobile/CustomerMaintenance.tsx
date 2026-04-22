@@ -343,7 +343,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       </div>
                       
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{c.id}</div>
                         <span style={{ fontSize: '8.5px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '1.5px 6px', borderRadius: '5px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7', textTransform: 'uppercase' }}>
                           {overdue ? `OVERDUE` : 'ACTIVE'}
                         </span>

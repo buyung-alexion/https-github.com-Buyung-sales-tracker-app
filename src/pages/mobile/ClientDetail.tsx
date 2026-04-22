@@ -10,8 +10,14 @@ export default function ClientDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
   const navigate = useNavigate();
   const { currentSalesId } = useCurrentSales();
-  const { prospek, customers, activities, sales = [] } = useSalesData();
+  const { prospek, customers, activities, sales = [], masterStatuses = [] } = useSalesData();
   const currentSales = sales.find(s => s.id === currentSalesId);
+
+  const getStatusName = (idOrName: string) => {
+    if (!idOrName) return 'Cold';
+    const found = masterStatuses.find(s => s.id === idOrName || s.name === idOrName);
+    return found ? found.name : idOrName;
+  };
   const salesName = currentSales?.nama;
   const [activeTab, setActiveTab] = useState<'details' | 'history'>('history');
 
@@ -161,7 +167,7 @@ export default function ClientDetail() {
               {type === 'prospek' && (
                 <div>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '2px' }}>Status Saluran</div>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Prospek {targetData.status}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#334155' }}>Prospek {getStatusName(targetData.status)}</div>
                 </div>
               )}
 

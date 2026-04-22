@@ -69,7 +69,14 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
 
 
 export default function ManagerProspek() {
-  const { prospek, customers, sales, activities, masterAreas, masterCategories, masterChannels, refresh } = useSalesData();
+  const { sales, prospek = [], activities, refresh, masterStatuses = [], customers, masterAreas, masterCategories, masterChannels } = useSalesData();
+
+  const getStatusName = (idOrName: string) => {
+    if (!idOrName) return 'Cold';
+    const found = masterStatuses.find((s: any) => s.id === idOrName || s.name === idOrName);
+    return found ? found.name : idOrName;
+  };
+
   const [search, setSearch] = useState('');
 
   useEffect(() => {
@@ -533,9 +540,6 @@ export default function ManagerProspek() {
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '14px', letterSpacing: '-0.3px' }}>{p.nama_toko}</div>
-                            <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', background: '#f8fafc', padding: '2px 6px', borderRadius: '6px', border: '1px solid #f1f5f9' }}>
-                              #{p.id}
-                            </span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                             <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{p.nama_pic}</div>
@@ -595,11 +599,11 @@ export default function ManagerProspek() {
                         borderRadius: '10px',
                         fontSize: '11px',
                         fontWeight: 900,
-                        background: p.status === 'Hot' ? '#fef2f2' : p.status === 'Warm' ? '#fffbeb' : '#f0f9ff',
-                        color: p.status === 'Hot' ? '#ef4444' : p.status === 'Warm' ? '#f59e0b' : '#0ea5e9',
-                        border: `1px solid ${p.status === 'Hot' ? '#fee2e2' : p.status === 'Warm' ? '#fef3c7' : '#e0f2fe'}`
+                        background: getStatusName(p.status) === 'Hot' ? '#fef2f2' : getStatusName(p.status) === 'Warm' ? '#fffbeb' : '#f0f9ff',
+                        color: getStatusName(p.status) === 'Hot' ? '#ef4444' : getStatusName(p.status) === 'Warm' ? '#f59e0b' : '#0ea5e9',
+                        border: `1px solid ${getStatusName(p.status) === 'Hot' ? '#fee2e2' : getStatusName(p.status) === 'Warm' ? '#fef3c7' : '#e0f2fe'}`
                       }}>
-                        {p.status.toUpperCase()}
+                        {getStatusName(p.status).toUpperCase()}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>

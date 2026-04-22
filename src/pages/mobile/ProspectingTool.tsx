@@ -224,12 +224,20 @@ export default function ProspectingTool({ salesId }: Props) {
   const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
 
   const getStatusColor = (status: string = 'Cold') => {
-    switch (status) {
+    // Normalize status (could be ID or Name)
+    const statusName = getStatusName(status);
+    switch (statusName) {
       case 'Hot': return '#EF4444'; // Bright Red
       case 'Warm': return '#F59E0B'; // Bright Amber
       case 'Cold': return '#3B82F6'; // Bright Blue
       default: return '#6366F1'; // Vibrant Indigo fallback
     }
+  };
+
+  const getStatusName = (id: string) => {
+    if (!id) return 'Cold';
+    const found = masterStatuses.find(s => s.id === id || s.name === id);
+    return found ? found.name : id;
   };
 
   return (
@@ -359,8 +367,7 @@ export default function ProspectingTool({ salesId }: Props) {
                       </div>
                       
                       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{p.id}</div>
-                        <div style={{ background: `${accent}15`, color: accent, fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{p.status}</div>
+                        <div style={{ background: `${accent}15`, color: accent, fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{getStatusName(p.status)}</div>
                         {isFollowedUp && (
                           <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
                             <CheckCheck size={9} strokeWidth={3.5} /> FOLLOW UP
@@ -623,7 +630,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
                   <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={addForm.status} onChange={e => setAddForm({ ...addForm, status: e.target.value as StatusProspek })}>
                     <option value="">-- Pilih Status --</option>
-                    {masterStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    {masterStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                   </select>
                 </div>
               </div>
@@ -735,7 +742,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   <label style={{ fontSize: '12px', fontWeight: 800, color: '#64748b', marginBottom: '8px', display: 'block' }}>Status Suhu</label>
                   <select className="form-input" style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px', fontWeight: 700 }} value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value as StatusProspek })}>
                     <option value="">-- Pilih Status --</option>
-                    {masterStatuses.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    {masterStatuses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
                   </select>
                 </div>
               </div>

@@ -15,7 +15,7 @@ import {
 
 
 export default function PerformanceAnalytics() {
-  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas } = useSalesData();
+  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas, masterStatuses = [] } = useSalesData();
 
   // --- MASTER FILTER STATES ---
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month');
@@ -36,6 +36,12 @@ export default function PerformanceAnalytics() {
 
   // Use a stable reference for "now" to avoid re-calculating everything on every render
   const [now] = useState(new Date());
+
+  const getStatusName = (idOrName: string) => {
+    if (!idOrName) return 'Cold';
+    const found = masterStatuses.find(s => s.id === idOrName || s.name === idOrName);
+    return found ? found.name : idOrName;
+  };
   
   // --- DATA SOURCES ---
   // Now we use masterStats as the primary source of truth for filtered data
@@ -191,8 +197,8 @@ export default function PerformanceAnalytics() {
   // Pie Data for Status Distribution Gauge
   // Pie Data for Status Distribution Gauge
   const fTotal = (prospek.length + totalUniqueClosing) || 1; // Base pool for proportions
-  const fStatusColdNum = prospek.filter(p => p.status?.toLowerCase() === 'cold').length;
-  const fStatusHotNum = prospek.filter(p => p.status?.toLowerCase() === 'hot').length;
+  const fStatusColdNum = prospek.filter(p => getStatusName(p.status).toLowerCase() === 'cold').length;
+  const fStatusHotNum = prospek.filter(p => getStatusName(p.status).toLowerCase() === 'hot').length;
   const fClosedNum = totalUniqueClosing;
 
   const statusDistData = useMemo(() => [
