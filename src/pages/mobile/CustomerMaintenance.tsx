@@ -342,14 +342,14 @@ export default function CustomerMaintenance({ salesId }: Props) {
                         )}
                       </div>
                       
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
-                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{c.id}</div>
-                        <span style={{ fontSize: '9px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '2px 7px', borderRadius: '5px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7', textTransform: 'uppercase' }}>
-                          {overdue ? `🚨 OVERDUE` : '✅ ACTIVE'}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{c.id}</div>
+                        <span style={{ fontSize: '8.5px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '1.5px 6px', borderRadius: '5px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7', textTransform: 'uppercase' }}>
+                          {overdue ? `OVERDUE` : 'ACTIVE'}
                         </span>
                         {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCheck size={10} strokeWidth={3.5} /> FOLLOW UP
+                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckCheck size={9} strokeWidth={3.5} /> FOLLOW UP
                           </div>
                         )}
                       </div>

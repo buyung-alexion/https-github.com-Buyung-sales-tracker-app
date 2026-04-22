@@ -358,12 +358,12 @@ export default function ProspectingTool({ salesId }: Props) {
                         )}
                       </div>
                       
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '5px', marginTop: '1px' }}>
-                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{p.id}</div>
-                        <div style={{ background: `${accent}15`, color: accent, fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{p.status}</div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                        <div style={{ background: '#EEF2FF', color: '#6366F1', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #E0E7FF' }}>{p.id}</div>
+                        <div style={{ background: `${accent}15`, color: accent, fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{p.status}</div>
                         {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '9px', fontWeight: 900, padding: '2px 7px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCheck size={10} strokeWidth={3.5} /> FOLLOW UP
+                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <CheckCheck size={9} strokeWidth={3.5} /> FOLLOW UP
                           </div>
                         )}
                       </div>
