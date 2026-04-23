@@ -23,14 +23,14 @@ export default function SalesChat({ salesId }: Props) {
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
-  // Hide nav bar when chat is active
+  // Manage UI states when chat is active
   useEffect(() => {
     if (activeChatId) {
-      document.body.classList.add('hide-nav');
+      document.body.classList.add('hide-nav', 'chat-active');
     } else {
-      document.body.classList.remove('hide-nav');
+      document.body.classList.remove('hide-nav', 'chat-active');
     }
-    return () => document.body.classList.remove('hide-nav');
+    return () => document.body.classList.remove('hide-nav', 'chat-active');
   }, [activeChatId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -207,6 +207,7 @@ export default function SalesChat({ salesId }: Props) {
                </div>
             </div>
           ))}
+          <div style={{ height: '100px' }} />
         </div>
       </div>
     );
