@@ -365,22 +365,27 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
            />
         </div>
 
-        {/* Submit Button (Floating Style at bottom of scroll area) */}
+        {/* Submit Button (Removed from scroll area, now in fixed footer below) */}
+      </div>
+
+      {/* 3. Fixed Footer for Action Button */}
+      <div style={{ 
+        padding: '20px 20px calc(40px + env(safe-area-inset-bottom))', 
+        background: '#fff', borderTop: '1px solid #f1f5f9', position: 'relative', zIndex: 30 
+      }}>
         <button 
           onClick={handleCheckIn} 
           disabled={lockCheckIn || isSubmitting} 
           style={{ 
-            width: '100%', height: '60px', 
+            width: '100%', height: '56px', 
             background: lockCheckIn ? '#E2E8F0' : (isSubmitting ? '#CBD5E1' : 'var(--brand-yellow)'), 
             color: '#111827', borderRadius: '16px', fontWeight: 950, fontSize: '16px', border: 'none', 
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-            boxShadow: lockCheckIn ? 'none' : '0 8px 20px rgba(255, 193, 7, 0.3)',
-            marginBottom: '20px'
+            boxShadow: lockCheckIn ? 'none' : '0 8px 20px rgba(255, 193, 7, 0.3)'
           }}
         >
           {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Kirim Laporan'}
         </button>
-
       </div>
     </div>
   );
