@@ -298,35 +298,58 @@ export default function SalesChat({ salesId }: Props) {
           </div>
         )}
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
-              <Smile size={24} />
-            </button>
-            <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
-              <Paperclip size={22} />
-            </button>
-            <button onClick={() => { setShowPhotoOptions(!showPhotoOptions); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
-              <ImageIcon size={22} />
-            </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {/* Main Input Pill (WhatsApp Style) */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#ffffff', borderRadius: '28px', padding: '6px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
+             <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
+                <Smile size={24} />
+             </button>
+             
+             <input 
+                type="text" 
+                placeholder="Ketik pesan..."
+                value={inputText}
+                onChange={e => setInputText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '15px', fontWeight: 600, color: '#111827', padding: '0 8px' }}
+             />
+
+             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
+                   <Paperclip size={22} />
+                </button>
+                <button onClick={() => { setShowPhotoOptions(!showPhotoOptions); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
+                   <ImageIcon size={22} />
+                </button>
+             </div>
           </div>
-          
-          <input type="file" ref={docInputRef} style={{ display: 'none' }} onChange={e => handleFileChange(e, 'doc')} />
-          <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
-          <input type="file" ref={galleryInputRef} accept="image/*" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
-          
-          <form style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid #e2e8f0' }} onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
-            <input 
-              placeholder="Ketik pesan..." 
-              value={inputText}
-              onChange={e => setInputText(e.target.value)}
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#111827' }}
-            />
-            <button type="submit" style={{ flexShrink: 0, background: 'var(--brand-yellow)', border: 'none', width: '38px', height: '38px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111827', boxShadow: '0 4px 10px rgba(255, 193, 7, 0.3)', cursor: 'pointer' }}>
-              <Send size={18} />
-            </button>
-          </form>
+
+          {/* Floating Send Button */}
+          <button 
+            onClick={handleSend}
+            style={{ 
+              flexShrink: 0, 
+              background: 'var(--brand-yellow)', 
+              border: 'none', 
+              width: '48px', 
+              height: '48px', 
+              borderRadius: '50%', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              color: '#111827', 
+              boxShadow: '0 4px 15px rgba(255, 193, 7, 0.4)', 
+              cursor: 'pointer',
+              transition: 'transform 0.2s active'
+            }}
+          >
+            <Send size={22} style={{ marginLeft: '2px' }} />
+          </button>
         </div>
+
+        <input type="file" ref={docInputRef} style={{ display: 'none' }} onChange={e => handleFileChange(e, 'doc')} />
+        <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
+        <input type="file" ref={galleryInputRef} accept="image/*" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
       </div>
 
 
