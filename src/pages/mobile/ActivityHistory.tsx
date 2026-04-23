@@ -193,34 +193,32 @@ export default function ActivityHistory() {
       {/* Floating Action Button */}
       <button 
         onClick={() => setIsFormOpen(true)}
-        style={{ position: 'fixed', bottom: '110px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#10B981', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.4)', zIndex: 100 }}
+        style={{ position: 'fixed', bottom: '110px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#3B82F6', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)', zIndex: 100 }}
       >
         <Plus size={32} strokeWidth={3} />
       </button>
 
-      {/* Activity Form Drawer */}
+      {/* Activity Form Drawer (Moved for stability) */}
       {isFormOpen && (
         <div onClick={() => setIsFormOpen(false)} style={{ 
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
-          zIndex: 99999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
+          zIndex: 999999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
         }}>
           <div onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100%', background: '#fff', 
+            height: '92vh', width: '100vw', background: '#fff', 
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
             display: 'flex', flexDirection: 'column', overflowY: 'auto',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
-            animation: 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            position: 'relative'
+            position: 'relative', margin: 0, padding: 0
           }}>
             {/* Close Button Overlay */}
             <button 
               onClick={() => setIsFormOpen(false)}
-              style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 10000, background: '#fff', border: 'none', borderRadius: '50%', width: '40px', height: '40px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
             >
-              <X size={20} color="#1e293b" />
+              <X size={20} color="#64748b" />
             </button>
-            
-            <ActivityReport salesId={user.id} onSuccess={() => setIsFormOpen(false)} />
+            <ActivityReport salesId={user?.id || ''} onSuccess={() => setIsFormOpen(false)} />
           </div>
         </div>
       )}

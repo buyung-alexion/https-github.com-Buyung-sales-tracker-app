@@ -228,6 +228,8 @@ export default function OrderHistory() {
         )}
       </div>
 
+      </div>
+
       {/* Floating Action Button */}
       <button 
         onClick={() => { 
@@ -241,21 +243,21 @@ export default function OrderHistory() {
         <Plus size={32} strokeWidth={3} />
       </button>
 
-      {/* Quick Order / Edit Drawer */}
+      {/* Quick Order / Edit Drawer (Moved outside page-content for stable positioning) */}
       {isOrderModalOpen && (
         <div onClick={() => setIsOrderModalOpen(false)} style={{ 
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
-          zIndex: 99999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
+          zIndex: 999999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
         }}>
           <div onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100%', background: '#f8fafc', 
+            height: '92vh', width: '100vw', background: '#f8fafc', 
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
             display: 'flex', flexDirection: 'column', overflow: 'hidden',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
-            animation: 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            position: 'relative', margin: 0, padding: 0
           }}>
             {/* 1. Header & Drag Handle */}
-            <div style={{ padding: '12px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+            <div style={{ padding: '12px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#fff', borderBottom: '1px solid #f1f5f9', flexShrink: 0 }}>
               <div style={{ width: '36px', height: '5px', background: '#E2E8F0', borderRadius: '10px', marginBottom: '20px' }} />
               <div style={{ width: '100%', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -326,7 +328,7 @@ export default function OrderHistory() {
 
               {/* Card 2: Order Detail */}
               {selectedCust && (
-                <div className="animate-fade-up" style={{ background: '#fff', borderRadius: '24px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
+                <div style={{ background: '#fff', borderRadius: '24px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Pesanan</div>
                   
                   <div>
@@ -358,7 +360,7 @@ export default function OrderHistory() {
             </div>
 
             {/* 3. Action Footer */}
-            <div style={{ padding: '20px 20px 40px', background: '#fff', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ padding: '20px 20px 40px', background: '#fff', borderTop: '1px solid #f1f5f9', flexShrink: 0 }}>
               <button 
                 onClick={handleOrderSubmit}
                 disabled={!selectedCust || !orderAmount || isSubmitting}
@@ -372,7 +374,6 @@ export default function OrderHistory() {
                 {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : orderSuccess ? <><CheckCircle size={24} /> Berhasil!</> : (editOrderId ? 'Update Pesanan' : 'Kirim & Lanjut Accurate')}
               </button>
             </div>
-
           </div>
         </div>
       )}
