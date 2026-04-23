@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Search, Send, Paperclip, Smile, CheckSquare, MessageCircle, Users, X } from 'lucide-react';
+import { Search, Send, Paperclip, Smile, CheckSquare, MessageCircle, Users, X, Image as ImageIcon } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import { chatStore } from '../../store/chatStore';
 import type { ChatMessage, ChatContact } from '../../types';
 
 export default function ManagerChat() {
+  const { user } = useAuth();
+  const currentUserId = user?.id || 'Manager-1';
+  const currentUserName = user?.nama || 'Anda';
+
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [selectedContact, setSelectedContact] = useState<ChatContact | null>(null);
   const [inputText, setInputText] = useState('');
@@ -19,7 +24,7 @@ export default function ManagerChat() {
   const EMOJI_LIST = ['😀','😂','😍','🙏','👍','🔥','🎉','😊','👋','😎'];
 
   const handleSelectContact = (c: ChatContact) => {
-    const cid = chatStore.getChatId('Manager-1', c.id);
+    const cid = chatStore.getChatId(currentUserId, c.id);
     setSelectedContact(c);
     setActiveChatId(cid);
   };
@@ -31,10 +36,12 @@ export default function ManagerChat() {
     }, 50);
     
     // Load dynamic contacts from backend
-    chatStore.loadContacts('Manager-1').then(c => {
-      setContacts(c);
-      if (c.length > 0) {
-        handleSelectContact(c[0]);
+    chatStore.loadContacts(currentUserId).then(c => {
+      // Filter out self from contact list
+      const otherContacts = c.filter(contact => contact.id !== currentUserId);
+      setContacts(otherContacts);
+      if (otherContacts.length > 0) {
+        handleSelectContact(otherContacts[0]);
       }
     });
 
@@ -79,8 +86,9 @@ export default function ManagerChat() {
     const channel = chatStore.subscribeToMessages('*', (payload) => {
       if (payload.eventType === 'INSERT') {
         // Refresh contacts to move the latest to the top
-        chatStore.loadContacts('Manager-1').then(c => {
-          setContacts(c);
+        chatStore.loadContacts(currentUserId).then(c => {
+          const otherContacts = c.filter(contact => contact.id !== currentUserId);
+          setContacts(otherContacts);
         });
       }
     });
@@ -109,8 +117,8 @@ export default function ManagerChat() {
     // Inject sent message optimistically to Database
     const sentMsg = await chatStore.sendMessage({
       chat_id: activeChatId,
-      sender_id: 'Manager-1', // Default Manager Role representation
-      sender_name: 'Anda',
+      sender_id: currentUserId,
+      sender_name: currentUserName,
       text: payloadText,
       attachment: currentAttachment || undefined
     });
@@ -243,7 +251,7 @@ export default function ManagerChat() {
                 </div>
                 
                 {activeMessages.map(msg => {
-                  const isMe = msg.sender_id === 'Manager-1';
+                  const isMe = msg.sender_id === currentUserId;
                   return (
                     <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
                       <div style={{ 
@@ -312,8 +320,9 @@ export default function ManagerChat() {
                     </div>
                   )}
                 </div>
-                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0 }}>
-                  <Paperclip size={24} color="#64748b" />
+                <button type="button" onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', padding: 0, alignItems: 'center', gap: '8px' }}>
+                  <Paperclip size={22} color="#64748b" />
+                  <ImageIcon size={22} color="#64748b" />
                 </button>
                 <input 
                   type="file" 
