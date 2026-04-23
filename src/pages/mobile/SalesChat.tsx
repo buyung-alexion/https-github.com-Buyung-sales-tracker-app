@@ -24,7 +24,10 @@ export default function SalesChat({ salesId }: Props) {
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const EMOJI_LIST = ['😀','😂','😍','🙏','👍','🔥','🎉','😊','👋','😎','🙌','✨'];
 
   // Load Contacts
@@ -111,9 +114,17 @@ export default function SalesChat({ salesId }: Props) {
     });
   };
 
-  const handleCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'doc') => {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    if (type === 'doc') {
+      // For now, we handle docs as text placeholders or small base64
+      // Real app would upload to Supabase Storage
+      setAttachment(`[File: ${file.name}]`);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (ev) => {
       const img = new Image();
@@ -257,6 +268,17 @@ export default function SalesChat({ salesId }: Props) {
           </div>
         )}
 
+        {showPhotoOptions && (
+          <div className="animate-fade-up" style={{ position: 'absolute', bottom: '100%', left: '50px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', width: '160px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
+             <button onClick={() => { cameraInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
+                <ImageIcon size={18} /> Ambil Foto
+             </button>
+             <button onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
+                <Users size={18} /> Dari Galeri
+             </button>
+          </div>
+        )}
+
         {attachment && (
           <div style={{ marginBottom: '12px', position: 'relative', display: 'inline-block' }}>
             <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '8px', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
@@ -268,17 +290,20 @@ export default function SalesChat({ salesId }: Props) {
         
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+            <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
               <Smile size={24} />
             </button>
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+            <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
               <Paperclip size={22} />
             </button>
-            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+            <button onClick={() => { setShowPhotoOptions(!showPhotoOptions); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
               <ImageIcon size={22} />
             </button>
           </div>
-          <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} capture="environment" onChange={handleCapture} />
+          
+          <input type="file" ref={docInputRef} style={{ display: 'none' }} onChange={e => handleFileChange(e, 'doc')} />
+          <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
+          <input type="file" ref={galleryInputRef} accept="image/*" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
           
           <form style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid #e2e8f0' }} onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             <input 
