@@ -60,6 +60,23 @@ export default function SalesChat({ salesId }: Props) {
     };
   }, [activeChatId]);
 
+  // Global Subscription to all messages to update contact list (WhatsApp Style sorting)
+  useEffect(() => {
+    const channel = chatStore.subscribeToMessages('*', (payload) => {
+      if (payload.eventType === 'INSERT') {
+        // Refresh contacts to move the latest to the top
+        chatStore.loadContacts(salesId, true).then(c => {
+          const filtered = c.filter(contact => contact.id !== salesId);
+          setContacts(filtered);
+        });
+      }
+    });
+
+    return () => {
+      channel();
+    };
+  }, [salesId]);
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);

@@ -80,11 +80,12 @@ export const chatStore = {
    * Subscribe ke Real-time Database dari Supabase untuk menerima pesan baru.
    */
   subscribeToMessages(chatId: string, callback: (payload: any) => void) {
+    const filter = chatId === '*' ? undefined : `chat_id=eq.${chatId}`;
     const channel = supabase
       .channel(`chat_${chatId}`)
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'messages', filter: `chat_id=eq.${chatId}` },
+        { event: '*', schema: 'public', table: 'messages', filter },
         (payload) => {
           callback(payload);
         }
@@ -110,6 +111,25 @@ export const chatStore = {
       return [];
     }
 
+    const { data: lastMessages } = await supabase
+      .from('messages')
+      .select('chat_id, text, timestamp')
+      .order('timestamp', { ascending: false });
+
+    const getLatestInfo = (chatId: string) => {
+      const msg = lastMessages?.find(m => m.chat_id === chatId);
+      if (!msg) return { text: 'Ketuk untuk mulai obrolan...', time: '', ts: '' };
+      
+      const d = new Date(msg.timestamp);
+      const now = new Date();
+      const isToday = d.toDateString() === now.toDateString();
+      const timeStr = isToday 
+        ? d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+
+      return { text: msg.text || '📷 Foto', time: timeStr, ts: msg.timestamp };
+    };
+
     // Mengambil jumlah unread secara batch
     const { data: unreadData } = await supabase
       .from('messages')
@@ -123,51 +143,66 @@ export const chatStore = {
 
     const contacts: ChatContact[] = sales.map((s) => {
       const chatId = [currentUserId, s.id].sort().join('_');
+      const latest = getLatestInfo(chatId);
       return {
         id: s.id,
         name: s.nama,
         type: 'direct' as const,
-        lastMessage: 'Ketuk untuk mulai obrolan...',
-        lastMessageTime: '',
+        lastMessage: latest.text,
+        lastMessageTime: latest.time,
+        lastMessageTimestamp: latest.ts,
         unreadCount: getUnreadCount(chatId),
       };
     });
 
     // Mengambil grup dari database
     const { data: dbRooms } = await supabase.from('chat_rooms').select('*').eq('type', 'group');
-    const groups: ChatContact[] = (dbRooms || []).map(r => ({
-      id: r.id,
-      name: r.name,
-      type: 'group' as const,
-      lastMessage: 'Channel grup tim Sales',
-      lastMessageTime: '',
-      unreadCount: getUnreadCount(r.id),
-    }));
+    const groups: ChatContact[] = (dbRooms || []).map(r => {
+      const latest = getLatestInfo(r.id);
+      return {
+        id: r.id,
+        name: r.name,
+        type: 'group' as const,
+        lastMessage: latest.text,
+        lastMessageTime: latest.time,
+        lastMessageTimestamp: latest.ts,
+        unreadCount: getUnreadCount(r.id),
+      };
+    });
 
     // Fallback if no groups found (ensure some default existence)
     if (groups.length === 0) {
+      const latest = getLatestInfo('g-pusat');
       groups.push({
         id: 'g-pusat',
         name: 'Grup Pengumuman Pusat',
         type: 'group' as const,
-        lastMessage: 'Channel resmi tim Sales',
-        lastMessageTime: '',
+        lastMessage: latest.text,
+        lastMessageTime: latest.time,
+        lastMessageTimestamp: latest.ts,
         unreadCount: getUnreadCount('g-pusat'),
       });
     }
 
     if (includeManager) {
+      const chatId = [currentUserId, 'Manager-1'].sort().join('_');
+      const latest = getLatestInfo(chatId);
       groups.unshift({
         id: 'Manager-1',
         name: 'Admin Pusat',
         type: 'direct' as const,
-        lastMessage: 'Hubungi admin pusat untuk bantuan',
-        lastMessageTime: '',
-        unreadCount: getUnreadCount([currentUserId, 'Manager-1'].sort().join('_')),
+        lastMessage: latest.text,
+        lastMessageTime: latest.time,
+        lastMessageTimestamp: latest.ts,
+        unreadCount: getUnreadCount(chatId),
         online: true
       });
     }
 
-    return [...groups, ...contacts];
+    return [...groups, ...contacts].sort((a, b) => {
+      const tsA = a.lastMessageTimestamp || '0';
+      const tsB = b.lastMessageTimestamp || '0';
+      return tsB.localeCompare(tsA);
+    });
   }
 };

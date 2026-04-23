@@ -44,7 +44,7 @@ export default function ManagerChat() {
     };
   }, []);
 
-  // Fetch and Subscribe to DB Real-Time
+  // Fetch and Subscribe to DB Real-Time for Active Chat Messages
   useEffect(() => {
     if (!activeChatId) return;
 
@@ -55,7 +55,7 @@ export default function ManagerChat() {
       if (isMounted) setActiveMessages(msgs);
     });
 
-    // Subscribing
+    // Subscribing to messages in the current active chat
     const unsub = chatStore.subscribeToMessages(activeChatId, (payload) => {
       if (!isMounted) return;
       if (payload.eventType === 'INSERT') {
@@ -73,6 +73,22 @@ export default function ManagerChat() {
       unsub();
     };
   }, [activeChatId]);
+
+  // Global Subscription to all messages to update contact list (WhatsApp Style sorting)
+  useEffect(() => {
+    const channel = chatStore.subscribeToMessages('*', (payload) => {
+      if (payload.eventType === 'INSERT') {
+        // Refresh contacts to move the latest to the top
+        chatStore.loadContacts('Manager-1').then(c => {
+          setContacts(c);
+        });
+      }
+    });
+
+    return () => {
+      channel();
+    };
+  }, []);
 
   useEffect(() => {
     // Scroll to bottom whenever active messages change

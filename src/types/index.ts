@@ -104,6 +104,7 @@ export type ChatContact = {
   avatar?: string;
   lastMessage: string;
   lastMessageTime: string;
+  lastMessageTimestamp?: string;
   unreadCount: number;
   online?: boolean;
 };
