@@ -36,7 +36,7 @@ export default function ManagerShell() {
 
   if (!user) return null;
 
-  const isAdmin = (user?.role || '').toLowerCase() === 'admin';
+  const isAdmin = (user?.role || '').toLowerCase().includes('admin');
 
   const menuCategories = [
     {

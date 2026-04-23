@@ -14,7 +14,7 @@ export default function ManagerSettings() {
     password: ''
   });
 
-  const isSuperAdmin = (profile.role || '').toLowerCase() === 'admin';
+  const isSuperAdmin = (profile.role || '').toLowerCase().includes('admin');
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: 'Pengaturan Profil', sub: 'Kelola informasi diri, kredensial login, dan keamanan akun Anda.' } }));
