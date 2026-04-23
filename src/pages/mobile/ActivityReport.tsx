@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import { Camera, Users, Loader2, MapPin, CheckCircle, Crosshair, AlertTriangle } from 'lucide-react';
 import { store } from '../../store/dataStore';
 
-interface Props { salesId: string; }
+interface Props { salesId: string; onSuccess?: () => void; }
 
 const AREA_CONFIG: { area: string; emoji: string; desc: string; color: string; center: [number, number] }[] = [
   { area: 'SMD', emoji: '🏙️', desc: 'Samarinda', color: '#6366f1', center: [-0.4948, 117.1436] },
@@ -39,7 +39,7 @@ const iconBlue = createIcon('#3b82f6');
 
 // MapUpdater is deprecated in favor of mapRef
 
-export default function ActivityReport({ salesId }: Props) {
+export default function ActivityReport({ salesId, onSuccess }: Props) {
   const { activities, customers, prospek, masterAreas, sales = [], refresh } = useSalesData();
   const currentSales = sales.find(s => s.id === salesId);
   const salesName = currentSales?.nama;
@@ -192,6 +192,7 @@ export default function ActivityReport({ salesId }: Props) {
           setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
           setTipeAksi('Visit');
           setIsSubmitting(false);
+          if (onSuccess) onSuccess();
       }, 2000);
     } catch (err) {
       setSaveError('Kesalahan sistem saat menyimpan.');
