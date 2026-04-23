@@ -11,7 +11,7 @@ function RootRedirector() {
 
   if (!isLoggedIn) return <LoginPage />;
 
-  const isManager = (normalizedRole.includes('manager') || normalizedRole === 'admin') && !normalizedRole.includes('sales');
+  const isManager = (normalizedRole.includes('manager') || normalizedRole.includes('admin')) && !normalizedRole.includes('sales');
   
   return <Navigate to={isManager ? "/manager/activity" : "/mobile/home"} replace />;
 }
@@ -49,7 +49,7 @@ export default function App() {
           Protected by simple auth checks.
       */}
       <Route path="/manager/*" element={
-        (isLoggedIn && (normalizedRole.includes('manager') || normalizedRole === 'admin')) ? <ManagerShell /> : <Navigate to="/" replace />
+        (isLoggedIn && (normalizedRole.includes('manager') || normalizedRole.includes('admin'))) ? <ManagerShell /> : <Navigate to="/" replace />
       } />
 
       <Route path="/mobile/*" element={
