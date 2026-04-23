@@ -179,7 +179,12 @@ export default function OrderHistory() {
                   {/* Accordion Header */}
                   <div 
                     onClick={() => toggleExpand(date)}
-                    style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', background: isExpanded ? '#f8fafc' : '#fff' }}
+                    style={{ 
+                      padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
+                      background: isExpanded ? '#f8fafc' : '#fff',
+                      borderLeft: `5px solid ${isExpanded ? 'var(--brand-yellow)' : '#e2e8f0'}`,
+                      transition: 'all 0.2s'
+                    }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       {isExpanded ? <ChevronDown size={18} color="#64748b" /> : <ChevronRight size={18} color="#64748b" />}
@@ -238,10 +243,10 @@ export default function OrderHistory() {
 
       {/* Quick Order / Edit Drawer */}
       {isOrderModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsOrderModalOpen(false)} style={{ zIndex: 99999, padding: 0, display: 'flex', alignItems: 'flex-end' }}>
+        <div className="modal-overlay" onClick={() => setIsOrderModalOpen(false)} style={{ zIndex: 99999, padding: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
           <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100%', maxWidth: '100%', overflowY: 'hidden', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
-            padding: 0, background: '#f8fafc', border: 'none', display: 'flex', flexDirection: 'column', margin: 0
+            height: '92vh', width: '100%', maxWidth: '100vw', overflowY: 'hidden', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
+            padding: 0, background: '#f8fafc', border: 'none', display: 'flex', flexDirection: 'column', margin: '0 auto', left: 0, right: 0
           }}>
             {/* 1. Header & Drag Handle */}
             <div style={{ padding: '12px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
