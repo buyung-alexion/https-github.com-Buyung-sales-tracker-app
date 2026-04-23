@@ -36,6 +36,8 @@ export default function ManagerShell() {
 
   if (!user) return null;
 
+  const isAdmin = (user?.role || '').toLowerCase() === 'admin';
+
   const menuCategories = [
     {
       category: 'Main Menu',
@@ -58,7 +60,7 @@ export default function ManagerShell() {
       category: 'Menu Setting',
       items: [
         { to: '/manager/settings', icon: <Settings size={18} />, label: 'Setting' },
-        { to: '/manager/data', icon: <Database size={18} />, label: 'Data Management' },
+        ...(isAdmin ? [{ to: '/manager/data', icon: <Database size={18} />, label: 'Data Management' }] : []),
         { to: 'logout', icon: <LogOut size={18} />, label: 'Logout', action: true },
       ]
     }

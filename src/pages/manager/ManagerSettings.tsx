@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, Save, User, Key, Mail, Shield } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 
 export default function ManagerSettings() {
+  const { user } = useAuth();
   const [profile, setProfile] = useState({
-    nama: 'Admin Utama',
-    username: 'admin_pusat',
-    role: 'Super Admin',
-    phone: '0811-9999-8888',
-    email: 'admin@garudatexas.com',
-    avatar: 'https://api.dicebear.com/7.x/notionists/svg?seed=Admin',
+    nama: user?.nama || 'Unknown',
+    username: user?.username || 'user',
+    role: user?.role || 'Manager',
+    phone: user?.no_wa || '',
+    email: user?.email || '',
+    avatar: user?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.nama}`,
     password: ''
   });
+
+  const isSuperAdmin = (profile.role || '').toLowerCase() === 'admin';
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: 'Pengaturan Profil', sub: 'Kelola informasi diri, kredensial login, dan keamanan akun Anda.' } }));
@@ -47,7 +51,6 @@ export default function ManagerSettings() {
     fontSize: '13px', fontWeight: 700, color: '#475569', marginTop: '20px'
   };
 
-  const isSuperAdmin = profile.role === 'Super Admin';
 
   return (
     <div className="mgr-page" style={{ position: 'relative', marginTop: '24px' }}>
