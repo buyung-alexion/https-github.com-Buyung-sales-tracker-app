@@ -11,6 +11,7 @@ import Profile from './Profile';
 import ClientDetail from './ClientDetail';
 import SalesChat from './SalesChat';
 import MobileLeaderboard from './MobileLeaderboard';
+import OrderHistory from './OrderHistory';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
 
 export default function MobileShell() {
@@ -173,6 +174,7 @@ export default function MobileShell() {
           <Route path="profile/:type/:id" element={<ClientDetail />} />
           <Route path="chat" element={<SalesChat salesId={user.id} />} />
           <Route path="rank" element={<MobileLeaderboard />} />
+          <Route path="order-history" element={<OrderHistory />} />
         </Routes>
       </main>
 

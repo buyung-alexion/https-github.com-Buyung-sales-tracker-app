@@ -109,3 +109,12 @@ export type ChatContact = {
   online?: boolean;
 };
 
+export interface SalesOrder {
+  id: string;
+  created_at: string;
+  sales_id: string;
+  customer_id: string;
+  customer_name: string;
+  amount: number;
+}
+

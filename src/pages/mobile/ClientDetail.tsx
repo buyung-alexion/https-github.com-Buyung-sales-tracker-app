@@ -57,7 +57,19 @@ export default function ClientDetail() {
 
   const handleOrder = async () => {
     if (type !== 'customer') return;
-    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, salesName);
+    
+    const amountStr = prompt('Masukkan nominal order (hanya angka, misal: 1500000):');
+    if (!amountStr) return;
+    
+    const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
+    if (isNaN(amount) || amount <= 0) {
+      alert('Nominal tidak valid.');
+      return;
+    }
+
+    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, amount, salesName);
+    
+    // Redirect to Accurate Mobile for processing
     window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
   };
 

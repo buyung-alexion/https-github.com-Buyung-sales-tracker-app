@@ -96,9 +96,19 @@ export default function Homepage({ salesId }: Props) {
 
   const handleQuickOrder = async () => {
     if (!selectedCust) return;
+    
+    const amountStr = prompt(`Masukkan nominal order untuk ${selectedCust.nama_toko} (Angka saja):`);
+    if (!amountStr) return;
+    
+    const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
+    if (isNaN(amount) || amount <= 0) {
+      alert('Nominal tidak valid.');
+      return;
+    }
+
     setIsSubmittingOrder(true);
     try {
-      await store.logOrder(salesId, selectedCust.id, selectedCust.nama_toko, salesName);
+      await store.logOrder(salesId, selectedCust.id, selectedCust.nama_toko, amount, salesName);
       setOrderSuccess(true);
       
       // Pure Direct Launcher Intent
@@ -250,7 +260,7 @@ export default function Homepage({ salesId }: Props) {
                 className="tap-active" 
                 onClick={() => {
                   if (item.label === 'Order') {
-                    setOrderModalOpen(true);
+                    navigate('/mobile/order-history');
                   } else {
                     navigate(item.path);
                   }

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
-import type { SystemTargets, Prospek, Customer, Activity, Sales } from '../types';
+import type { SystemTargets, Prospek, Customer, Activity, Sales, SalesOrder } from '../types';
 
 interface SalesDataContextType {
   sales: Sales[];
@@ -9,6 +9,7 @@ interface SalesDataContextType {
   prospek: Prospek[];
   customers: Customer[];
   activities: Activity[];
+  orders: SalesOrder[];
   systemTargets: SystemTargets | null;
   masterAreas: {id: string, name: string}[];
   masterCategories: {id: string, name: string}[];
@@ -28,6 +29,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const [prospek, setProspek] = useState<Prospek[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [orders, setOrders] = useState<SalesOrder[]>([]);
   const [systemTargets, setSystemTargets] = useState<SystemTargets | null>(null);
   const [masterAreas, setMasterAreas] = useState<{id: string, name: string}[]>([]);
   const [masterCategories, setMasterCategories] = useState<{id: string, name: string}[]>([]);
@@ -40,17 +42,18 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const fetchData = useCallback(async () => {
     try {
       // Parallel fetch but individual handling to prevent one failure from blocking others
-      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC] = await Promise.all([
+      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders] = await Promise.all([
         supabase.from('sales').select('*').order('id'),
         supabase.from('prospek').select('*').order('created_at', { ascending: false }),
         supabase.from('customer').select('*').order('tanggal_join', { ascending: false }),
         supabase.from('activity').select('*').order('timestamp', { ascending: false }),
-        supabase.from('system_targets').select('*').eq('id', 1).maybeSingle(), // Use maybeSingle to avoid 406 errors if missing
+        supabase.from('system_targets').select('*').eq('id', 1).maybeSingle(), 
         supabase.from('master_areas').select('*').order('name'),
         supabase.from('master_categories').select('*').order('name'),
         supabase.from('master_channels').select('*').order('name'),
         supabase.from('master_prospect_status').select('*').order('name'),
-        supabase.from('master_actions').select('*').order('name')
+        supabase.from('master_actions').select('*').order('name'),
+        supabase.from('orders').select('*').order('created_at', { ascending: false })
       ]);
 
       // Logging for diagnostics (useful during deployment validation)
@@ -72,6 +75,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setMasterChannels(resMCH.data || []);
       setMasterStatuses(resMS.data || []);
       setMasterActions(resMAC.data || []);
+      setOrders(resOrders.data || []);
 
       console.log(`[SalesDataContext] Initialized. Items: ${resCustomer.data?.length || 0} Customers, ${resProspek.data?.length || 0} Prospeks`);
     } catch (err) {
@@ -107,6 +111,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_channels' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_prospect_status' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_actions' }, () => debouncedFetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => debouncedFetch())
       .subscribe();
 
     return () => {
@@ -121,6 +126,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
     prospek,
     customers,
     activities,
+    orders,
     systemTargets,
     masterAreas,
     masterCategories,

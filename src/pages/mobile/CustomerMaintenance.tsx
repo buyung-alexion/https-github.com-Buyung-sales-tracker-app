@@ -389,9 +389,14 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     <button 
                       className="tap-active"
                       style={{ width: '100%', background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }} 
-                      onClick={(e) => { 
+                      onClick={async (e) => { 
                         e.stopPropagation(); 
-                        store.logOrder(salesId, c.id, c.nama_toko, salesName);
+                        const amountStr = prompt(`Masukkan nominal order untuk ${c.nama_toko} (Angka saja):`);
+                        if (!amountStr) return;
+                        const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
+                        if (isNaN(amount) || amount <= 0) return alert('Nominal tidak valid.');
+                        
+                        await store.logOrder(salesId, c.id, c.nama_toko, amount, salesName);
                         window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
                       }}
                     >

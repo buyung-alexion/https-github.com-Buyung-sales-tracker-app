@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { Sales, Prospek, Customer, Activity, Area } from '../types';
+import type { Sales, Prospek, Customer, Activity, Area, SalesOrder } from '../types';
 
 // Sequential ID generation for Prospects and Customers
 // Prefixes: P for Prospect, C for Customer, S for Sales
@@ -164,7 +164,7 @@ export const store = {
     window.open(`tel:${noTelp}`, '_self');
   },
 
-  async logOrder(salesId: string, targetId: string, targetNama: string, salesName?: string) {
+  async logOrder(salesId: string, targetId: string, targetNama: string, amount: number, salesName?: string) {
     // 1. Log Activity
     await this.logActivity({
       id_sales: salesId,
@@ -173,11 +173,33 @@ export const store = {
       target_type: 'customer',
       target_nama: targetNama,
       tipe_aksi: 'Order',
-      catatan_hasil: `SALES ORDER CONFIRMED`
+      catatan_hasil: `SALES ORDER: Rp ${amount.toLocaleString('id-ID')}`
     });
 
-    // 2. Update Customer Table
+    // 2. Insert into structured orders table
+    const { error: orderErr } = await supabase.from('orders').insert([{
+      sales_id: salesId,
+      customer_id: targetId,
+      customer_name: targetNama,
+      amount: amount,
+      created_at: new Date().toISOString()
+    }]);
+    if (orderErr) console.error('logOrder table error:', orderErr);
+
+    // 3. Update Customer Table last_order_date
     await supabase.from('customer').update({ last_order_date: new Date().toISOString() }).eq('id', targetId);
+  },
+
+  async fetchOrders(salesId?: string): Promise<SalesOrder[]> {
+    let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (salesId) query = query.eq('sales_id', salesId);
+    
+    const { data, error } = await query;
+    if (error) {
+      console.error('fetchOrders error:', error);
+      return [];
+    }
+    return data as SalesOrder[];
   },
 
   async logVisit(salesId: string, area: Area, catatan: string, salesName?: string) {
