@@ -195,7 +195,7 @@ export default function ActivityHistory() {
 
       {/* Activity Form Drawer */}
       {isFormOpen && (
-        <div className="modal-overlay" onClick={() => setIsFormOpen(false)} style={{ zIndex: 9999, padding: 0, display: 'flex', alignItems: 'flex-end' }}>
+        <div className="modal-overlay" onClick={() => setIsFormOpen(false)} style={{ zIndex: 99999, padding: 0, display: 'flex', alignItems: 'flex-end' }}>
           <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
             height: '92vh', width: '100%', maxWidth: '100%', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
             padding: 0, background: '#fff', border: 'none', position: 'relative', margin: 0

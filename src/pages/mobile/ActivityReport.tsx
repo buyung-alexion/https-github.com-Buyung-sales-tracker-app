@@ -370,7 +370,7 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
 
       {/* 3. Fixed Footer for Action Button */}
       <div style={{ 
-        padding: '20px 20px calc(40px + env(safe-area-inset-bottom))', 
+        padding: '20px 20px calc(100px + env(safe-area-inset-bottom))', 
         background: '#fff', borderTop: '1px solid #f1f5f9', position: 'relative', zIndex: 30 
       }}>
         <button 

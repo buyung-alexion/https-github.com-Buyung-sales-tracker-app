@@ -238,7 +238,7 @@ export default function OrderHistory() {
 
       {/* Quick Order / Edit Drawer */}
       {isOrderModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsOrderModalOpen(false)} style={{ zIndex: 9999, padding: 0, display: 'flex', alignItems: 'flex-end' }}>
+        <div className="modal-overlay" onClick={() => setIsOrderModalOpen(false)} style={{ zIndex: 99999, padding: 0, display: 'flex', alignItems: 'flex-end' }}>
           <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
             height: '92vh', width: '100%', maxWidth: '100%', overflowY: 'hidden', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
             padding: 0, background: '#f8fafc', border: 'none', display: 'flex', flexDirection: 'column', margin: 0
