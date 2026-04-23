@@ -348,9 +348,10 @@ export default function ManagerCustomer() {
       const matchSearch = c.nama_toko.toLowerCase().includes(search.toLowerCase()) || 
                           (c.no_wa && c.no_wa.toLowerCase().includes(search.toLowerCase())) ||
                           (c.area && c.area.toLowerCase().includes(search.toLowerCase()));
-      const matchSales = filterSales === 'All' || c.sales_pic === filterSales;
-      const matchArea = filterArea === 'All' || c.area === filterArea;
-      const matchCat = filterCategory === 'All' || c.kategori === filterCategory;
+      const isSalesRole = sales.some(s => s.id == c.sales_pic);
+      const matchSales = filterSales === 'All' || c.sales_pic == filterSales;
+      const matchArea = filterArea === 'All' || c.area == filterArea;
+      const matchCat = filterCategory === 'All' || c.kategori == filterCategory;
       
       // Retention Filter Logic
       let matchRetention = true;
@@ -360,7 +361,7 @@ export default function ManagerCustomer() {
         matchRetention = filterRetention === 'Aktif' ? isActive : !isActive;
       }
 
-      return matchSearch && matchSales && matchArea && matchCat && matchRetention;
+      return isSalesRole && matchSearch && matchSales && matchArea && matchCat && matchRetention;
     });
   }, [rawCustomers, search, filterSales, filterArea, filterCategory, filterRetention]);
 
@@ -370,10 +371,11 @@ export default function ManagerCustomer() {
       const matchSearch = c.nama_toko.toLowerCase().includes(search.toLowerCase()) || 
                           (c.no_wa && c.no_wa.toLowerCase().includes(search.toLowerCase())) ||
                           (c.area && c.area.toLowerCase().includes(search.toLowerCase()));
-      const matchSales = filterSales === 'All' || c.sales_pic === filterSales;
-      const matchArea = filterArea === 'All' || c.area === filterArea;
-      const matchCat = filterCategory === 'All' || c.kategori === filterCategory;
-      return matchSearch && matchSales && matchArea && matchCat;
+      const isSalesRole = sales.some(s => s.id == c.sales_pic);
+      const matchSales = filterSales === 'All' || c.sales_pic == filterSales;
+      const matchArea = filterArea === 'All' || c.area == filterArea;
+      const matchCat = filterCategory === 'All' || c.kategori == filterCategory;
+      return isSalesRole && matchSearch && matchSales && matchArea && matchCat;
     });
 
     const active = base.filter(c => {

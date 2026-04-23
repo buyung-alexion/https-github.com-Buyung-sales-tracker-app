@@ -56,7 +56,11 @@ export default function LiveActivityFeed() {
   const filtered = useMemo(() => {
     const acts = activities || [];
     return acts
-      .filter(a => filterSales === 'all' || a.id_sales === filterSales)
+      .filter(a => {
+        const isSalesRole = sales.some(s => s.id == a.id_sales);
+        const matchSales = filterSales === 'all' || a.id_sales == filterSales;
+        return isSalesRole && matchSales;
+      })
       .filter(a => {
         if (dateFilter === 'all') return true;
         const t = new Date(a.timestamp || 0).getTime();
@@ -85,7 +89,11 @@ export default function LiveActivityFeed() {
     if (selectedCategory !== 'all' && selectedCategory !== 'Prospek') return [];
     
     return (allProspek || [])
-      .filter(p => filterSales === 'all' || p.sales_owner === filterSales)
+      .filter(p => {
+        const isSalesRole = sales.some(s => s.id == p.sales_owner);
+        const matchSales = filterSales === 'all' || p.sales_owner == filterSales;
+        return isSalesRole && matchSales;
+      })
       .filter(p => {
         if (dateFilter === 'all') return true;
         const t = new Date(p.created_at || 0).getTime();

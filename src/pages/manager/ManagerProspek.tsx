@@ -180,7 +180,11 @@ export default function ManagerProspek() {
         if (filterType === 'old30') return p.ageMs > thirtyDaysMs;
         return true;
       })
-      .filter(p => filterSales === 'All' || p.sales_owner === filterSales)
+      .filter(p => {
+        const isSalesRole = sales.some(s => s.id == p.sales_owner);
+        const matchSales = filterSales === 'All' || p.sales_owner == filterSales;
+        return isSalesRole && matchSales;
+      })
       .filter(p => {
         if (filterDate === 'all') return true;
         const t = new Date(p.created_at).getTime();
@@ -194,7 +198,11 @@ export default function ManagerProspek() {
 
     // Filtered Customers (Converted from Prospek only)
     const filteredC = customers
-      .filter(c => filterSales === 'All' || c.sales_pic === filterSales)
+      .filter(c => {
+        const isSalesRole = sales.some(s => s.id == c.sales_pic);
+        const matchSales = filterSales === 'All' || c.sales_pic == filterSales;
+        return isSalesRole && matchSales;
+      })
       .filter(c => filterArea === 'All' || c.area === filterArea)
       .filter(c => c.is_from_prospek !== false) // Include converted prospects (true) and legacy data (null), exclude direct inputs (false)
       .filter(c => {
