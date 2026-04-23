@@ -79,7 +79,7 @@ export default function ActivityHistory() {
   return (
     <div className="page-content" style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '120px' }}>
       {/* Header Branding Yellow Style */}
-      <div style={{ background: '#FFC107', padding: 'calc(20px + env(safe-area-inset-top)) 20px 40px', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px', boxShadow: '0 10px 30px rgba(255, 193, 7, 0.2)' }}>
+      <div style={{ background: 'var(--brand-yellow)', padding: 'calc(20px + env(safe-area-inset-top)) 20px 40px', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px', boxShadow: '0 10px 30px rgba(255, 193, 7, 0.2)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button onClick={() => navigate(-1)} style={{ background: 'rgba(0,0,0,0.1)', border: 'none', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <ArrowLeft size={20} color="#000" />

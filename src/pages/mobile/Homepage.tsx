@@ -144,7 +144,7 @@ export default function Homepage({ salesId }: Props) {
         padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
         position: 'relative', 
         overflow: 'hidden',
-        background: '#FFC107',
+        background: 'var(--brand-yellow)',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
