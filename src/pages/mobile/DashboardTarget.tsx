@@ -1,4 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { useSalesData } from '../../hooks/useSalesData';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from 'recharts';
 import { AlertCircle, Users, Star } from 'lucide-react';
@@ -17,6 +19,17 @@ export default function DashboardTarget({ salesId }: Props) {
     [salesId, activities, prospek, systemTargets, filterType]
   );
 
+  // Live date tracking for midnight transitions
+  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = format(new Date(), 'yyyy-MM-dd');
+      if (current !== todayStr) setTodayStr(current);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [todayStr]);
+
   const {
     followup: followupCount,
     order: soCount,
@@ -31,12 +44,16 @@ export default function DashboardTarget({ salesId }: Props) {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dayStr = d.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
-      const actsForDay = filteredActs.filter((a: any) => new Date(a.timestamp).getDate() === d.getDate());
+      const comparisonStr = format(d, 'yyyy-MM-dd');
+      const dayStr = format(d, 'iii d', { locale: localeId });
+      
+      const actsForDay = filteredActs.filter((a: any) => {
+        return format(new Date(a.timestamp), 'yyyy-MM-dd') === comparisonStr;
+      });
       data.push({ name: dayStr, Aktivitas: actsForDay.length });
     }
     return data;
-  }, [filteredActs]);
+  }, [filteredActs, todayStr]);
 
   const totalTarget = systemTargets?.ind_poin ?? 150;
   const overallPct = Math.min(100, totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0);

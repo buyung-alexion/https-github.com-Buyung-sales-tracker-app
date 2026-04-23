@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
@@ -25,36 +25,49 @@ export default function OrderHistory() {
 
   if (!user) return null;
 
+  // Live date tracking for midnight transitions
+  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = format(new Date(), 'yyyy-MM-dd');
+      if (current !== todayStr) setTodayStr(current);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [todayStr]);
+
+  const yesterdayStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return format(d, 'yyyy-MM-dd');
+  }, [todayStr]);
+
   const myOrders = useMemo(() => orders.filter(o => o.sales_id === user.id), [orders, user.id]);
   
-  // Grouping by date
+  // Grouping by local date
   const groupedOrders = useMemo(() => {
     const groups: Record<string, typeof myOrders> = {};
     myOrders.forEach(order => {
-      const date = order.created_at.split('T')[0];
+      // Convert to local date string for correct grouping
+      const date = format(new Date(order.created_at), 'yyyy-MM-dd');
       if (!groups[date]) groups[date] = [];
       groups[date].push(order);
     });
     return groups;
-  }, [myOrders]);
+  }, [myOrders, todayStr]);
 
-  const sortedDates = useMemo(() => Object.keys(groupedOrders).sort((a, b) => b.localeCompare(a)), [groupedOrders]);
+  const sortedDates = useMemo(() => Object.keys(groupedOrders).sort((a, b) => b.localeCompare(a)), [groupedOrders]); 
 
   // Expand "Hari ini" by default on first load
   useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    if (sortedDates.includes(today) && expandedDates.length === 0) {
-      setExpandedDates([today]);
+    if (sortedDates.includes(todayStr) && expandedDates.length === 0) {
+      setExpandedDates([todayStr]);
     }
-  }, [sortedDates]);
+  }, [sortedDates, todayStr]);
 
   const formatGroupName = (dateStr: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    
-    if (dateStr === today) return 'Hari ini';
-    if (dateStr === yesterday) return 'Kemarin';
-    
+    if (dateStr === todayStr) return 'Hari ini';
+    if (dateStr === yesterdayStr) return 'Kemarin';
     return format(new Date(dateStr), 'dd MMM yyyy', { locale: localeId });
   };
 

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
@@ -21,22 +21,39 @@ export default function ActivityHistory() {
 
   if (!user) return null;
 
+  // Live date tracking for midnight transitions
+  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = format(new Date(), 'yyyy-MM-dd');
+      if (current !== todayStr) setTodayStr(current);
+    }, 10000); // Check every 10s for better responsiveness
+    return () => clearInterval(interval);
+  }, [todayStr]);
+
+  const yesterdayStr = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return format(d, 'yyyy-MM-dd');
+  }, [todayStr]);
+
   // Filter activities for this sales only
   const myActivities = useMemo(() => 
     activities.filter(a => a.id_sales === user.id), 
     [activities, user.id]
   );
 
-  // Grouping logic
+  // Grouping logic by local date
   const groupedActivities = useMemo(() => {
     const groups: Record<string, typeof myActivities> = {};
     myActivities.forEach(act => {
-      const date = act.timestamp.split('T')[0];
+      const date = format(new Date(act.timestamp), 'yyyy-MM-dd');
       if (!groups[date]) groups[date] = [];
       groups[date].push(act);
     });
     return groups;
-  }, [myActivities]);
+  }, [myActivities, todayStr]);
 
   const sortedDates = useMemo(() => 
     Object.keys(groupedActivities).sort((a, b) => b.localeCompare(a)), 
@@ -45,19 +62,14 @@ export default function ActivityHistory() {
 
   // Expand today by default
   useMemo(() => {
-    const today = new Date().toISOString().split('T')[0];
-    if (sortedDates.includes(today) && expandedDates.length === 0) {
-      setExpandedDates([today]);
+    if (sortedDates.includes(todayStr) && expandedDates.length === 0) {
+      setExpandedDates([todayStr]);
     }
-  }, [sortedDates]);
+  }, [sortedDates, todayStr]);
 
   const formatGroupName = (dateStr: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-    
-    if (dateStr === today) return 'Hari ini';
-    if (dateStr === yesterday) return 'Kemarin';
-    
+    if (dateStr === todayStr) return 'Hari ini';
+    if (dateStr === yesterdayStr) return 'Kemarin';
     return format(new Date(dateStr), 'dd MMM yyyy', { locale: localeId });
   };
 
@@ -96,7 +108,7 @@ export default function ActivityHistory() {
            </div>
            <div style={{ flex: 1, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
               <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>Hari Ini</div>
-              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>{groupedActivities[new Date().toISOString().split('T')[0]]?.length || 0} Aksi</div>
+              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>{groupedActivities[todayStr]?.length || 0} Aksi</div>
            </div>
         </div>
       </div>

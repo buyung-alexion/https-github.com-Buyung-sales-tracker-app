@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
@@ -68,6 +68,17 @@ export default function Homepage({ salesId }: Props) {
   const totalSO = breakdown.order;
   const totalVisit = breakdown.visitProspek + breakdown.visitCustomer;
 
+  // Live date tracking for midnight transitions
+  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = format(new Date(), 'yyyy-MM-dd');
+      if (current !== todayStr) setTodayStr(current);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [todayStr]);
+
   // Recent Activities
   const recentActs = activities
     .filter(a => a.id_sales === salesId)
@@ -75,22 +86,24 @@ export default function Homepage({ salesId }: Props) {
     .slice(0, 4);
 
   // Data Grafik (Last 7 Days) - Performed for specifically this Sales ID
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i));
-    return d.toISOString().split('T')[0];
-  });
+  const chartData = useMemo(() => {
+    const dates = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return format(d, 'yyyy-MM-dd');
+    });
 
-  const chartData = last7Days.map(date => {
-    const count = activities.filter(act => 
-      act.id_sales === salesId && 
-      act.timestamp.split('T')[0] === date
-    ).length;
-    return {
-      day: new Date(date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }),
-      count
-    };
-  });
+    return dates.map(date => {
+      const count = activities.filter(act => 
+        act.id_sales === salesId && 
+        format(new Date(act.timestamp), 'yyyy-MM-dd') === date
+      ).length;
+      return {
+        day: format(new Date(date), 'dd MMM', { locale: localeId }),
+        count
+      };
+    });
+  }, [activities, salesId, todayStr]);
 
   const maxCount = Math.max(...chartData.map(d => d.count), 5);
 
@@ -575,7 +588,7 @@ export default function Homepage({ salesId }: Props) {
         letterSpacing: '0.05em',
         opacity: 0.8
       }}>
-        vDeploy 1.0.24.0423
+        vDeploy 1.0.24.0424 • STABLE
       </div>
     </div>
   );
