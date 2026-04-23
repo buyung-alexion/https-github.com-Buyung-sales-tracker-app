@@ -99,8 +99,13 @@ input, textarea, select { font-family: inherit; }
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
   height: calc(72px + env(safe-area-inset-bottom));
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.hide-nav .bottom-nav {
+  transform: translateY(100%);
+  pointer-events: none;
 }
 
 .nav-item {

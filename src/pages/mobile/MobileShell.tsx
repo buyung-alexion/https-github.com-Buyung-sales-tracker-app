@@ -160,7 +160,7 @@ export default function MobileShell() {
         </Routes>
       </main>
 
-      {!isEditingProfile && (
+      {(!isEditingProfile && location.pathname !== '/mobile/chat') && (
         <nav className="bottom-nav shadow-premium">
           {[
             { to: '/mobile/home',     Icon: LayoutDashboard, label: 'Home'      },

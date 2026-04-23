@@ -252,7 +252,7 @@ export default function OrderHistory() {
           <div onClick={e => e.stopPropagation()} style={{ 
             height: '92vh', width: '100%', maxWidth: '100%', background: '#f8fafc', 
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-            display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            display: 'flex', flexDirection: 'column', overflowX: 'hidden', overflowY: 'hidden',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
             position: 'relative', boxSizing: 'border-box'
           }}>
