@@ -155,21 +155,23 @@ export default function SalesChat({ salesId }: Props) {
   // Render Chat List
   if (!activeChatId) {
     return (
-      <div className="page-content" style={{ background: '#fff', minHeight: '100vh', padding: '0' }}>
-        <div className="hero-compact" style={{ padding: 'calc(64px + env(safe-area-inset-top)) 20px 48px', position: 'relative', overflow: 'hidden', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px' }}>
+      <div className="page-content" style={{ background: '#fff', height: '100dvh', display: 'flex', flexDirection: 'column', padding: '0', overflow: 'hidden' }}>
+        {/* Header - Fixed & Opaque */}
+        <div className="hero-compact" style={{ flexShrink: 0, padding: 'calc(64px + env(safe-area-inset-top)) 20px 32px', position: 'relative', overflow: 'hidden', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px', background: 'var(--brand-yellow)', zIndex: 100 }}>
           {/* Decorative elements */}
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 106 }}>
             <button onClick={() => navigate('/mobile/home')} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={20} color="#111827" strokeWidth={3} /></button>
             <div>
-              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0 }}>Live Chat</h2>
-              <div className="hero-premium-subtitle">Sales Communication & Support</div>
+              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0, color: '#111827' }}>Live Chat</h2>
+              <div className="hero-premium-subtitle" style={{ color: '#111827', opacity: 0.7 }}>Sales Communication & Support</div>
             </div>
           </div>
         </div>
 
-        <div style={{ padding: '16px 20px' }}>
+        {/* Search Bar - Fixed Height */}
+        <div style={{ flexShrink: 0, padding: '16px 20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '12px', padding: '10px 16px', gap: '10px' }}>
             <Search size={18} color="#64748b" />
             <input 
@@ -181,7 +183,8 @@ export default function SalesChat({ salesId }: Props) {
           </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
+        {/* Scrollable List Area */}
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '40px' }}>
           {loading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading chats...</div>
           ) : filteredContacts.length === 0 ? (
@@ -207,7 +210,7 @@ export default function SalesChat({ salesId }: Props) {
                </div>
             </div>
           ))}
-          <div style={{ height: '100px' }} />
+          <div style={{ height: '60px' }} />
         </div>
       </div>
     );
@@ -279,15 +282,16 @@ export default function SalesChat({ salesId }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area (Sticky Footer) */}
+      {/* Input Area (Sticky Opaque Footer) */}
       <div style={{ 
         flexShrink: 0,
-        background: 'transparent', 
-        padding: `4px 12px calc(12px + env(safe-area-inset-bottom))`, 
+        background: '#f0f2f5', 
+        padding: `12px 12px calc(12px + env(safe-area-inset-bottom))`, 
         zIndex: 1000,
         width: '100%',
         boxSizing: 'border-box',
-        position: 'relative'
+        position: 'relative',
+        borderTop: '1px solid #e2e8f0'
       }}>
         {/* Attachment Preview (Fixed relative to footer) */}
         {attachment && (
