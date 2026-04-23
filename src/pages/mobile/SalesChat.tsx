@@ -265,44 +265,57 @@ export default function SalesChat({ salesId }: Props) {
             </div>
           );
         })}
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} style={{ height: '100px' }} />
       </div>
 
-       {/* Input Area */}
-      <div style={{ background: '#fff', padding: `12px 16px calc(15px + env(safe-area-inset-bottom))`, borderTop: '1px solid #e2e8f0', position: 'relative', zIndex: 10, width: '100%', boxSizing: 'border-box' }}>
+      {/* Attachment Preview (Fixed above bar) */}
+      {attachment && (
+        <div style={{ position: 'fixed', bottom: '90px', left: '16px', zIndex: 1100 }}>
+          <div style={{ position: 'relative', display: 'inline-block' }}>
+            <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '12px', border: '3px solid #fff', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }} />
+            <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer' }}>
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Input Area (Fixed at Viewport Bottom) */}
+      <div style={{ 
+        position: 'fixed', 
+        bottom: 0, 
+        left: 0, 
+        right: 0, 
+        background: 'transparent', 
+        padding: `12px 12px calc(12px + env(safe-area-inset-bottom))`, 
+        zIndex: 1000,
+        width: '100%',
+        boxSizing: 'border-box'
+      }}>
         {showEmojiPicker && (
-          <div style={{ position: 'absolute', bottom: '100%', left: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', width: '220px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
+          <div style={{ position: 'absolute', bottom: '100%', left: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap', width: '240px', boxShadow: '0 -10px 30px rgba(0,0,0,0.1)', zIndex: 1200, marginBottom: '12px' }}>
             {EMOJI_LIST.map(e => (
-              <span key={e} style={{ cursor: 'pointer', fontSize: '22px' }} onClick={() => { setInputText(prev => prev + e); setShowEmojiPicker(false); }}>{e}</span>
+              <span key={e} style={{ cursor: 'pointer', fontSize: '24px' }} onClick={() => { setInputText(prev => prev + e); setShowEmojiPicker(false); }}>{e}</span>
             ))}
           </div>
         )}
 
         {showPhotoOptions && (
-          <div className="animate-fade-up" style={{ position: 'absolute', bottom: '100%', left: '50px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', width: '160px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
-             <button onClick={() => { cameraInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
+          <div className="animate-fade-up" style={{ position: 'absolute', bottom: '100%', left: '40px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px', width: '160px', boxShadow: '0 -10px 30px rgba(0,0,0,0.1)', zIndex: 1200, marginBottom: '12px' }}>
+             <button onClick={() => { cameraInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: 'none', background: 'transparent', fontSize: '14px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
                 <ImageIcon size={18} /> Ambil Foto
              </button>
-             <button onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', border: 'none', background: 'transparent', fontSize: '13px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
+             <button onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: 'none', background: 'transparent', fontSize: '14px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
                 <Users size={18} /> Dari Galeri
              </button>
           </div>
         )}
 
-        {attachment && (
-          <div style={{ marginBottom: '12px', position: 'relative', display: 'inline-block' }}>
-            <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '8px', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-            <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <X size={12} />
-            </button>
-          </div>
-        )}
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {/* Main Input Pill (WhatsApp Style) */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#ffffff', borderRadius: '28px', padding: '6px 12px', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', border: '1px solid #e2e8f0' }}>
-             <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
-                <Smile size={24} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+          {/* Main Input Pill */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#ffffff', borderRadius: '30px', padding: '4px 8px', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
+             <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer' }}>
+                <Smile size={26} />
              </button>
              
              <input 
@@ -311,15 +324,15 @@ export default function SalesChat({ salesId }: Props) {
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '15px', fontWeight: 600, color: '#111827', padding: '0 8px' }}
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '16px', fontWeight: 600, color: '#111827', padding: '10px 4px' }}
              />
 
-             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
-                   <Paperclip size={22} />
+             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '4px' }}>
+                <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer' }}>
+                   <Paperclip size={24} />
                 </button>
-                <button onClick={() => { setShowPhotoOptions(!showPhotoOptions); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '6px', cursor: 'pointer' }}>
-                   <ImageIcon size={22} />
+                <button onClick={() => { setShowPhotoOptions(!showPhotoOptions); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer' }}>
+                   <ImageIcon size={24} />
                 </button>
              </div>
           </div>
@@ -331,19 +344,18 @@ export default function SalesChat({ salesId }: Props) {
               flexShrink: 0, 
               background: 'var(--brand-yellow)', 
               border: 'none', 
-              width: '48px', 
-              height: '48px', 
+              width: '52px', 
+              height: '52px', 
               borderRadius: '50%', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               color: '#111827', 
               boxShadow: '0 4px 15px rgba(255, 193, 7, 0.4)', 
-              cursor: 'pointer',
-              transition: 'transform 0.2s active'
+              cursor: 'pointer'
             }}
           >
-            <Send size={22} style={{ marginLeft: '2px' }} />
+            <Send size={24} style={{ marginLeft: '2px' }} />
           </button>
         </div>
 
@@ -351,7 +363,6 @@ export default function SalesChat({ salesId }: Props) {
         <input type="file" ref={cameraInputRef} accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
         <input type="file" ref={galleryInputRef} accept="image/*" style={{ display: 'none' }} onChange={e => handleFileChange(e, 'image')} />
       </div>
-
 
       {/* Invite Member Modal */}
       {showInviteModal && (
