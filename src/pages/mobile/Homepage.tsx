@@ -1,7 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
+import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star } from 'lucide-react';
 import { store } from '../../store/dataStore';
