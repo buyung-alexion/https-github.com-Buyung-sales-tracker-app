@@ -156,7 +156,7 @@ export default function SalesChat({ salesId }: Props) {
   if (!activeChatId) {
     return (
       <div className="page-content" style={{ background: '#fff', minHeight: '100vh', padding: '0' }}>
-        <div className="hero-compact" style={{ padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', position: 'relative', overflow: 'hidden', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px' }}>
+        <div className="hero-compact" style={{ padding: 'calc(32px + env(safe-area-inset-top)) 20px 48px', position: 'relative', overflow: 'hidden', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px' }}>
           {/* Decorative elements */}
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
           
@@ -217,7 +217,7 @@ export default function SalesChat({ salesId }: Props) {
   return (
     <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', padding: 0, background: '#f0f2f5', overflow: 'hidden', position: 'relative' }}>
       {/* Header (Sticky) */}
-       <div className="hero-compact" style={{ flexShrink: 0, background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+       <div className="hero-compact" style={{ flexShrink: 0, background: 'var(--brand-yellow)', padding: 'calc(50px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
         <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.id === 'Group-1' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800, overflow: 'hidden' }}>
           {selectedContact?.type === 'group' ? <Users size={20} /> : (selectedContact?.avatar ? <img src={selectedContact.avatar} alt={selectedContact.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selectedContact?.name.charAt(0))}
