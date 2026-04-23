@@ -103,10 +103,10 @@ export default function LiveActivityFeed() {
 
   // Pie Chart Data for Activity Breakdown
   const pieData = useMemo(() => [
-    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: '#f472b6' },
-    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: '#fbbf24' },
-    { name: 'Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: '#f87171' },
-    { name: 'Prospek', value: filteredProspek.length, color: '#818cf8' },
+    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: '#60a5fa' }, // Sky Blue
+    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: '#3b82f6' }, // Blue
+    { name: 'Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: '#2563eb' }, // Royal Blue
+    { name: 'Prospek', value: filteredProspek.length, color: '#1d4ed8' }, // Deep Blue
   ], [filtered, filteredProspek]);
   
   const totalActs = useMemo(() => pieData.reduce((acc, curr) => acc + curr.value, 0), [pieData]);
@@ -175,14 +175,14 @@ export default function LiveActivityFeed() {
           justifyContent: 'flex-end',
           boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
         }}>
-          {/* Prospek (Purple) */}
-          <div style={{ height: `${hProspek}%`, background: '#818cf8', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Order (Red) */}
-          <div style={{ height: `${hOrder}%`, background: '#f87171', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Visit (Yellow) */}
-          <div style={{ height: `${hVisit}%`, background: '#fbbf24', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Followup (Pink) */}
-          <div style={{ height: `${hFollowup}%`, background: '#f472b6', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Prospek (Deep Blue) */}
+          <div style={{ height: `${hProspek}%`, background: '#1d4ed8', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Order (Royal Blue) */}
+          <div style={{ height: `${hOrder}%`, background: '#2563eb', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Visit (Blue) */}
+          <div style={{ height: `${hVisit}%`, background: '#3b82f6', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Followup (Sky Blue) */}
+          <div style={{ height: `${hFollowup}%`, background: '#60a5fa', width: '100%', transition: 'height 0.8s ease' }} />
         </div>
 
         <div style={{ 
@@ -315,11 +315,15 @@ export default function LiveActivityFeed() {
             borderRadius: '32px', 
             padding: '32px', 
             boxShadow: '0 10px 40px rgba(0,0,0,0.04)',
-            border: '1px solid #f1f5f9',
+            border: '1px solid #e2e8f0',
             display: 'flex',
             flexDirection: 'column',
-            minHeight: '450px'
+            minHeight: '450px',
+            position: 'relative',
+            overflow: 'hidden'
           }}>
+            {/* Subtle Blue Tint Gradient for matching */}
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
               <div>
                 <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Ringkasan Sales</h3>
@@ -330,10 +334,10 @@ export default function LiveActivityFeed() {
             {/* Legend */}
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
               {[
-                { label: 'FOLLOWUP', color: '#f472b6' },
-                { label: 'VISIT', color: '#fbbf24' },
-                { label: 'ORDER', color: '#f87171' },
-                { label: 'PROSPEK', color: '#818cf8' }
+                { label: 'FOLLOWUP', color: '#60a5fa' },
+                { label: 'VISIT', color: '#3b82f6' },
+                { label: 'ORDER', color: '#2563eb' },
+                { label: 'PROSPEK', color: '#1d4ed8' }
               ].map(cat => (
                 <div key={cat.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', fontWeight: 900, color: '#64748b' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: cat.color }} /> {cat.label}
