@@ -139,12 +139,12 @@ export default function Homepage({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingBottom: '100px', background: '#F8FAFC', paddingTop: 0 }}>
       
-      {/* Top Section - Compact GrabFood Style Header */}
+      {/* Top Section - Compact Branding Header */}
       <div className="hero-compact" style={{ 
         padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
         position: 'relative', 
         overflow: 'hidden',
-        background: 'var(--brand-yellow)',
+        background: '#FFC107',
         borderBottomLeftRadius: '32px',
         borderBottomRightRadius: '32px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
@@ -153,7 +153,7 @@ export default function Homepage({ salesId }: Props) {
         <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)', filter: 'blur(40px)' }} />
         
         <div style={{ position: 'relative', zIndex: 5, paddingBottom: '16px' }}>
-          {/* Top Bar - Identity & Icons - Compact Premium */}
+          {/* Top Bar - Identity & Icons */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <div 
@@ -175,9 +175,9 @@ export default function Homepage({ salesId }: Props) {
               <div>
                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                     <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                    <span style={{ fontSize: '10px', color: '#111827', fontWeight: 800, opacity: 0.6, letterSpacing: '0.05em' }}>ONLINE</span>
+                    <span style={{ fontSize: '10px', color: '#000', fontWeight: 800, opacity: 0.6, letterSpacing: '0.05em' }}>ONLINE</span>
                  </div>
-                 <h2 style={{ fontSize: '20px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.5px' }}>
+                 <h2 style={{ fontSize: '20px', fontWeight: 950, color: '#000', margin: 0, letterSpacing: '-0.5px' }}>
                    Halo, {salesDisplayName}!
                  </h2>
               </div>

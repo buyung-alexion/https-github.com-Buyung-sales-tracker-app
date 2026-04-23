@@ -13,6 +13,7 @@ import SalesChat from './SalesChat';
 import MobileLeaderboard from './MobileLeaderboard';
 import OrderHistory from './OrderHistory';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
+import ChatNotificationPopup from '../../components/ChatNotificationPopup';
 
 export default function MobileShell() {
   const { user, logout } = useAuth();
@@ -34,6 +35,14 @@ export default function MobileShell() {
 
   return (
     <div className="mobile-shell">
+      <ChatNotificationPopup 
+        newMsg={newMsg} 
+        onClear={clearNewMsg} 
+        onClick={() => {
+          navigate('/mobile/chat');
+          clearNewMsg();
+        }} 
+      />
       {/* 
           OVERLAY SIDEBAR (Premium Side Menu)
           Added to provide stable logout and navigation access from anywhere.

@@ -190,6 +190,15 @@ export const store = {
     await supabase.from('customer').update({ last_order_date: new Date().toISOString() }).eq('id', targetId);
   },
 
+  async updateOrder(orderId: string, amount: number) {
+    const { error } = await supabase
+      .from('orders')
+      .update({ amount })
+      .eq('id', orderId);
+    
+    if (error) throw error;
+  },
+
   async fetchOrders(salesId?: string): Promise<SalesOrder[]> {
     let query = supabase.from('orders').select('*').order('created_at', { ascending: false });
     if (salesId) query = query.eq('sales_id', salesId);

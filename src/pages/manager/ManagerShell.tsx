@@ -12,6 +12,7 @@ import ManagerSettings from './ManagerSettings';
 import DataManagement from './DataManagement';
 import ManagerChat from './ManagerChat';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
+import ChatNotificationPopup from '../../components/ChatNotificationPopup';
 
 export default function ManagerShell() {
   const { logout, user } = useAuth();
@@ -77,6 +78,14 @@ export default function ManagerShell() {
 
   return (
     <div className="manager-shell">
+      <ChatNotificationPopup 
+        newMsg={newMsg} 
+        onClear={clearNewMsg} 
+        onClick={() => {
+          navigate('/manager/chat');
+          clearNewMsg();
+        }} 
+      />
       {/* Sidebar */}
       <aside className={`manager-sidebar ${sidebarOpen ? 'open' : ''}`}>
         <div className="sidebar-logo">
