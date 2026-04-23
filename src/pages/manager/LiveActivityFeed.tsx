@@ -360,20 +360,26 @@ export default function LiveActivityFeed() {
             
             {/* Activity Breakdown (Radial Gauge) - Polished Contrast */}
             <div style={{ 
-              background: '#f8fafc', // Light solid background for the container
+              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', 
               borderRadius: '32px', 
               padding: '32px', 
-              boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
-              border: '1px solid #f1f5f9',
+              boxShadow: '0 20px 50px rgba(37, 99, 235, 0.25)',
+              border: '1px solid rgba(255,255,255,0.2)',
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-between',
               flex: 1,
-              minHeight: '450px'
+              minHeight: '450px',
+              position: 'relative',
+              overflow: 'hidden'
             }}>
-               <div style={{ marginBottom: '20px' }}>
-                  <h3 style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Summary Aktivitas</h3>
-                  <p style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>KOMPOSISI TIPE AKSI</p>
+               {/* Premium Decorative Mesh Pattern */}
+               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+               <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+               <div style={{ marginBottom: '20px', position: 'relative', zIndex: 1 }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 950, color: '#fff', margin: 0 }}>Summary Aktivitas</h3>
+                  <p style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', marginTop: '4px' }}>KOMPOSISI TIPE AKSI</p>
                </div>
 
                <div style={{ 
@@ -382,11 +388,13 @@ export default function LiveActivityFeed() {
                  display: 'flex', 
                  alignItems: 'center', 
                  justifyContent: 'center',
-                 background: '#fff', // White card for the chart
+                 background: 'rgba(255,255,255,0.95)', // Slightly transparent white card
+                 backdropFilter: 'blur(10px)',
                  borderRadius: '24px',
                  margin: '0 0 24px',
-                 boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
-                 border: '1px solid #fff'
+                 boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+                 border: '1px solid #fff',
+                 zIndex: 1
                }}>
                   <ResponsiveContainer width="100%" height={260}>
                     <PieChart>
@@ -419,11 +427,18 @@ export default function LiveActivityFeed() {
                   </div>
                </div>
 
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', position: 'relative', zIndex: 1 }}>
                   {pieData.map(d => {
                     const pct = totalActs > 0 ? Math.round((d.value / totalActs) * 100) : 0;
                     return (
-                      <div key={d.name} style={{ background: '#fff', padding: '12px', borderRadius: '16px', border: '1px solid #f1f5f9', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                      <div key={d.name} style={{ 
+                        background: 'rgba(255, 255, 255, 0.9)', 
+                        padding: '12px', 
+                        borderRadius: '16px', 
+                        border: '1px solid rgba(255,255,255,0.5)', 
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                        backdropFilter: 'blur(5px)'
+                      }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: d.color }}></div>
                           <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{d.name}</span>

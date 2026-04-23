@@ -15,7 +15,7 @@ import {
 
 
 export default function PerformanceAnalytics() {
-  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas, masterStatuses = [] } = useSalesData();
+  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas, masterChannels, masterStatuses = [] } = useSalesData();
 
   // --- MASTER FILTER STATES ---
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month');
@@ -364,12 +364,16 @@ export default function PerformanceAnalytics() {
     const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
     
     return Object.entries(counts)
-      .map(([name, value], i) => ({
-        name,
-        value,
-        percentage: Math.round((value / total) * 100),
-        color: colors[i % colors.length]
-      }))
+      .map(([name, value], i) => {
+        const channelObj = masterChannels.find(mc => mc.id === name);
+        const resolvedName = channelObj ? channelObj.name : name;
+        return {
+          name: resolvedName,
+          value,
+          percentage: Math.round((value / total) * 100),
+          color: colors[i % colors.length]
+        };
+      })
       .sort((a, b) => b.value - a.value);
   }, [prospek]);
 
@@ -382,12 +386,16 @@ export default function PerformanceAnalytics() {
     const total = prospek.length || 1;
     const colors = ['#10b981', '#6366f1', '#f59e0b', '#3b82f6', '#ef4444'];
     return Object.entries(counts)
-      .map(([name, value], i) => ({
-        name,
-        value,
-        percentage: Math.round((value / total) * 100),
-        color: colors[i % colors.length]
-      }))
+      .map(([name, value], i) => {
+        const areaObj = masterAreas.find(ma => ma.id === name);
+        const resolvedName = areaObj ? areaObj.name : name;
+        return {
+          name: resolvedName,
+          value,
+          percentage: Math.round((value / total) * 100),
+          color: colors[i % colors.length]
+        };
+      })
       .sort((a,b) => b.value - a.value);
   }, [prospek]);
 
@@ -1443,33 +1451,41 @@ export default function PerformanceAnalytics() {
              return (
               <div style={{ 
                 background: 'linear-gradient(135deg, #facc15 0%, #eab308 100%)', 
-                borderRadius: '24px', 
-                padding: '18px', 
+                borderRadius: '32px', 
+                padding: '24px', 
                 color: '#111827', 
                 display: 'flex', 
                 flexDirection: 'column', 
-                boxShadow: '0 12px 32px rgba(234, 179, 8, 0.2)',
+                boxShadow: '0 20px 50px rgba(234, 179, 8, 0.3)',
                 position: 'relative',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
               }}>
-                 {/* Decorative Mesh Pattern */}
-                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.15, backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
-                 <div style={{ position: 'absolute', top: '-50px', right: '-50px', width: '200px', height: '200px', background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
+                 {/* Premium Decorative Mesh Pattern */}
+                 <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle at 1px 1px, #fff 1px, transparent 0)', backgroundSize: '20px 20px', pointerEvents: 'none' }} />
+                 <div style={{ position: 'absolute', top: '-100px', right: '-100px', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(255,255,255,0.4) 0%, transparent 70%)', borderRadius: '50%', pointerEvents: 'none' }} />
 
-                 <div style={{ marginBottom: '16px', position: 'relative', zIndex: 1 }}>
+                 <div style={{ marginBottom: '24px', position: 'relative', zIndex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div>
-                        <div style={{ fontSize: '24px', fontWeight: 950, marginBottom: '2px', color: '#111827', letterSpacing: '-0.5px' }}>Total Aktivitas</div>
-                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#854d0e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Distribusi Dominan</div>
+                        <div style={{ fontSize: '28px', fontWeight: 950, marginBottom: '4px', color: '#111827', letterSpacing: '-1px' }}>Total Aktivitas</div>
+                        <div style={{ fontSize: '12px', fontWeight: 800, color: '#854d0e', textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.8 }}>Distribusi Dominan</div>
                       </div>
-                      <div style={{ background: 'rgba(255,255,255,0.9)', padding: '8px 16px', borderRadius: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', textAlign: 'right' }}>
-                        <div style={{ fontSize: '18px', fontWeight: 950, color: '#111827', lineHeight: 1 }}>{totalAll}</div>
-                        <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Interaksi</div>
+                      <div style={{ 
+                        background: 'rgba(255,255,255,0.95)', 
+                        padding: '12px 20px', 
+                        borderRadius: '20px', 
+                        boxShadow: '0 10px 20px rgba(0,0,0,0.05)', 
+                        textAlign: 'right',
+                        border: '1px solid #fff'
+                      }}>
+                        <div style={{ fontSize: '22px', fontWeight: 950, color: '#111827', lineHeight: 1 }}>{totalAll}</div>
+                        <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '4px' }}>Interaksi</div>
                       </div>
                     </div>
                  </div>
                  
-                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', flex: 1, position: 'relative', zIndex: 1 }}>
+                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', flex: 1, position: 'relative', zIndex: 1 }}>
                     {domActs.map((act) => {
                       const trendVal = calculateTrend(act.value, act.prevValue);
                       const isUp = trendVal >= 0;
@@ -1477,47 +1493,59 @@ export default function PerformanceAnalytics() {
 
                       return (
                         <div key={act.label} style={{ 
-                          background: 'rgba(255, 255, 255, 0.45)', 
-                          backdropFilter: 'blur(8px)',
-                          borderRadius: '16px', 
-                          padding: '8px 10px',
+                          background: 'rgba(255, 255, 255, 0.6)', 
+                          backdropFilter: 'blur(12px)',
+                          borderRadius: '24px', 
+                          padding: '16px',
                           display: 'flex', 
                           flexDirection: 'column',
-                          gap: '6px',
-                          border: '1px solid rgba(255,255,255,0.5)',
-                          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                          transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                          gap: '12px',
+                          border: '1px solid rgba(255,255,255,0.7)',
+                          boxShadow: '0 8px 15px rgba(0,0,0,0.04)',
+                          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
                         }}>
                           {/* Row Header */}
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#fff', color: act.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', boxShadow: '0 4px 8px rgba(0,0,0,0.08)' }}>
-                                {act.icon}
-                              </div>
-                              <span style={{ fontSize: '11px', fontWeight: 950, color: '#1e293b', whiteSpace: 'nowrap' }}>{act.label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ 
+                              width: '44px', 
+                              height: '44px', 
+                              borderRadius: '14px', 
+                              background: '#fff', 
+                              color: act.color, 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              justifyContent: 'center', 
+                              fontSize: '20px', 
+                              boxShadow: '0 4px 10px rgba(0,0,0,0.06)',
+                              flexShrink: 0
+                            }}>
+                              {act.icon}
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <div style={{ fontSize: '13px', fontWeight: 950, color: '#111827' }}>{act.value}</div>
-                              <div style={{ 
-                                display: 'flex', alignItems: 'center', gap: '1px',
-                                padding: '2px 5px', borderRadius: '6px',
-                                background: isUp ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                color: isUp ? '#059669' : '#dc2626',
-                                fontSize: '10px', fontWeight: 900,
-                              }}>
-                                {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}{Math.abs(trendVal)}%
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: '13px', fontWeight: 800, color: '#475569', marginBottom: '2px' }}>{act.label}</div>
+                              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+                                <span style={{ fontSize: '20px', fontWeight: 950, color: '#111827' }}>{act.value}</span>
+                                <div style={{ 
+                                  display: 'flex', alignItems: 'center', gap: '2px',
+                                  padding: '2px 6px', borderRadius: '8px',
+                                  background: isUp ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                                  color: isUp ? '#059669' : '#dc2626',
+                                  fontSize: '10px', fontWeight: 900,
+                                }}>
+                                  {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />}~{Math.abs(trendVal)}%
+                                </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* Progress Pill */}
-                          <div style={{ height: '6px', background: 'rgba(0,0,0,0.05)', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
+                          {/* Refined Progress Bar */}
+                          <div style={{ height: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '10px', overflow: 'hidden', position: 'relative' }}>
                              <div style={{ 
                                position: 'absolute', left: 0, top: 0, bottom: 0, 
                                width: `${percentage}%`, 
-                               background: `linear-gradient(to right, #fff, ${act.color})`, 
+                               background: `linear-gradient(to right, ${act.color}88, ${act.color})`, 
                                borderRadius: '10px',
-                               boxShadow: `0 0 12px ${act.color}44`
+                               boxShadow: `0 0 15px ${act.color}33`
                              }} />
                           </div>
                         </div>
