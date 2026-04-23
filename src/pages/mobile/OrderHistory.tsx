@@ -240,113 +240,128 @@ export default function OrderHistory() {
       {isOrderModalOpen && (
         <div className="modal-overlay" onClick={() => setIsOrderModalOpen(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
           <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
-            maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
-            padding: '24px 20px calc(120px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' 
+            height: '92vh', overflowY: 'hidden', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
+            padding: 0, background: '#f8fafc', border: 'none', display: 'flex', flexDirection: 'column'
           }}>
-            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ background: '#FEF3C7', color: '#F59E0B', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {editOrderId ? <Edit3 size={20} /> : <Plus size={20} strokeWidth={3} />}
+            {/* 1. Header & Drag Handle */}
+            <div style={{ padding: '12px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', background: '#fff', borderBottom: '1px solid #f1f5f9' }}>
+              <div style={{ width: '36px', height: '5px', background: '#E2E8F0', borderRadius: '10px', marginBottom: '20px' }} />
+              <div style={{ width: '100%', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ background: '#EFF6FF', color: '#3B82F6', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <ShoppingCart size={20} />
+                  </div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 950, color: '#1e293b' }}>{editOrderId ? 'Edit Pesanan' : 'Order Baru'}</h3>
                 </div>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827' }}>{editOrderId ? 'Edit Pesanan' : 'Buat Pesanan Baru'}</h3>
+                <button onClick={() => setIsOrderModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <X size={18} color="#64748b" />
+                </button>
               </div>
-              <button className="tap-active" onClick={() => setIsOrderModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {/* Search Customer (Only for new orders) */}
-              {!editOrderId && (
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
-                    <Search size={18} />
-                  </div>
-                  <input 
-                    type="text" 
-                    className="form-input" 
-                    placeholder="Cari Customer..." 
-                    style={{ width: '100%', borderRadius: '16px', border: '2px solid #f1f5f9', padding: '14px 14px 14px 48px', fontWeight: 700, fontSize: '15px' }}
-                    value={orderSearch}
-                    onChange={e => setOrderSearch(e.target.value)}
-                  />
-                </div>
-              )}
-
-              {/* Customer Info (Edit Mode) */}
-              {editOrderId && selectedCust && (
-                 <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '18px', border: '2px solid #3B82F6' }}>
-                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 800, marginBottom: '4px' }}>CUSTOMER</div>
-                    <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b' }}>{selectedCust.nama_toko}</div>
-                 </div>
-              )}
-
-              {/* Nominal Order Input */}
-              {selectedCust && (
-                <div style={{ background: '#F0F9FF', borderRadius: '18px', padding: '16px', border: '2px solid #BAE6FD' }}>
-                  <label style={{ fontSize: '12px', color: '#0369a1', fontWeight: 900, marginBottom: '8px', display: 'block', textTransform: 'uppercase' }}>Nominal Order (IDR)</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#fff', padding: '4px 16px', borderRadius: '12px', border: '1px solid #7DD3FC' }}>
-                    <span style={{ fontWeight: 900, color: '#0369a1', fontSize: '18px' }}>Rp</span>
-                    <input 
-                      type="number"
-                      placeholder="Contoh: 1500000"
-                      value={orderAmount}
-                      onChange={e => setOrderAmount(e.target.value)}
-                      style={{ flex: 1, border: 'none', outline: 'none', padding: '12px 0', fontSize: '18px', fontWeight: 900, color: '#0369a1' }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {/* Customer Selection List (Only for new orders) */}
-              {!editOrderId && (
-                <div style={{ maxHeight: '250px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px' }}>
-                  {filteredCustomers.length > 0 ? (
-                    filteredCustomers.map(c => (
-                      <div 
-                        key={c.id} 
-                        className="tap-active"
-                        onClick={() => setSelectedCust(c)}
-                        style={{ 
-                          padding: '14px 16px', borderRadius: '18px', border: '2px solid',
-                          borderColor: selectedCust?.id === c.id ? '#3B82F6' : '#f8fafc',
-                          background: selectedCust?.id === c.id ? '#EFF6FF' : '#F8FAFC',
-                          display: 'flex', alignItems: 'center', gap: '12px', transition: 'all 0.2s'
-                        }}
-                      >
-                        <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🏢</div>
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: '14px', fontWeight: 900, color: '#111827' }}>{c.nama_toko}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{c.area}</div>
-                        </div>
-                        {selectedCust?.id === c.id && <CheckCircle size={20} color="#3B82F6" />}
-                      </div>
-                    ))
-                  ) : (
-                    <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
-                      <Users size={32} style={{ opacity: 0.3, marginBottom: '8px' }} />
-                      <div style={{ fontSize: '12px', fontWeight: 800 }}>Customer Tidak Ditemukan</div>
+            {/* 2. Scrollable Content Area */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Card 1: Customer Selection */}
+              <div style={{ background: '#fff', borderRadius: '24px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Informasi Pelanggan</div>
+                
+                {editOrderId || selectedCust ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: '#F0F9FF', borderRadius: '16px', border: '1px solid #BAE6FD' }}>
+                    <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>🏢</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '15px', fontWeight: 900, color: '#1e293b' }}>{selectedCust?.nama_toko || 'Customer'}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{selectedCust?.area || '-'}</div>
                     </div>
-                  )}
+                    {!editOrderId && (
+                      <button 
+                        onClick={() => { setSelectedCust(null); setOrderSearch(''); }}
+                        style={{ border: 'none', background: 'none', color: '#3B82F6', fontSize: '11px', fontWeight: 800 }}
+                      >
+                        Ganti
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div style={{ position: 'relative' }}>
+                      <Search size={18} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                      <input 
+                        type="text" 
+                        placeholder="Cari nama toko atau area..." 
+                        style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '12px 12px 12px 42px', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+                        value={orderSearch}
+                        onChange={e => setOrderSearch(e.target.value)}
+                      />
+                    </div>
+                    <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {filteredCustomers.map(c => (
+                        <div 
+                          key={c.id} 
+                          onClick={() => setSelectedCust(c)}
+                          style={{ padding: '12px 16px', borderRadius: '14px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '12px' }}
+                        >
+                          <div style={{ fontSize: '16px' }}>🏬</div>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b' }}>{c.nama_toko}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', fontWeight: 600 }}>{c.area}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 2: Order Detail */}
+              {selectedCust && (
+                <div className="animate-fade-up" style={{ background: '#fff', borderRadius: '24px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Pesanan</div>
+                  
+                  <div>
+                    <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '8px' }}>NOMINAL ORDER (RP)</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', padding: '16px', borderRadius: '16px', border: '2px solid #E2E8F0' }}>
+                      <span style={{ fontSize: '20px', fontWeight: 950, color: '#3B82F6' }}>Rp</span>
+                      <input 
+                        type="number" 
+                        placeholder="0"
+                        style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '24px', fontWeight: 950, color: '#1e293b' }}
+                        value={orderAmount}
+                        onChange={e => setOrderAmount(e.target.value)}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
 
-              {/* Submit Button - Moved higher up to avoid overlap */}
+              {/* Progress Tracker (Optional Visual Only) */}
+              {selectedCust && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 10px' }}>
+                   <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#3B82F6' }} />
+                   <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: orderAmount ? '#3B82F6' : '#E2E8F0' }} />
+                   <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: '#E2E8F0' }} />
+                </div>
+              )}
+
+            </div>
+
+            {/* 3. Action Footer */}
+            <div style={{ padding: '20px 20px 40px', background: '#fff', borderTop: '1px solid #f1f5f9' }}>
               <button 
-                className="tap-active" 
-                disabled={!selectedCust || isSubmitting}
                 onClick={handleOrderSubmit}
+                disabled={!selectedCust || !orderAmount || isSubmitting}
                 style={{ 
-                  width: '100%', height: '62px', borderRadius: '18px', fontSize: '16px', fontWeight: 950,
-                  background: isSubmitting ? '#e2e8f0' : orderSuccess ? '#10b981' : '#3B82F6',
-                  color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                  boxShadow: '0 12px 24px rgba(59, 130, 246, 0.3)',
-                  marginTop: '10px'
+                  width: '100%', height: '60px', borderRadius: '16px', border: 'none', 
+                  background: (!selectedCust || !orderAmount) ? '#E2E8F0' : (isSubmitting ? '#94a3b8' : '#3B82F6'),
+                  color: '#fff', fontSize: '16px', fontWeight: 950, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+                  boxShadow: (!selectedCust || !orderAmount) ? 'none' : '0 8px 25px rgba(59, 130, 246, 0.3)'
                 }}
               >
-                {isSubmitting ? <Loader2 className="animate-spin" size={24} /> : orderSuccess ? <><CheckCircle size={24} /> Berhasil!</> : editOrderId ? 'Update & Lanjut' : 'Lanjut ke Accurate'}
+                {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : orderSuccess ? <><CheckCircle size={24} /> Berhasil!</> : (editOrderId ? 'Update Pesanan' : 'Kirim & Lanjut Accurate')}
               </button>
             </div>
+
           </div>
         </div>
       )}
