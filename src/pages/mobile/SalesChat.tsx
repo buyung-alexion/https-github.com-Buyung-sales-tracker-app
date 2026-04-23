@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Search, Users, Camera, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, Send, Search, Users, Camera, CheckCircle2, Smile, Paperclip, Image as ImageIcon, X } from 'lucide-react';
 import { chatStore } from '../../store/chatStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { ChatMessage, ChatContact } from '../../types';
@@ -18,12 +18,14 @@ export default function SalesChat({ salesId }: Props) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const EMOJI_LIST = ['😀','😂','😍','🙏','👍','🔥','🎉','😊','👋','😎','🙌','✨'];
 
   // Load Contacts
   useEffect(() => {
@@ -165,8 +167,8 @@ export default function SalesChat({ salesId }: Props) {
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No contacts found.</div>
           ) : filteredContacts.map(c => (
             <div key={c.id} onClick={() => handleSelectContact(c)} style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px 20px', borderBottom: '1px solid #f8fafc', cursor: 'pointer', position: 'relative' }}>
-               <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: c.type === 'group' ? '#e0e7ff' : (c.id === 'Manager-1' ? '#FFFBEB' : '#E0F2FE'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.type === 'group' ? '#6366f1' : (c.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontWeight: 800, position: 'relative' }}>
-                 {c.type === 'group' ? <Users size={24} /> : c.name.charAt(0)}
+               <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: c.type === 'group' ? '#e0e7ff' : (c.id === 'Manager-1' ? '#FFFBEB' : '#E0F2FE'), display: 'flex', alignItems: 'center', justifyContent: 'center', color: c.type === 'group' ? '#6366f1' : (c.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontWeight: 800, position: 'relative', overflow: 'hidden' }}>
+                 {c.type === 'group' ? <Users size={24} /> : (c.avatar ? <img src={c.avatar} alt={c.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : c.name.charAt(0))}
                  {c.unreadCount > 0 && (
                    <div style={{ position: 'absolute', top: '-2px', right: '-2px', background: '#EF4444', color: '#fff', fontSize: '10px', minWidth: '18px', height: '18px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #fff', fontWeight: 900 }}>
                      {c.unreadCount}
@@ -193,10 +195,10 @@ export default function SalesChat({ salesId }: Props) {
   return (
     <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5' }}>
       {/* Header */}
-      <div className="hero-compact" style={{ background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+       <div className="hero-compact" style={{ background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
         <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800 }}>
-          {selectedContact?.type === 'group' ? <Users size={20} /> : selectedContact?.name.charAt(0)}
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800, overflow: 'hidden' }}>
+          {selectedContact?.type === 'group' ? <Users size={20} /> : (selectedContact?.avatar ? <img src={selectedContact.avatar} alt={selectedContact.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selectedContact?.name.charAt(0))}
         </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: '15px', fontWeight: 900, color: '#111827' }}>{selectedContact?.name}</div>
@@ -245,33 +247,51 @@ export default function SalesChat({ salesId }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area */}
-      <div style={{ background: '#fff', padding: '12px 16px 30px', borderTop: '1px solid #e2e8f0' }}>
+       {/* Input Area */}
+      <div style={{ background: '#fff', padding: '12px 16px 30px', borderTop: '1px solid #e2e8f0', position: 'relative' }}>
+        {showEmojiPicker && (
+          <div style={{ position: 'absolute', bottom: '100%', left: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', width: '220px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
+            {EMOJI_LIST.map(e => (
+              <span key={e} style={{ cursor: 'pointer', fontSize: '22px' }} onClick={() => { setInputText(prev => prev + e); setShowEmojiPicker(false); }}>{e}</span>
+            ))}
+          </div>
+        )}
+
         {attachment && (
           <div style={{ marginBottom: '12px', position: 'relative', display: 'inline-block' }}>
             <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '8px', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
             <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
           </div>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => fileInputRef.current?.click()} style={{ background: '#f1f5f9', border: 'none', width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-            <Camera size={20} />
-          </button>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button onClick={() => setShowEmojiPicker(!showEmojiPicker)} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+              <Smile size={24} />
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+              <Paperclip size={22} />
+            </button>
+            <button onClick={() => fileInputRef.current?.click()} style={{ background: 'none', border: 'none', color: '#64748b', padding: '4px' }}>
+              <ImageIcon size={22} />
+            </button>
+          </div>
           <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} capture="environment" onChange={handleCapture} />
           
-          <form style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '24px', padding: '4px 6px 4px 16px' }} onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+          <form style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#f1f5f9', borderRadius: '24px', padding: '4px 6px 4px 16px', border: '1px solid #e2e8f0' }} onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
             <input 
-              placeholder="Type message..." 
+              placeholder="Ketik pesan..." 
               value={inputText}
               onChange={e => setInputText(e.target.value)}
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600 }}
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#111827' }}
             />
-            <button type="submit" style={{ background: 'var(--brand-yellow)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111827' }}>
-              <Send size={16} />
+            <button type="submit" style={{ background: 'var(--brand-yellow)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111827', boxShadow: '0 4px 10px rgba(255, 193, 7, 0.3)' }}>
+              <Send size={18} />
             </button>
           </form>
         </div>
       </div>
+
 
       {/* Invite Member Modal */}
       {showInviteModal && (
