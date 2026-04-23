@@ -4,8 +4,8 @@ import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { 
   ArrowLeft, Search, Plus, X, MapPin, 
-  ChevronDown, ChevronRight, CheckCircle, 
-  MessageSquare, Camera, Users, Clock, History
+  ChevronDown, ChevronRight, 
+  MessageSquare, Clock, History
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
