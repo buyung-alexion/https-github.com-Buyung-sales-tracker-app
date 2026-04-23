@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink } from 'react-router-dom';
-import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle } from 'lucide-react';
+import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
@@ -11,9 +11,13 @@ import Leaderboard from './Leaderboard';
 import ManagerSettings from './ManagerSettings';
 import DataManagement from './DataManagement';
 import ManagerChat from './ManagerChat';
+import { useChatNotifications } from '../../hooks/useChatNotifications';
 
 export default function ManagerShell() {
   const { logout, user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { unreadCount: chatUnread, newMsg, clearNewMsg } = useChatNotifications(user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [shellTitle, setShellTitle] = useState('');
   const [shellSub, setShellSub] = useState('');
@@ -33,6 +37,12 @@ export default function ManagerShell() {
       logout();
     }
   };
+
+  useEffect(() => {
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
 
   if (!user) return null;
 
@@ -146,13 +156,57 @@ export default function ManagerShell() {
 
           <nav className="topbar-nav">
             {menuCategories.flatMap(c => c.items).filter(i => !i.action).map(item => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`}>
+              <NavLink key={item.path} to={item.path} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
                 {item.icon} <span>{item.label}</span>
+                {item.label === 'Team Chat' && chatUnread > 0 && (
+                  <span style={{ 
+                    position: 'absolute', top: '-4px', right: '-4px', 
+                    background: '#ef4444', color: '#fff', fontSize: '10px', 
+                    fontWeight: 900, minWidth: '18px', height: '18px', 
+                    borderRadius: '50%', display: 'flex', alignItems: 'center', 
+                    justifyContent: 'center', border: '2px solid #fff' 
+                  }}>
+                    {chatUnread > 9 ? '9+' : chatUnread}
+                  </span>
+                )}
               </NavLink>
             ))}
           </nav>
           <div className="topbar-right" />
         </header>
+
+        {/* NOTIFICATION TOAST (New Message) */}
+        {newMsg && (
+          <div 
+            className="animate-slide-down" 
+            onClick={() => { navigate('/manager/chat'); clearNewMsg(); }}
+            style={{ 
+              position: 'fixed', top: '24px', right: '24px', 
+              background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)',
+              borderRadius: '20px', padding: '16px 20px', zIndex: 10000,
+              display: 'flex', alignItems: 'center', gap: '16px', color: '#fff',
+              boxShadow: '0 20px 40px rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)',
+              cursor: 'pointer', width: '380px'
+            }}
+          >
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <MessageSquare size={24} color="#fff" />
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#3b82f6', letterSpacing: '0.1em' }}>PESAN BARU</div>
+                <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 700 }}>BARU SAJA</div>
+              </div>
+              <div style={{ fontSize: '15px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{newMsg.sender_name || 'Tim'}: {newMsg.text}</div>
+            </div>
+            <button 
+              onClick={(e) => { e.stopPropagation(); clearNewMsg(); }}
+              style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
 
         <main className="manager-content">
           <Routes>

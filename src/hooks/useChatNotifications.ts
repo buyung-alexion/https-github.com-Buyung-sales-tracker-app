@@ -40,7 +40,10 @@ export function useChatNotifications(currentUserId: string | undefined) {
             setNewMsg(payload.new);
             // Optional: Browser Notification if permission granted
             if (Notification.permission === 'granted') {
-              new Notification('Pesan Baru', { body: payload.new.content });
+              new Notification(`Pesan dari ${payload.new.sender_name || 'Tim'}`, { 
+                body: payload.new.text,
+                icon: '/assets/image/logo_ikt.png'
+              });
             }
           }
         }
