@@ -269,7 +269,7 @@ export default function SalesChat({ salesId }: Props) {
       </div>
 
        {/* Input Area */}
-      <div style={{ background: '#fff', padding: `12px 16px calc(${activeChatId ? '12px' : '85px'} + env(safe-area-inset-bottom))`, borderTop: '1px solid #e2e8f0', position: 'relative', zIndex: 10 }}>
+      <div style={{ background: '#fff', padding: `12px 16px calc(15px + env(safe-area-inset-bottom))`, borderTop: '1px solid #e2e8f0', position: 'relative', zIndex: 10, width: '100%', boxSizing: 'border-box' }}>
         {showEmojiPicker && (
           <div style={{ position: 'absolute', bottom: '100%', left: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', width: '220px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
             {EMOJI_LIST.map(e => (
@@ -322,7 +322,7 @@ export default function SalesChat({ salesId }: Props) {
               onChange={e => setInputText(e.target.value)}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '14px', fontWeight: 600, color: '#111827' }}
             />
-            <button type="submit" style={{ background: 'var(--brand-yellow)', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111827', boxShadow: '0 4px 10px rgba(255, 193, 7, 0.3)' }}>
+            <button type="submit" style={{ flexShrink: 0, background: 'var(--brand-yellow)', border: 'none', width: '38px', height: '38px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111827', boxShadow: '0 4px 10px rgba(255, 193, 7, 0.3)', cursor: 'pointer' }}>
               <Send size={18} />
             </button>
           </form>
