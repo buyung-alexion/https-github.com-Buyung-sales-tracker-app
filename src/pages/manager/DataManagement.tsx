@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart, Loader2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
-import { supabase } from '../../lib/supabase';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function DataManagement() {
