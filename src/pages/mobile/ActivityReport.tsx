@@ -1,9 +1,9 @@
 import { useMemo, useState, useRef, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Camera, Users, Loader2, MapPin, CheckCircle, Crosshair, AlertTriangle } from 'lucide-react';
+import { Camera, Users, Loader2, MapPin, CheckCircle, Crosshair, AlertTriangle, X } from 'lucide-react';
 import { store } from '../../store/dataStore';
 
 interface Props { salesId: string; onSuccess?: () => void; }
@@ -51,7 +51,6 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
   const [targetId, setTargetId] = useState<string>('');
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>({ lat: -1.265, lng: 116.83 }); // Default Balikpapan
-  const [isLocating, setIsLocating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tipeAksi, setTipeAksi] = useState<string>('Visit');
   const mapRef = useRef<L.Map | null>(null);
@@ -120,16 +119,15 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
   }, []);
 
   const handleGetLocation = () => {
-    setIsLocating(true);
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         if (mapRef.current) {
           mapRef.current.flyTo([pos.coords.latitude, pos.coords.longitude], 16, { animate: true, duration: 1.5 });
         }
-        setIsLocating(false);
       },
-      (err) => { alert('Location failed: ' + err.message); setIsLocating(false); },
+      (err) => { alert('Location failed: ' + err.message); },
       { enableHighAccuracy: true }
     );
   };
