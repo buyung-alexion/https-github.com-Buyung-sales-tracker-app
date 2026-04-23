@@ -214,11 +214,11 @@ export default function SalesChat({ salesId }: Props) {
 
   // Render Active Conversation
   return (
-    <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5' }}>
-      {/* Header */}
-       <div className="hero-compact" style={{ background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+    <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5', overflow: 'hidden' }}>
+      {/* Header (Sticky) */}
+       <div className="hero-compact" style={{ flexShrink: 0, background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
         <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
-        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.type === 'group' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800, overflow: 'hidden' }}>
+        <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.id === 'Group-1' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800, overflow: 'hidden' }}>
           {selectedContact?.type === 'group' ? <Users size={20} /> : (selectedContact?.avatar ? <img src={selectedContact.avatar} alt={selectedContact.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selectedContact?.name.charAt(0))}
         </div>
         <div style={{ flex: 1 }}>
@@ -235,8 +235,8 @@ export default function SalesChat({ salesId }: Props) {
         )}
       </div>
 
-      {/* Messages Area */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* Messages Area (Scrollable) */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {messages.map(m => {
           const isMe = m.sender_id === salesId;
           return (
@@ -265,33 +265,31 @@ export default function SalesChat({ salesId }: Props) {
             </div>
           );
         })}
-        <div ref={messagesEndRef} style={{ height: '100px' }} />
+        <div ref={messagesEndRef} />
       </div>
 
-      {/* Attachment Preview (Fixed above bar) */}
-      {attachment && (
-        <div style={{ position: 'fixed', bottom: '90px', left: '16px', zIndex: 1100 }}>
-          <div style={{ position: 'relative', display: 'inline-block' }}>
-            <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '12px', border: '3px solid #fff', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }} />
-            <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer' }}>
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Input Area (Fixed at Viewport Bottom) */}
+      {/* Input Area (Sticky Footer) */}
       <div style={{ 
-        position: 'fixed', 
-        bottom: 0, 
-        left: 0, 
-        right: 0, 
+        flexShrink: 0,
         background: 'transparent', 
-        padding: `12px 12px calc(12px + env(safe-area-inset-bottom))`, 
+        padding: `4px 12px calc(12px + env(safe-area-inset-bottom))`, 
         zIndex: 1000,
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        position: 'relative'
       }}>
+        {/* Attachment Preview (Fixed relative to footer) */}
+        {attachment && (
+          <div style={{ position: 'absolute', bottom: '100%', left: '16px', zIndex: 1100, marginBottom: '10px' }}>
+            <div style={{ position: 'relative', display: 'inline-block' }}>
+              <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '12px', border: '3px solid #fff', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }} />
+              <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer' }}>
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+        )}
+
         {showEmojiPicker && (
           <div style={{ position: 'absolute', bottom: '100%', left: '12px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap', width: '240px', boxShadow: '0 -10px 30px rgba(0,0,0,0.1)', zIndex: 1200, marginBottom: '12px' }}>
             {EMOJI_LIST.map(e => (
@@ -311,10 +309,25 @@ export default function SalesChat({ salesId }: Props) {
           </div>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 52px', 
+          alignItems: 'center', 
+          gap: '8px', 
+          width: '100%' 
+        }}>
           {/* Main Input Pill */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#ffffff', borderRadius: '30px', padding: '4px 8px', boxShadow: '0 4px 15px rgba(0,0,0,0.08)', border: '1px solid #e2e8f0' }}>
-             <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: '#ffffff', 
+            borderRadius: '30px', 
+            padding: '4px 8px', 
+            boxShadow: '0 4px 15px rgba(0,0,0,0.1)', 
+            border: '1px solid #e2e8f0',
+            minWidth: 0
+          }}>
+             <button onClick={() => { setShowEmojiPicker(!showEmojiPicker); setShowPhotoOptions(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer', flexShrink: 0 }}>
                 <Smile size={26} />
              </button>
              
@@ -324,10 +337,10 @@ export default function SalesChat({ salesId }: Props) {
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '16px', fontWeight: 600, color: '#111827', padding: '10px 4px' }}
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '16px', fontWeight: 600, color: '#111827', padding: '10px 4px', minWidth: 0 }}
              />
 
-             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '4px' }}>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '4px', flexShrink: 0 }}>
                 <button onClick={() => { docInputRef.current?.click(); setShowPhotoOptions(false); setShowEmojiPicker(false); }} style={{ background: 'none', border: 'none', color: '#64748b', padding: '8px', cursor: 'pointer' }}>
                    <Paperclip size={24} />
                 </button>
@@ -341,18 +354,19 @@ export default function SalesChat({ salesId }: Props) {
           <button 
             onClick={handleSend}
             style={{ 
-              flexShrink: 0, 
-              background: 'var(--brand-yellow)', 
-              border: 'none', 
               width: '52px', 
               height: '52px', 
               borderRadius: '50%', 
+              background: 'var(--brand-yellow)', 
+              border: 'none', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
               color: '#111827', 
               boxShadow: '0 4px 15px rgba(255, 193, 7, 0.4)', 
-              cursor: 'pointer'
+              cursor: 'pointer',
+              padding: 0,
+              flexShrink: 0
             }}
           >
             <Send size={24} style={{ marginLeft: '2px' }} />
