@@ -5,7 +5,7 @@ import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
 
-const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], salesData: any[] }) => {
+const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }: { customers: any[], salesData: any[], masterCategories: any[] }) => {
   // 1. Chart: Customer By Sales (Pill Design)
   const salesStats = useMemo(() => {
     return salesData.map(s => {
@@ -46,7 +46,7 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
       counts[k] = (counts[k] || 0) + 1;
     });
     return Object.entries(counts).map(([id, count]) => {
-      const cat = masterCategories.find(mc => mc.id === id);
+      const cat = masterCategories.find(mc => String(mc.id) === id);
       return { name: cat ? cat.name : id, count };
     }).sort((a, b) => b.count - a.count).slice(0, 4);
   }, [customers, masterCategories]);
@@ -291,7 +291,7 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
 };
 
 export default function ManagerCustomer() {
-  const { customers: rawCustomers, sales, activities, masterAreas, masterCategories, refresh } = useSalesData();
+  const { customers: rawCustomers, sales, allSales, activities, masterAreas, masterCategories, refresh } = useSalesData();
   const [search, setSearch] = useState('');
   const [filterSales, setFilterSales] = useState('All');
   const [filterArea, setFilterArea] = useState('All');
@@ -395,7 +395,7 @@ export default function ManagerCustomer() {
       return {
         ...c,
         lastAct: cActs.length > 0 ? cActs[0] : null,
-        salesName: sales.find(s => s.id === c.sales_pic)?.nama || 'No PIC'
+        salesName: allSales.find(s => String(s.id) === String(c.sales_pic))?.nama || c.sales_pic || 'No PIC'
       };
     });
   }, [filteredCustomers, activities, sales]);
@@ -631,6 +631,7 @@ export default function ManagerCustomer() {
       <CustomerOverviewCharts 
         customers={filteredCustomers} 
         salesData={sales} 
+        masterCategories={masterCategories}
       />
 
       {/* TABLE SECTION */}
@@ -748,7 +749,7 @@ export default function ManagerCustomer() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {masterAreas.find(ma => ma.id === c.area)?.name || c.area || 'Unknown'}
+                        {masterAreas.find(ma => String(ma.id) === String(c.area))?.name || c.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -798,7 +799,7 @@ export default function ManagerCustomer() {
                         color: '#0ea5e9',
                         border: '1px solid #e0f2fe'
                       }}>
-                        {(masterCategories.find(mc => mc.id === c.kategori)?.name || c.kategori || 'Retail').toUpperCase()}
+                        {(masterCategories.find(mc => String(mc.id) === String(c.kategori))?.name || c.kategori || 'Retail').toUpperCase()}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>

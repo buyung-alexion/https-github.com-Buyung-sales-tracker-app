@@ -69,7 +69,7 @@ const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: str
 
 
 export default function ManagerProspek() {
-  const { sales, prospek = [], activities, refresh, masterStatuses = [], customers, masterAreas, masterCategories, masterChannels } = useSalesData();
+  const { sales, allSales, prospek = [], activities, refresh, masterStatuses = [], customers, masterAreas, masterCategories, masterChannels } = useSalesData();
 
   const getStatusName = (idOrName: string) => {
     if (!idOrName) return 'Cold';
@@ -135,7 +135,7 @@ export default function ManagerProspek() {
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
 
-  const getSalesName = (id: string) => sales.find(s => s.id === id)?.nama || 'Unknown';
+  const getSalesName = (id: string) => allSales.find(s => s.id === id)?.nama || id;
 
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
   const nowMs = new Date().getTime();
@@ -555,7 +555,7 @@ export default function ManagerProspek() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {masterAreas.find(ma => ma.id === p.area)?.name || p.area || 'Unknown'}
+                        {masterAreas.find(ma => String(ma.id) === String(p.area))?.name || p.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -571,7 +571,7 @@ export default function ManagerProspek() {
                          border: '1px solid #e2e8f0',
                          textTransform: 'uppercase'
                        }}>
-                         {masterCategories.find(mc => mc.id === p.kategori)?.name || p.kategori || 'Retail'}
+                         {masterCategories.find(mc => String(mc.id) === String(p.kategori))?.name || p.kategori || 'Retail'}
                        </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>

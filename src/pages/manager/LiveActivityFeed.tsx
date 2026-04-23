@@ -23,7 +23,7 @@ const getActLabel = (tipe: string) => {
 const ACT_COLOR: Record<string, string> = { WA: 'act-followup', Visit: 'act-visit', Call: 'act-followup', Order: 'act-order' };
 
 export default function LiveActivityFeed() {
-  const { activities, sales, prospek: allProspek } = useSalesData();
+  const { activities, sales, allSales, prospek: allProspek } = useSalesData();
   const [filterSales, setFilterSales] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
   const [selectedArea, setSelectedArea] = useState<string>('all');
@@ -37,7 +37,7 @@ export default function LiveActivityFeed() {
   const [viewAll, setViewAll] = useState(false);
   const ITEMS_PER_PAGE = 20;
 
-  const getSalesName = (id: string) => sales.find(s => s.id === id)?.nama || id;
+  const getSalesName = (id: string) => allSales.find(s => String(s.id) === String(id))?.nama || id;
 
   // Use a stable reference for "now" for data-binding logic
   const [now] = useState(new Date());
