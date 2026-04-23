@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Save, User, Key, Mail, Shield } from 'lucide-react';
+import { Camera, Save, User, Key, Shield } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
 export default function ManagerSettings() {
@@ -9,8 +9,7 @@ export default function ManagerSettings() {
     username: user?.username || 'user',
     role: user?.role || 'Manager',
     phone: user?.no_wa || '',
-    email: user?.email || '',
-    avatar: user?.avatar_url || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.nama}`,
+    avatar: user?.foto_profil || `https://api.dicebear.com/7.x/notionists/svg?seed=${user?.nama}`,
     password: ''
   });
 
@@ -72,7 +71,6 @@ export default function ManagerSettings() {
             <span style={{ background: '#fef08a', color: '#a16207', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 800 }}>{profile.role}</span>
             <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px dashed #e2e8f0', width: '100%', textAlign: 'left' }}>
               <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}><User size={16} /> @{profile.username}</p>
-              <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={16} /> {profile.email}</p>
               <p style={{ margin: '0', fontSize: '13px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Shield size={16} color={isSuperAdmin ? "#b45309" : "#0369a1"} />
                 <span style={{ fontWeight: 800, color: isSuperAdmin ? '#b45309' : '#0369a1' }}>
@@ -98,10 +96,6 @@ export default function ManagerSettings() {
                   <label style={labelStyle}>Nomor Handphone</label>
                   <input type="text" style={inputStyle} value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })} />
                 </div>
-              </div>
-              <div>
-                <label style={labelStyle}>Alamat Email</label>
-                <input type="email" style={inputStyle} value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })} required />
               </div>
               <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e2e8f0' }}>
                 <h4 style={{ fontSize: '15px', fontWeight: 800, color: '#0f172a', margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px' }}><Key size={18} /> Ganti Password</h4>

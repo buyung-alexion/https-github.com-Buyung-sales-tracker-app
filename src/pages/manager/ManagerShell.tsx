@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
 import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
@@ -15,7 +15,6 @@ import { useChatNotifications } from '../../hooks/useChatNotifications';
 
 export default function ManagerShell() {
   const { logout, user } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
   const { unreadCount: chatUnread, newMsg, clearNewMsg } = useChatNotifications(user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -99,8 +98,19 @@ export default function ManagerShell() {
                   {item.icon} <span style={{ color: '#ef4444' }}>{item.label}</span>
                 </a>
               ) : (
-                <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)}>
+                <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative' }}>
                   {item.icon} <span>{item.label}</span>
+                  {item.label === 'Live Chat' && chatUnread > 0 && (
+                    <span style={{ 
+                      position: 'absolute', top: '12px', right: '16px', 
+                      background: '#ef4444', color: '#fff', fontSize: '10px', 
+                      fontWeight: 900, minWidth: '18px', height: '18px', 
+                      borderRadius: '50%', display: 'flex', alignItems: 'center', 
+                      justifyContent: 'center', border: '2px solid #fff' 
+                    }}>
+                      {chatUnread > 9 ? '9+' : chatUnread}
+                    </span>
+                  )}
                 </NavLink>
               ))}
             </div>
@@ -156,9 +166,9 @@ export default function ManagerShell() {
 
           <nav className="topbar-nav">
             {menuCategories.flatMap(c => c.items).filter(i => !i.action).map(item => (
-              <NavLink key={item.path} to={item.path} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
+              <NavLink key={item.to} to={item.to} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
                 {item.icon} <span>{item.label}</span>
-                {item.label === 'Team Chat' && chatUnread > 0 && (
+                {item.label === 'Live Chat' && chatUnread > 0 && (
                   <span style={{ 
                     position: 'absolute', top: '-4px', right: '-4px', 
                     background: '#ef4444', color: '#fff', fontSize: '10px', 
