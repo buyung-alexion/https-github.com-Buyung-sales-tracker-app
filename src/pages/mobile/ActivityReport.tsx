@@ -237,10 +237,15 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
         }} />
       </div>
 
-      {/* 2. Main Form Area */}
+      {/* Drag Handle for Sheet Feel */}
+      <div style={{ padding: '12px 0 0', display: 'flex', justifyContent: 'center', background: '#f8fafc' }}>
+        <div style={{ width: '36px', height: '5px', background: '#E2E8F0', borderRadius: '10px' }} />
+      </div>
+
       <div style={{ 
-        height: '64vh', overflowY: 'auto', padding: '0 20px 120px', 
-        display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '-15px', position: 'relative', zIndex: 20 
+        height: '62vh', overflowY: 'auto', padding: '10px 20px 120px', 
+        display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '0', position: 'relative', zIndex: 20,
+        background: '#f8fafc'
       }}>
         
         {/* Status/Success Messages */}
@@ -365,15 +370,15 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
           onClick={handleCheckIn} 
           disabled={lockCheckIn || isSubmitting} 
           style={{ 
-            width: '100%', height: '64px', 
+            width: '100%', height: '60px', 
             background: lockCheckIn ? '#E2E8F0' : (isSubmitting ? '#CBD5E1' : 'var(--brand-yellow)'), 
-            color: '#111827', borderRadius: '18px', fontWeight: 950, fontSize: '17px', border: 'none', 
+            color: '#111827', borderRadius: '16px', fontWeight: 950, fontSize: '16px', border: 'none', 
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-            boxShadow: lockCheckIn ? 'none' : '0 10px 25px rgba(255, 204, 0, 0.3)',
+            boxShadow: lockCheckIn ? 'none' : '0 8px 20px rgba(255, 193, 7, 0.3)',
             marginBottom: '20px'
           }}
         >
-          {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Simpan & Kirim Laporan'}
+          {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Kirim Laporan'}
         </button>
 
       </div>
