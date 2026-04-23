@@ -200,10 +200,17 @@ export default function ActivityHistory() {
 
       {/* Activity Form Drawer */}
       {isFormOpen && (
-        <div className="modal-overlay" onClick={() => setIsFormOpen(false)} style={{ zIndex: 99999, padding: 0, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}>
-          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100%', maxWidth: '100vw', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
-            padding: 0, background: '#fff', border: 'none', position: 'relative', margin: '0 auto', left: 0, right: 0
+        <div onClick={() => setIsFormOpen(false)} style={{ 
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
+          zIndex: 99999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
+        }}>
+          <div onClick={e => e.stopPropagation()} style={{ 
+            height: '92vh', width: '100%', background: '#fff', 
+            borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
+            display: 'flex', flexDirection: 'column', overflowY: 'auto',
+            boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
+            animation: 'slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            position: 'relative'
           }}>
             {/* Close Button Overlay */}
             <button 
