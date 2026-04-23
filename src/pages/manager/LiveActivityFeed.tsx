@@ -37,7 +37,7 @@ export default function LiveActivityFeed() {
   const [viewAll, setViewAll] = useState(false);
   const ITEMS_PER_PAGE = 20;
 
-  const getSalesName = (id: string) => allSales.find(s => String(s.id) === String(id))?.nama || id;
+  const getSalesName = (id: string) => allSales.find(s => s.id == id || (Number(s.id) === Number(id) && id !== ''))?.nama || id;
 
   // Use a stable reference for "now" for data-binding logic
   const [now] = useState(new Date());
@@ -97,7 +97,7 @@ export default function LiveActivityFeed() {
       .filter(p => selectedArea === 'all' || p.area === selectedArea)
       .filter(p => 
         (p.nama_toko || '').toLowerCase().includes(search.toLowerCase()) ||
-        (sales.find(s => s.id === p.sales_owner)?.nama || '').toLowerCase().includes(search.toLowerCase())
+        (allSales.find(s => s.id == p.sales_owner || (Number(s.id) === Number(p.sales_owner) && p.sales_owner !== ''))?.nama || '').toLowerCase().includes(search.toLowerCase())
       );
   }, [allProspek, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs, sales]);
 

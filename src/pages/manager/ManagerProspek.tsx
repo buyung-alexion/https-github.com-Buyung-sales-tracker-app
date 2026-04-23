@@ -135,7 +135,7 @@ export default function ManagerProspek() {
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
 
-  const getSalesName = (id: string) => allSales.find(s => s.id === id)?.nama || id;
+  const getSalesName = (id: string) => allSales.find(s => s.id == id || (Number(s.id) === Number(id) && id !== ''))?.nama || id;
 
   const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
   const nowMs = new Date().getTime();
@@ -156,7 +156,7 @@ export default function ManagerProspek() {
         salesName: getSalesName(p.sales_owner)
       };
     });
-  }, [prospek, activities, sales, nowMs]);
+  }, [prospek, activities, allSales, nowMs]);
 
   const kpiStats = useMemo(() => {
     const nocontactCount = prospekWithStats.filter(p => p.contactCount === 0).length;
@@ -190,7 +190,7 @@ export default function ManagerProspek() {
         return true;
       })
       .filter(p => filterArea === 'All' || p.area === filterArea)
-      .filter(p => !search || p.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === p.sales_owner)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
+      .filter(p => !search || p.nama_toko.toLowerCase().includes(search.toLowerCase()) || (allSales.find(s => s.id == p.sales_owner || (Number(s.id) === Number(p.sales_owner) && p.sales_owner !== ''))?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
 
     // Filtered Customers (Converted from Prospek only)
     const filteredC = customers
@@ -205,7 +205,7 @@ export default function ManagerProspek() {
         if (filterDate === 'month') return t >= monthMs;
         return true;
       })
-      .filter(c => !search || c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (sales.find(s => s.id === c.sales_pic)?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
+      .filter(c => !search || c.nama_toko.toLowerCase().includes(search.toLowerCase()) || (allSales.find(s => s.id == c.sales_pic || (Number(s.id) === Number(c.sales_pic) && c.sales_pic !== ''))?.nama || 'Unknown').toLowerCase().includes(search.toLowerCase()));
 
     return {
       filteredP: filteredP.sort((a, b) => b.created_at.localeCompare(a.created_at)),
@@ -555,7 +555,7 @@ export default function ManagerProspek() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {masterAreas.find(ma => String(ma.id) === String(p.area))?.name || p.area || 'Unknown'}
+                        {masterAreas.find(ma => ma.id == p.area || (Number(ma.id) === Number(p.area) && p.area !== ''))?.name || p.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -571,7 +571,7 @@ export default function ManagerProspek() {
                          border: '1px solid #e2e8f0',
                          textTransform: 'uppercase'
                        }}>
-                         {masterCategories.find(mc => String(mc.id) === String(p.kategori))?.name || p.kategori || 'Retail'}
+                         {masterCategories.find(mc => mc.id == p.kategori || (Number(mc.id) === Number(p.kategori) && p.kategori !== ''))?.name || p.kategori || 'Retail'}
                        </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>

@@ -46,7 +46,7 @@ const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }:
       counts[k] = (counts[k] || 0) + 1;
     });
     return Object.entries(counts).map(([id, count]) => {
-      const cat = masterCategories.find(mc => String(mc.id) === id);
+      const cat = masterCategories.find(mc => mc.id == id || (Number(mc.id) === Number(id) && id !== ''));
       return { name: cat ? cat.name : id, count };
     }).sort((a, b) => b.count - a.count).slice(0, 4);
   }, [customers, masterCategories]);
@@ -395,10 +395,10 @@ export default function ManagerCustomer() {
       return {
         ...c,
         lastAct: cActs.length > 0 ? cActs[0] : null,
-        salesName: allSales.find(s => String(s.id) === String(c.sales_pic))?.nama || c.sales_pic || 'No PIC'
+        salesName: allSales.find(s => s.id == c.sales_pic || (Number(s.id) === Number(c.sales_pic) && c.sales_pic !== ''))?.nama || c.sales_pic || 'No PIC'
       };
     });
-  }, [filteredCustomers, activities, sales]);
+  }, [filteredCustomers, activities, allSales]);
 
   const pagedCustomers = useMemo(() => {
     if (viewAll) return customerWithStats;
@@ -749,7 +749,7 @@ export default function ManagerCustomer() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {masterAreas.find(ma => String(ma.id) === String(c.area))?.name || c.area || 'Unknown'}
+                        {masterAreas.find(ma => ma.id == c.area || (Number(ma.id) === Number(c.area) && c.area !== ''))?.name || c.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -799,7 +799,7 @@ export default function ManagerCustomer() {
                         color: '#0ea5e9',
                         border: '1px solid #e0f2fe'
                       }}>
-                        {(masterCategories.find(mc => String(mc.id) === String(c.kategori))?.name || c.kategori || 'Retail').toUpperCase()}
+                        {(masterCategories.find(mc => mc.id == c.kategori || (Number(mc.id) === Number(c.kategori) && c.kategori !== ''))?.name || c.kategori || 'Retail').toUpperCase()}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
