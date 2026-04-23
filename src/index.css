@@ -108,6 +108,11 @@ body.hide-nav .bottom-nav {
   pointer-events: none;
 }
 
+.mobile-main.no-scroll {
+  overflow: hidden !important;
+  height: 100dvh;
+}
+
 .nav-item {
   flex: 1;
   display: flex;

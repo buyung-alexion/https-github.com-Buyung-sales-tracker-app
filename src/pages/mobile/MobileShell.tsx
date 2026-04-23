@@ -144,7 +144,7 @@ export default function MobileShell() {
         </button>
       </div>
 
-      <main className="mobile-main">
+      <main className={`mobile-main ${location.pathname.startsWith('/mobile/chat') ? 'no-scroll' : ''}`}>
         <Routes>
           <Route index element={<Homepage salesId={user.id} />} />
           <Route path="home" element={<Homepage salesId={user.id} />} />

@@ -214,7 +214,7 @@ export default function SalesChat({ salesId }: Props) {
 
   // Render Active Conversation
   return (
-    <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', padding: 0, background: '#f0f2f5', overflow: 'hidden' }}>
+    <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100dvh', padding: 0, background: '#f0f2f5', overflow: 'hidden', position: 'relative' }}>
       {/* Header (Sticky) */}
        <div className="hero-compact" style={{ flexShrink: 0, background: 'var(--brand-yellow)', padding: 'calc(10px + env(safe-area-inset-top)) 20px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px', zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
         <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
