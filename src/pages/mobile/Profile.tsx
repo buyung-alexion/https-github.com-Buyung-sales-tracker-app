@@ -231,7 +231,6 @@ export default function Profile() {
                 style={{ width: '100%', height: '100%', borderRadius: '34px', objectFit: 'cover', border: '3px solid #fff' }}
               />
             </div>
-            
             <div style={{ position: 'absolute', bottom: '-4px', right: '-12px', display: 'flex', gap: '4px' }}>
                <button
                 onClick={() => cameraInputRef.current?.click()}
@@ -430,7 +429,7 @@ export default function Profile() {
         </div>
       )}
       <div style={{ marginTop: '40px', textAlign: 'center', opacity: 0.3, fontSize: '10px', fontWeight: 800, paddingBottom: '20px' }}>
-        SALES TRACKER MOBILE v1.3.7 • STABLE
+        SALES TRACKER MOBILE v1.3.8 • STABLE
       </div>
     </div>
   );

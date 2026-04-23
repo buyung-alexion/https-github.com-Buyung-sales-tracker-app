@@ -237,7 +237,17 @@ export default function SalesChat({ salesId }: Props) {
       </div>
 
       {/* Messages Area (Scrollable) */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px 20px 10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      <div style={{ 
+        flex: 1, 
+        overflowY: 'auto', 
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehaviorY: 'contain',
+        padding: '20px 20px 10px', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: '8px',
+        minHeight: 0
+      }}>
         {messages.map(m => {
           const isMe = m.sender_id === salesId;
           return (
