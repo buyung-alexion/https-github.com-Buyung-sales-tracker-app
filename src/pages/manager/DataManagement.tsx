@@ -9,13 +9,13 @@ export default function DataManagement() {
   const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
   const [isLoading, setIsLoading] = useState(true);
 
-  const { masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
+  const { allSales, masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
 
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       const roles = await store.fetchRoles();
-      const { data: sales } = await supabase.from('sales').select('*');
+      const sales = allSales;
       let targets = await store.fetchSystemTargets();
       if (!targets) {
         targets = { 
@@ -170,11 +170,9 @@ export default function DataManagement() {
         if (error) throw error;
       }
       setTeamModal({isOpen: false, data: null});
-      // Force immediate refresh from DB
-      const { data: sales, error: fetchError } = await supabase.from('sales').select('*').order('nama');
-      if (fetchError) throw fetchError;
+      await refreshGlobal();
       
-      setData(d => ({...d, teams: (sales || []).map((s:any) => ({ 
+      setData(d => ({...d, teams: (allSales || []).map((s:any) => ({ 
         id: s.id, nama: s.nama, username: s.username, pass: s.password, role: s.role, foto_profil: s.foto_profil, no_wa: s.no_wa
       }))}));
       

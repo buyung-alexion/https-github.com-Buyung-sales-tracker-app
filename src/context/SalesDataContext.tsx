@@ -5,6 +5,7 @@ import type { SystemTargets, Prospek, Customer, Activity, Sales } from '../types
 
 interface SalesDataContextType {
   sales: Sales[];
+  allSales: Sales[];
   prospek: Prospek[];
   customers: Customer[];
   activities: Activity[];
@@ -23,6 +24,7 @@ const SalesDataContext = createContext<SalesDataContextType | undefined>(undefin
 export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const { isLoggedIn } = useAuth();
   const [sales, setSales] = useState<Sales[]>([]);
+  const [allSales, setAllSales] = useState<Sales[]>([]);
   const [prospek, setProspek] = useState<Prospek[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -56,13 +58,11 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       if (resProspek.error) console.error('Prospek fetch error:', resProspek.error);
       if (resActivity.error) console.error('Activity fetch error:', resActivity.error);
 
-      const filteredSales = (resSales.data || []).filter(s => {
-        const r = (s.role || '').toLowerCase();
-        return r.includes('sales') || r.includes('salesman') || r.includes('marketing') || 
-               r.includes('manager') || r.includes('koordinator') || r.includes('supervisor') || r.includes('admin');
-      });
+      const allSalesData = resSales.data || [];
+      const salesOnly = allSalesData.filter(s => (s.role || '').toLowerCase() === 'sales');
       
-      setSales(filteredSales);
+      setSales(salesOnly);
+      setAllSales(allSalesData);
       setProspek(resProspek.data || []);
       setCustomers(resCustomer.data || []);
       setActivities(resActivity.data || []);
@@ -117,6 +117,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     sales,
+    allSales,
     prospek,
     customers,
     activities,

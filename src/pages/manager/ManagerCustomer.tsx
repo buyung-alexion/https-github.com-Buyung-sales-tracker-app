@@ -45,8 +45,11 @@ const CustomerOverviewCharts = ({ customers, salesData }: { customers: any[], sa
       const k = c.kategori || 'Uncategorized';
       counts[k] = (counts[k] || 0) + 1;
     });
-    return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 4);
-  }, [customers]);
+    return Object.entries(counts).map(([id, count]) => {
+      const cat = masterCategories.find(mc => mc.id === id);
+      return { name: cat ? cat.name : id, count };
+    }).sort((a, b) => b.count - a.count).slice(0, 4);
+  }, [customers, masterCategories]);
 
   const maxArea = Math.max(1, ...areaStats.map(s => s.count));
 
@@ -745,7 +748,7 @@ export default function ManagerCustomer() {
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
-                        {c.area || 'Unknown'}
+                        {masterAreas.find(ma => ma.id === c.area)?.name || c.area || 'Unknown'}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
@@ -795,7 +798,7 @@ export default function ManagerCustomer() {
                         color: '#0ea5e9',
                         border: '1px solid #e0f2fe'
                       }}>
-                        {(c.kategori || 'Retail').toUpperCase()}
+                        {(masterCategories.find(mc => mc.id === c.kategori)?.name || c.kategori || 'Retail').toUpperCase()}
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
