@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, Search, Users, Camera, CheckCircle2, Smile, Paperclip, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Send, Search, Users, CheckCircle2, Smile, Paperclip, Image as ImageIcon, X } from 'lucide-react';
 import { chatStore } from '../../store/chatStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { ChatMessage, ChatContact } from '../../types';
@@ -260,7 +260,9 @@ export default function SalesChat({ salesId }: Props) {
         {attachment && (
           <div style={{ marginBottom: '12px', position: 'relative', display: 'inline-block' }}>
             <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '8px', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-            <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+            <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <X size={12} />
+            </button>
           </div>
         )}
         
