@@ -248,7 +248,7 @@ export default function SalesChat({ salesId }: Props) {
       </div>
 
        {/* Input Area */}
-      <div style={{ background: '#fff', padding: '12px 16px 30px', borderTop: '1px solid #e2e8f0', position: 'relative' }}>
+      <div style={{ background: '#fff', padding: `12px 16px calc(12px + env(safe-area-inset-bottom))`, borderTop: '1px solid #e2e8f0', position: 'relative', zIndex: 10 }}>
         {showEmojiPicker && (
           <div style={{ position: 'absolute', bottom: '100%', left: '16px', background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap', width: '220px', boxShadow: '0 -10px 25px rgba(0,0,0,0.1)', zIndex: 50, marginBottom: '10px' }}>
             {EMOJI_LIST.map(e => (

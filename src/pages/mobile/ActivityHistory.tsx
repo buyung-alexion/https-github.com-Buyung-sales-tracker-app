@@ -207,11 +207,12 @@ export default function ActivityHistory() {
           zIndex: 999999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
         }}>
           <div onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100vw', background: '#fff', 
+            height: '92vh', width: '100%', maxWidth: '500px', background: '#fff', 
             borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
             display: 'flex', flexDirection: 'column', overflowY: 'auto',
             boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
-            position: 'relative', margin: 0, padding: 0
+            position: 'relative', margin: 0, padding: 0,
+            left: 0, right: 0
           }}>
             {/* Close Button Overlay */}
             <button 
