@@ -565,7 +565,7 @@ export default function Homepage({ salesId }: Props) {
         letterSpacing: '0.05em',
         opacity: 0.8
       }}>
-        vDeploy 1.0.24.0422
+        vDeploy 1.0.24.0423
       </div>
     </div>
   );
