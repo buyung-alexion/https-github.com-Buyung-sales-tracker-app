@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { store } from '../../store/dataStore';
-import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, Users, ChevronDown, ChevronRight, Edit3 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, ChevronDown, ChevronRight, Edit3 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
