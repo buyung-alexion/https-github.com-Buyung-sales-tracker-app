@@ -205,24 +205,27 @@ export default function OrderHistory() {
               const isExpanded = expandedDates.includes(date);
 
               return (
-                <div key={date} style={{ background: '#fff', borderRadius: '20px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
-                  {/* Accordion Header */}
+                <div key={date} style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+                  {/* Card Header (Accordion Trigger) */}
                   <div 
                     onClick={() => toggleExpand(date)}
                     style={{ 
-                      padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
-                      background: isExpanded ? '#f8fafc' : '#fff',
-                      borderLeft: `5px solid ${isExpanded ? 'var(--brand-yellow)' : '#e2e8f0'}`,
-                      transition: 'all 0.2s'
+                      padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
+                      background: '#fff',
+                      borderLeft: '6px solid #06b6d4',
+                      position: 'relative'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      {isExpanded ? <ChevronDown size={18} color="#64748b" /> : <ChevronRight size={18} color="#64748b" />}
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{formatGroupName(date)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b', marginBottom: '4px' }}>{formatGroupName(date)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
+                         <Search size={12} style={{ opacity: 0.7 }} />
+                         <span style={{ fontSize: '11px', fontWeight: 800 }}>{ordersInGroup.length} Pesanan</span>
+                      </div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                       <div style={{ fontSize: '14px', fontWeight: 900, color: '#F59E0B' }}>Rp {totalAmount.toLocaleString('id-ID')}</div>
-                       <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>{ordersInGroup.length} Pesanan</div>
+                    <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                       <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b' }}>Rp {totalAmount.toLocaleString('id-ID')}</div>
+                       {isExpanded ? <ChevronDown size={14} color="#94a3b8" /> : <ChevronRight size={14} color="#94a3b8" />}
                     </div>
                   </div>
                   

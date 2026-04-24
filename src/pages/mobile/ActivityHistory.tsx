@@ -102,13 +102,28 @@ export default function ActivityHistory() {
 
         {/* Summary Row */}
         <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
-           <div style={{ flex: 1, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>Total Aktivitas</div>
-              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>{myActivities.length} Laporan</div>
+           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <MapPin size={14} color="#2563eb" />
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Aktivitas</div>
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>
+                {myActivities.length} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Aksi</span>
+              </div>
            </div>
-           <div style={{ flex: 1, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>Hari Ini</div>
-              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>{groupedActivities[todayStr]?.length || 0} Aksi</div>
+           
+           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <History size={14} color="#d97706" />
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hari Ini</div>
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>
+                {groupedActivities[todayStr]?.length || 0} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Aksi</span>
+              </div>
            </div>
         </div>
       </div>
@@ -149,21 +164,27 @@ export default function ActivityHistory() {
               const isExpanded = expandedDates.includes(date);
 
               return (
-                <div key={date} style={{ background: '#fff', borderRadius: '20px', border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+                <div key={date} style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
+                  {/* Card Header (Accordion Trigger) */}
                   <div 
                     onClick={() => toggleExpand(date)}
                     style={{ 
-                      padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
-                      background: isExpanded ? '#f8fafc' : '#fff',
-                      borderLeft: `5px solid ${isExpanded ? 'var(--brand-yellow)' : '#e2e8f0'}`,
-                      transition: 'all 0.2s'
+                      padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
+                      background: '#fff',
+                      borderLeft: '6px solid #06b6d4',
+                      position: 'relative'
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      {isExpanded ? <ChevronDown size={18} color="#64748b" /> : <ChevronRight size={18} color="#64748b" />}
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{formatGroupName(date)}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b', marginBottom: '4px' }}>{formatGroupName(date)}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
+                         <History size={12} style={{ opacity: 0.7 }} />
+                         <span style={{ fontSize: '11px', fontWeight: 800 }}>{actsInGroup.length} Aktivitas</span>
+                      </div>
                     </div>
-                    <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>{actsInGroup.length} Aktivitas</div>
+                    <div style={{ textAlign: 'right' }}>
+                       {isExpanded ? <ChevronDown size={14} color="#94a3b8" /> : <ChevronRight size={14} color="#94a3b8" />}
+                    </div>
                   </div>
                   
                   {isExpanded && (

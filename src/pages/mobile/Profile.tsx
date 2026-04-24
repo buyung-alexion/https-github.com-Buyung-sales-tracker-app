@@ -429,7 +429,7 @@ export default function Profile() {
         </div>
       )}
       <div style={{ marginTop: '40px', textAlign: 'center', opacity: 0.3, fontSize: '10px', fontWeight: 800, paddingBottom: '20px' }}>
-        SALES TRACKER MOBILE v1.4.7 • STABLE
+        SALES TRACKER MOBILE v1.4.8 • STABLE
       </div>
     </div>
   );
