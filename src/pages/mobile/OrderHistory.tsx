@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { store } from '../../store/dataStore';
-import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, ChevronDown, ChevronRight, Edit3 } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, ChevronDown, ChevronRight, Edit3, BarChart2, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
@@ -219,7 +219,7 @@ export default function OrderHistory() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b', marginBottom: '4px' }}>{formatGroupName(date)}</div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
-                         <Search size={12} style={{ opacity: 0.7 }} />
+                         <FileText size={12} style={{ opacity: 0.7 }} />
                          <span style={{ fontSize: '11px', fontWeight: 800 }}>{ordersInGroup.length} Pesanan</span>
                       </div>
                     </div>
