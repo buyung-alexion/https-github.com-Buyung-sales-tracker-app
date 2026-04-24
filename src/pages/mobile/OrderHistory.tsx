@@ -142,13 +142,29 @@ export default function OrderHistory() {
 
         {/* Total Summary Row */}
         <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
-           <div style={{ flex: 1, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>Total Pesanan</div>
-              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>{myOrders.length} Pesanan</div>
+           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingCart size={14} color="#2563eb" />
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Pesanan</div>
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>
+                {myOrders.length} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Order</span>
+              </div>
            </div>
-           <div style={{ flex: 1, background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', borderRadius: '16px', padding: '12px', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <div style={{ fontSize: '10px', fontWeight: 800, color: 'rgba(0,0,0,0.5)', textTransform: 'uppercase' }}>Omzet Total</div>
-              <div style={{ fontSize: '18px', fontWeight: 950, color: '#000' }}>Rp {myOrders.reduce((sum, o) => sum + (o.amount || 0), 0).toLocaleString('id-ID')}</div>
+           
+           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BarChart2 size={14} color="#d97706" />
+                </div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Omzet Total</div>
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b', display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+                <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 700 }}>Rp</span>
+                <span>{myOrders.reduce((sum, o) => sum + (o.amount || 0), 0).toLocaleString('id-ID')}</span>
+              </div>
            </div>
         </div>
       </div>
