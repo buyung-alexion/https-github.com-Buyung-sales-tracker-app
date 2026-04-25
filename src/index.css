@@ -73,7 +73,7 @@ input, textarea, select { font-family: inherit; }
 .login-btn:hover { background: var(--bg-glass-hover); border-color: var(--brand-yellow); transform: translateX(4px); }
 .login-name { font-size: 18px; color: var(--text); }
 
-.mobile-shell { display: flex; flex-direction: column; height: 100vh; max-width: 480px; margin: 0 auto; }
+.mobile-shell { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; }
 .mobile-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 18px; background: #FFFFFF; border-bottom: 1px solid var(--border);
@@ -111,7 +111,6 @@ body.hide-nav .bottom-nav {
 
 .mobile-main.no-scroll {
   overflow: hidden !important;
-  height: 100dvh;
 }
 
 body.chat-active .bottom-nav {
@@ -120,7 +119,6 @@ body.chat-active .bottom-nav {
 
 body.chat-active .mobile-main {
   overflow: hidden !important;
-  height: 100dvh;
 }
 
 .nav-item {
