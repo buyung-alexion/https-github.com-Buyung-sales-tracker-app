@@ -183,7 +183,7 @@ export default function SalesChat({ salesId }: Props) {
         </div>
 
         {/* Scrollable List Area */}
-        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '100px' }}>
+        <div className="hide-scrollbar" style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '100px' }}>
           {loading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading chats...</div>
           ) : filteredContacts.length === 0 ? (
@@ -239,7 +239,7 @@ export default function SalesChat({ salesId }: Props) {
       </div>
 
       {/* Messages Area (Scrollable) */}
-      <div style={{ 
+      <div className="hide-scrollbar" style={{ 
         flex: 1, 
         overflowY: 'auto', 
         WebkitOverflowScrolling: 'touch',
@@ -267,7 +267,18 @@ export default function SalesChat({ salesId }: Props) {
                    <div style={{ fontSize: '10px', color: '#6366f1', fontWeight: 800, marginBottom: '2px' }}>{m.sender_name}</div>
                 )}
                 {m.attachment && (
-                  <img src={m.attachment} alt="Attachment" style={{ width: '100%', borderRadius: '8px', marginBottom: m.text ? '8px' : '0' }} />
+                  m.attachment.startsWith('[File:') ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: isMe ? 'rgba(0,0,0,0.05)' : '#f1f5f9', padding: '10px', borderRadius: '8px', marginBottom: m.text ? '8px' : '0' }}>
+                      <div style={{ background: isMe ? '#fff' : '#e2e8f0', width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isMe ? '#F59E0B' : '#64748b' }}>
+                        <Paperclip size={18} />
+                      </div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, wordBreak: 'break-all' }}>
+                        {m.attachment.replace('[File: ', '').replace(']', '')}
+                      </div>
+                    </div>
+                  ) : (
+                    <img src={m.attachment} alt="Attachment" style={{ width: '100%', borderRadius: '8px', marginBottom: m.text ? '8px' : '0' }} />
+                  )
                 )}
                 {m.text && <div style={{ fontSize: '14px', fontWeight: 600, lineHeight: '1.4' }}>{m.text}</div>}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
@@ -296,7 +307,18 @@ export default function SalesChat({ salesId }: Props) {
         {attachment && (
           <div style={{ position: 'absolute', bottom: '100%', left: '16px', zIndex: 1100, marginBottom: '10px' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '12px', border: '3px solid #fff', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }} />
+              {attachment.startsWith('[File:') ? (
+                <div style={{ height: '80px', padding: '0 20px', background: '#fff', borderRadius: '12px', border: '3px solid #e2e8f0', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                   <div style={{ background: '#f1f5f9', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                     <Paperclip size={20} />
+                   </div>
+                   <div style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
+                     {attachment.replace('[File: ', '').replace(']', '')}
+                   </div>
+                </div>
+              ) : (
+                <img src={attachment} alt="Preview" style={{ height: '80px', borderRadius: '12px', border: '3px solid #fff', boxShadow: '0 8px 25px rgba(0,0,0,0.2)' }} />
+              )}
               <button onClick={() => setAttachment(null)} style={{ position: 'absolute', top: '-10px', right: '-10px', background: '#EF4444', color: '#fff', border: 'none', borderRadius: '50%', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer' }}>
                 <X size={16} />
               </button>
