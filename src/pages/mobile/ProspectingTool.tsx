@@ -509,8 +509,9 @@ export default function ProspectingTool({ salesId }: Props) {
 
       {/* Closing Modal */}
       {closingModal && (
-        <div className="modal-overlay" onClick={() => setClosingModal(null)}>
-          <div className="modal-card" onClick={e => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={() => setClosingModal(null)} style={{ alignItems: 'flex-end', padding: 0 }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', border: 'none' }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div className="modal-header">
               <h3>🤝 Deal Closing!</h3>
               <button onClick={() => setClosingModal(null)}><X size={20} /></button>
