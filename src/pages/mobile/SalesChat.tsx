@@ -285,7 +285,7 @@ export default function SalesChat({ salesId }: Props) {
       <div style={{ 
         flexShrink: 0,
         background: '#f0f2f5', 
-        padding: `12px 12px calc(82px + env(safe-area-inset-bottom))`, 
+        padding: `12px 12px calc(12px + env(safe-area-inset-bottom))`, 
         zIndex: 1000,
         width: '100%',
         boxSizing: 'border-box',
