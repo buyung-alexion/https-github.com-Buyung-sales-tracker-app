@@ -49,6 +49,7 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [targetType, setTargetType] = useState<'General' | 'Customer' | 'Prospek'>('General');
   const [targetId, setTargetId] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [location, setLocation] = useState<{lat: number, lng: number} | null>({ lat: -1.265, lng: 116.83 }); // Default Balikpapan
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -188,7 +189,7 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
       await refresh();
       setTimeout(() => {
           setSuccess(false); setCatatan(''); setPhotoBase64(null); setTargetId(''); setTargetType('General');
-          setTipeAksi('Visit');
+          setTipeAksi('Visit'); setSearchQuery('');
           setIsSubmitting(false);
           if (onSuccess) onSuccess();
       }, 2000);
@@ -280,11 +281,11 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
               <div>
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '8px' }}>TIPE TARGET</label>
                 <div style={{ display: 'flex', gap: '8px', background: '#F1F5F9', padding: '4px', borderRadius: '14px' }}>
-                   {['General', 'Customer', 'Prospek'].map(t => (
-                     <button 
-                       key={t}
-                       onClick={() => { setTargetType(t as any); setTargetId(''); }}
-                       style={{ 
+                     {['General', 'Customer', 'Prospek'].map(t => (
+                       <button 
+                         key={t}
+                         onClick={() => { setTargetType(t as any); setTargetId(''); setSearchQuery(''); }}
+                         style={{ 
                          flex: 1, padding: '10px 0', borderRadius: '10px', border: 'none', 
                          fontSize: '12px', fontWeight: 800, transition: 'all 0.2s',
                          background: targetType === t ? '#fff' : 'transparent',
@@ -301,6 +302,17 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
               {targetType !== 'General' && (
                 <div className="animate-fade-up">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '6px' }}>NAMA TOKO</label>
+                  <input
+                    type="text"
+                    placeholder={`Cari ${targetType === 'Customer' ? 'Customer' : 'Prospek'}...`}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px',
+                      fontSize: '14px', fontWeight: 600, color: '#1e293b', background: '#fff', outline: 'none',
+                      marginBottom: '8px'
+                    }}
+                  />
                   <select 
                     style={{ 
                       width: '100%', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', 
@@ -310,7 +322,9 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
                     onChange={e => setTargetId(e.target.value)}
                   >
                     <option value="">-- Pilih Toko --</option>
-                    {(targetType === 'Customer' ? myCustomers : myProspek).map(item => (
+                    {(targetType === 'Customer' ? myCustomers : myProspek)
+                      .filter(item => item.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(item => (
                       <option key={item.id} value={item.id}>{item.nama_toko}</option>
                     ))}
                   </select>
