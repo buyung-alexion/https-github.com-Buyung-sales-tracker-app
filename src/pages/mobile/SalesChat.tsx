@@ -267,13 +267,13 @@ export default function SalesChat({ salesId }: Props) {
                    <div style={{ fontSize: '10px', color: '#6366f1', fontWeight: 800, marginBottom: '2px' }}>{m.sender_name}</div>
                 )}
                 {m.attachment && (
-                  m.attachment.startsWith('[File:') ? (
+                  (!m.attachment.startsWith('data:image/') && !m.attachment.startsWith('http') && !m.attachment.startsWith('/')) ? (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: isMe ? 'rgba(0,0,0,0.05)' : '#f1f5f9', padding: '10px', borderRadius: '8px', marginBottom: m.text ? '8px' : '0' }}>
                       <div style={{ background: isMe ? '#fff' : '#e2e8f0', width: '36px', height: '36px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isMe ? '#F59E0B' : '#64748b' }}>
                         <Paperclip size={18} />
                       </div>
                       <div style={{ fontSize: '13px', fontWeight: 700, wordBreak: 'break-all' }}>
-                        {m.attachment.replace('[File: ', '').replace(']', '')}
+                        {m.attachment.replace('[File: ', '').replace(']', '') || 'File Document'}
                       </div>
                     </div>
                   ) : (
@@ -307,13 +307,13 @@ export default function SalesChat({ salesId }: Props) {
         {attachment && (
           <div style={{ position: 'absolute', bottom: '100%', left: '16px', zIndex: 1100, marginBottom: '10px' }}>
             <div style={{ position: 'relative', display: 'inline-block' }}>
-              {attachment.startsWith('[File:') ? (
+              {(!attachment.startsWith('data:image/') && !attachment.startsWith('http') && !attachment.startsWith('/')) ? (
                 <div style={{ height: '80px', padding: '0 20px', background: '#fff', borderRadius: '12px', border: '3px solid #e2e8f0', boxShadow: '0 8px 25px rgba(0,0,0,0.1)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                    <div style={{ background: '#f1f5f9', width: '40px', height: '40px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
                      <Paperclip size={20} />
                    </div>
                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>
-                     {attachment.replace('[File: ', '').replace(']', '')}
+                     {attachment.replace('[File: ', '').replace(']', '') || 'File Document'}
                    </div>
                 </div>
               ) : (
