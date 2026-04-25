@@ -306,28 +306,46 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
                     type="text"
                     placeholder={`Cari ${targetType === 'Customer' ? 'Customer' : 'Prospek'}...`}
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      if (targetId) setTargetId(''); // Reset if user starts typing again
+                    }}
                     style={{
                       width: '100%', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px',
                       fontSize: '14px', fontWeight: 600, color: '#1e293b', background: '#fff', outline: 'none',
                       marginBottom: '8px'
                     }}
                   />
-                  <select 
-                    style={{ 
-                      width: '100%', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px', 
-                      fontSize: '14px', fontWeight: 800, color: '#1e293b', background: '#fff', outline: 'none' 
-                    }} 
-                    value={targetId} 
-                    onChange={e => setTargetId(e.target.value)}
-                  >
-                    <option value="">-- Pilih Toko --</option>
-                    {(targetType === 'Customer' ? myCustomers : myProspek)
-                      .filter(item => item.nama_toko.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map(item => (
-                      <option key={item.id} value={item.id}>{item.nama_toko}</option>
-                    ))}
-                  </select>
+                  
+                  {/* Autocomplete List */}
+                  {!targetId && (
+                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid #E2E8F0', borderRadius: '12px', background: '#fff', marginTop: '4px' }}>
+                      {(targetType === 'Customer' ? myCustomers : myProspek)
+                        .filter(item => (item?.nama_toko || '').toLowerCase().includes((searchQuery || '').toLowerCase()))
+                        .map(item => (
+                          <div 
+                            key={item.id} 
+                            onClick={() => {
+                              setTargetId(item.id);
+                              setSearchQuery(item.nama_toko);
+                            }}
+                            style={{ 
+                              padding: '12px 16px', borderBottom: '1px solid #f1f5f9', 
+                              fontSize: '14px', fontWeight: 700, color: '#1e293b',
+                              cursor: 'pointer', background: '#fff'
+                            }}
+                          >
+                            {item.nama_toko}
+                          </div>
+                      ))}
+                      
+                      {(targetType === 'Customer' ? myCustomers : myProspek).filter(item => (item?.nama_toko || '').toLowerCase().includes((searchQuery || '').toLowerCase())).length === 0 && (
+                        <div style={{ padding: '12px 16px', fontSize: '13px', color: '#94a3b8', textAlign: 'center' }}>
+                          Tidak ada hasil
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
            </div>
