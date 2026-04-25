@@ -17,6 +17,8 @@ export default function SalesChat({ salesId }: Props) {
   const [contacts, setContacts] = useState<ChatContact[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
+  const [selectedMessage, setSelectedMessage] = useState<ChatMessage | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [attachment, setAttachment] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +67,10 @@ export default function SalesChat({ salesId }: Props) {
           if (prev.find(m => m.id === payload.new.id)) return prev;
           return [...prev, payload.new as ChatMessage];
         });
+      } else if (payload.eventType === 'UPDATE') {
+        setMessages(prev => prev.map(m => m.id === payload.new.id ? { ...m, ...payload.new } : m));
+      } else if (payload.eventType === 'DELETE') {
+        setMessages(prev => prev.filter(m => m.id !== payload.old.id));
       }
     });
 
@@ -99,6 +105,9 @@ export default function SalesChat({ salesId }: Props) {
     const cid = chatStore.getChatId(salesId, c.id);
     setSelectedContact(c);
     setActiveChatId(cid);
+    setEditingMessageId(null);
+    setSelectedMessage(null);
+    setInputText('');
     // Mark as read immediately when selected
     chatStore.markAllAsRead(cid, salesId);
     // Update local count
@@ -114,13 +123,18 @@ export default function SalesChat({ salesId }: Props) {
     setInputText('');
     setAttachment(null);
 
-    await chatStore.sendMessage({
-      chat_id: activeChatId,
-      sender_id: salesId,
-      sender_name: currentUser?.nama || 'Sales',
-      text,
-      attachment: photo || undefined
-    });
+    if (editingMessageId) {
+      await chatStore.editMessage(editingMessageId, text);
+      setEditingMessageId(null);
+    } else {
+      await chatStore.sendMessage({
+        chat_id: activeChatId,
+        sender_id: salesId,
+        sender_name: currentUser?.nama || 'Sales',
+        text,
+        attachment: photo || undefined
+      });
+    }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'doc') => {
@@ -254,15 +268,19 @@ export default function SalesChat({ salesId }: Props) {
           const isMe = m.sender_id === salesId;
           return (
             <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
-              <div style={{ 
-                background: isMe ? 'var(--brand-yellow)' : '#fff', 
-                color: '#111827',
-                padding: '10px 14px', 
-                borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                maxWidth: '80%',
-                boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-                position: 'relative'
-              }}>
+              <div 
+                onClick={() => { if (isMe) setSelectedMessage(m); }}
+                style={{ 
+                  background: isMe ? 'var(--brand-yellow)' : '#fff', 
+                  color: '#111827',
+                  padding: '10px 14px', 
+                  borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                  maxWidth: '80%',
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+                  position: 'relative',
+                  cursor: isMe ? 'pointer' : 'default'
+                }}
+              >
                 {selectedContact?.type === 'group' && !isMe && (
                    <div style={{ fontSize: '10px', color: '#6366f1', fontWeight: 800, marginBottom: '2px' }}>{m.sender_name}</div>
                 )}
@@ -342,6 +360,21 @@ export default function SalesChat({ salesId }: Props) {
              <button onClick={() => { galleryInputRef.current?.click(); setShowPhotoOptions(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', border: 'none', background: 'transparent', fontSize: '14px', fontWeight: 800, color: '#475569', textAlign: 'left', borderRadius: '10px' }}>
                 <Users size={18} /> Dari Galeri
              </button>
+          </div>
+        )}
+
+        {editingMessageId && (
+          <div style={{ background: '#FFFBEB', padding: '8px 16px', borderRadius: '12px', marginBottom: '8px', border: '1px solid #FCD34D', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ fontSize: '13px', color: '#D97706', fontWeight: 700 }}>✏️ Mengedit pesan...</div>
+            <button 
+              onClick={() => {
+                setEditingMessageId(null);
+                setInputText('');
+              }}
+              style={{ background: 'none', border: 'none', color: '#EF4444', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+            >
+              Batal
+            </button>
           </div>
         )}
 
@@ -439,6 +472,45 @@ export default function SalesChat({ salesId }: Props) {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Message Options Action Sheet */}
+      {selectedMessage && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'flex-end' }}>
+          <div className="animate-fade-up" style={{ background: '#fff', width: '100%', borderRadius: '24px 24px 0 0', padding: '24px 20px calc(24px + env(safe-area-inset-bottom))', boxShadow: '0 -10px 40px rgba(0,0,0,0.2)' }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '0 auto 20px' }} onClick={() => setSelectedMessage(null)}></div>
+            <div style={{ fontSize: '14px', color: '#64748b', textAlign: 'center', marginBottom: '20px', fontWeight: 600 }}>Opsi Pesan</div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <button 
+                onClick={() => {
+                  setEditingMessageId(selectedMessage.id);
+                  setInputText(selectedMessage.text || '');
+                  setSelectedMessage(null);
+                }}
+                style={{ background: '#f8fafc', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, color: '#1e293b', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}
+              >
+                ✏️ Edit Pesan
+              </button>
+              <button 
+                onClick={async () => {
+                  if (confirm('Apakah Anda yakin ingin menghapus pesan ini?')) {
+                    await chatStore.deleteMessage(selectedMessage.id);
+                    setSelectedMessage(null);
+                  }
+                }}
+                style={{ background: '#FFF1F2', border: 'none', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, color: '#E11D48', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }}
+              >
+                🗑️ Hapus Pesan
+              </button>
+              <button 
+                onClick={() => setSelectedMessage(null)}
+                style={{ background: 'transparent', border: '1px solid #e2e8f0', padding: '16px', borderRadius: '16px', fontSize: '16px', fontWeight: 700, color: '#64748b', textAlign: 'center', marginTop: '8px' }}
+              >
+                Batal
+              </button>
             </div>
           </div>
         </div>

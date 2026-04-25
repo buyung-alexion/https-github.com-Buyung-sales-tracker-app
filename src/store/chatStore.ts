@@ -51,6 +51,30 @@ export const chatStore = {
   },
 
   /**
+   * Menghapus pesan berdasarkan ID.
+   */
+  async deleteMessage(id: string) {
+    const { error } = await supabase
+      .from('messages')
+      .delete()
+      .eq('id', id);
+
+    if (error) console.error('deleteMessage error:', error);
+  },
+
+  /**
+   * Mengubah teks pesan berdasarkan ID.
+   */
+  async editMessage(id: string, newText: string) {
+    const { error } = await supabase
+      .from('messages')
+      .update({ text: newText })
+      .eq('id', id);
+
+    if (error) console.error('editMessage error:', error);
+  },
+
+  /**
    * Memperbarui status message (contoh: jadi read).
    */
   async updateMessageStatus(id: string, status: 'sent' | 'delivered' | 'read') {
