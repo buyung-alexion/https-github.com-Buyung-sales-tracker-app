@@ -25,9 +25,11 @@ export default function SalesChat({ salesId }: Props) {
 
   // Manage UI states when chat is active
   useEffect(() => {
-    // We always want a clean shell for chat
-    document.body.classList.add('chat-active');
-    return () => document.body.classList.remove('chat-active');
+    if (activeChatId) {
+      // Hide bottom nav only when inside an active conversation
+      document.body.classList.add('chat-active');
+      return () => document.body.classList.remove('chat-active');
+    }
   }, [activeChatId]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -181,7 +183,7 @@ export default function SalesChat({ salesId }: Props) {
         </div>
 
         {/* Scrollable List Area */}
-        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '40px' }}>
+        <div style={{ flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch', paddingBottom: '100px' }}>
           {loading ? (
             <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>Loading chats...</div>
           ) : filteredContacts.length === 0 ? (
