@@ -113,7 +113,7 @@ export default function DashboardTarget({ salesId }: Props) {
   const maxOrderCount = topActiveCustomers[0]?.orderCount ?? 1;
 
   return (
-    <div className="page-content" style={{ paddingBottom: '80px', position: 'relative' }}>
+    <div className="page-content" style={{ paddingBottom: '100px', position: 'relative' }}>
       
       {/* Top Header - Premium Grab Style */}
       <div className="yellow-bg-top" style={{ 

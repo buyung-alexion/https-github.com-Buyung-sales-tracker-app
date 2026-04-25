@@ -84,7 +84,7 @@ input, textarea, select { font-family: inherit; }
 .header-greeting { font-size: 15px; font-weight: 600; }
 .switch-btn { width: 34px; height: 34px; border-radius: 50%; background: transparent; border: 1px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: #111827; transition: all 0.2s; }
 .switch-btn:hover { background: rgba(0,0,0,0.05); }
-.mobile-main { flex: 1; overflow-y: auto; scrollbar-gutter: stable; min-height: 0; padding-bottom: 100px; }
+.mobile-main { flex: 1; overflow-y: auto; scrollbar-gutter: stable; min-height: 0; }
 
 /* ─── BOTTOM NAV ─────────────────────────────────────────── */
 .bottom-nav {
