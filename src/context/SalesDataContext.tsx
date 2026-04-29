@@ -78,10 +78,20 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         if (c.status && c.status.startsWith(`TARGET_${currentMonthStr}:`)) {
           target_volume = parseFloat(c.status.split(':')[1]) || 0;
         }
+        
+        // Sum order volume for current month dynamically
+        const customerOrders = (resOrders.data || []).filter((o: any) => {
+          if (o.customer_id !== c.id) return false;
+          const orderDate = new Date(o.created_at);
+          const orderMonthStr = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
+          return orderMonthStr === currentMonthStr;
+        });
+        const total_order_volume = customerOrders.reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+
         return {
           ...c,
           target_volume,
-          total_order_volume: c.total_order_volume || 0
+          total_order_volume
         };
       });
       setCustomers(customersWithTargets);

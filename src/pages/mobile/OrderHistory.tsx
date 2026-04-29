@@ -42,7 +42,17 @@ export default function OrderHistory() {
     return format(d, 'yyyy-MM-dd');
   }, [todayStr]);
 
-  const myOrders = useMemo(() => orders.filter(o => o.sales_id === user.id), [orders, user.id]);
+  const myOrders = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    return orders.filter(o => {
+      if (o.sales_id !== user.id) return false;
+      const orderDate = new Date(o.created_at);
+      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    });
+  }, [orders, user.id]);
   
   // Grouping by local date
   const groupedOrders = useMemo(() => {
