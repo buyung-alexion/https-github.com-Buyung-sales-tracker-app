@@ -27,6 +27,10 @@ export function useChatNotifications(currentUserId: string | undefined) {
 
     fetchUnreadCount();
 
+    const pollInterval = setInterval(() => {
+      fetchUnreadCount();
+    }, 5000);
+
     // Subscribe to new messages
     const channel = supabase
       .channel('global_chat_notifications')
@@ -34,11 +38,9 @@ export function useChatNotifications(currentUserId: string | undefined) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'messages' },
         (payload) => {
-          // If message is for a chat I'm part of (hard to filter perfectly in client, but let's just re-fetch)
           if (payload.new.sender_id !== currentUserId) {
             fetchUnreadCount();
             setNewMsg(payload.new);
-            // Optional: Browser Notification if permission granted
             if (Notification.permission === 'granted') {
               new Notification(`Pesan dari ${payload.new.sender_name || 'Tim'}`, { 
                 body: payload.new.text,
@@ -51,12 +53,13 @@ export function useChatNotifications(currentUserId: string | undefined) {
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'messages' },
-        () => fetchUnreadCount() // When status changes to 'read'
+        () => fetchUnreadCount()
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
+      clearInterval(pollInterval);
     };
   }, [currentUserId]);
 
