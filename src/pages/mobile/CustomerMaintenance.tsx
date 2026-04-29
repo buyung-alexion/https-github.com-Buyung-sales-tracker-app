@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageCircle, Phone, Search, MapPin, Edit3, X, Plus, Camera, Filter, Users, CheckSquare, FileText, Loader2, CheckCircle, ShoppingCart, Map, CheckCheck } from 'lucide-react';
+import { MessageCircle, Phone, Search, MapPin, Edit3, X, Plus, Camera, Filter, Users, CheckSquare, FileText, Loader2, CheckCircle, Map, CheckCheck } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 import type { Customer } from '../../types';
@@ -442,23 +442,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   borderTop: isExpanded ? '1px dashed #f1f5f9' : 'none'
                 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <button 
-                      className="tap-active"
-                      style={{ width: '100%', background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }} 
-                      onClick={async (e) => { 
-                        e.stopPropagation(); 
-                        const volumeStr = prompt(`Masukkan volume order untuk ${c.nama_toko} (Qty/Kg):`);
-                        if (!volumeStr) return;
-                        const amount = parseFloat(volumeStr.replace(/[^0-9]/g, ''));
-                        if (isNaN(amount) || amount <= 0) return alert('Volume tidak valid.');
-                        
-                        await store.logOrder(salesId, c.id, c.nama_toko, amount, salesName);
-                        window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
-                      }}
-                    >
-                      <ShoppingCart size={18} /> Buat Pesanan (Accurate)
-                    </button>
-                    
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button 
                         className="tap-active"

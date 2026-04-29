@@ -55,23 +55,7 @@ export default function ClientDetail() {
     }
   };
 
-  const handleOrder = async () => {
-    if (type !== 'customer') return;
-    
-    const amountStr = prompt('Masukkan nominal order (hanya angka, misal: 1500000):');
-    if (!amountStr) return;
-    
-    const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
-    if (isNaN(amount) || amount <= 0) {
-      alert('Nominal tidak valid.');
-      return;
-    }
 
-    await store.logOrder(currentSalesId, targetData.id, targetData.nama_toko, amount, salesName);
-    
-    // Redirect to Accurate Mobile for processing
-    window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
-  };
 
   const handleNote = async () => {
     const note = prompt('Masukkan catatan untuk customer ini:');
@@ -125,14 +109,7 @@ export default function ClientDetail() {
             </span>
             
             <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-              {type === 'customer' && (
-                <button 
-                  onClick={handleOrder}
-                  style={{ background: '#111827', color: 'var(--brand-yellow)', border: 'none', borderRadius: '12px', padding: '8px 16px', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                >
-                  <ShoppingCart size={14} /> ORDER
-                </button>
-              )}
+
               <button 
                 onClick={handleNote}
                 style={{ background: '#fff', color: '#111827', border: '1px solid #111827', borderRadius: '12px', padding: '8px 16px', fontWeight: 900, fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
