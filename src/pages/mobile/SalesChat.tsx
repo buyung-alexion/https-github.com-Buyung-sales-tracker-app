@@ -60,6 +60,19 @@ export default function SalesChat({ salesId }: Props) {
       if (isMounted) setMessages(msgs);
     });
 
+    const pollInterval = setInterval(() => {
+      chatStore.loadMessages(activeChatId).then(msgs => {
+        if (isMounted) {
+          setMessages(prev => {
+            if (msgs.length !== prev.length || JSON.stringify(msgs) !== JSON.stringify(prev)) {
+              return msgs;
+            }
+            return prev;
+          });
+        }
+      });
+    }, 4000);
+
     const unsub = chatStore.subscribeToMessages(activeChatId, (payload) => {
       if (!isMounted) return;
       if (payload.eventType === 'INSERT') {
@@ -77,14 +90,26 @@ export default function SalesChat({ salesId }: Props) {
     return () => {
       isMounted = false;
       unsub();
+      clearInterval(pollInterval);
     };
   }, [activeChatId]);
 
   // Global Subscription to all messages to update contact list (WhatsApp Style sorting)
   useEffect(() => {
+    const pollContacts = setInterval(() => {
+      chatStore.loadContacts(salesId, true).then(c => {
+        const filtered = c.filter(contact => contact.id !== salesId);
+        setContacts(prev => {
+          if (JSON.stringify(filtered) !== JSON.stringify(prev)) {
+            return filtered;
+          }
+          return prev;
+        });
+      });
+    }, 10000);
+
     const channel = chatStore.subscribeToMessages('*', (payload) => {
       if (payload.eventType === 'INSERT') {
-        // Refresh contacts to move the latest to the top
         chatStore.loadContacts(salesId, true).then(c => {
           const filtered = c.filter(contact => contact.id !== salesId);
           setContacts(filtered);
@@ -94,6 +119,7 @@ export default function SalesChat({ salesId }: Props) {
 
     return () => {
       channel();
+      clearInterval(pollContacts);
     };
   }, [salesId]);
 

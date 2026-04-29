@@ -62,7 +62,19 @@ export default function ManagerChat() {
       if (isMounted) setActiveMessages(msgs);
     });
 
-    // Subscribing to messages in the current active chat
+    const pollInterval = setInterval(() => {
+      chatStore.loadMessages(activeChatId).then(msgs => {
+        if (isMounted) {
+          setActiveMessages(prev => {
+            if (msgs.length !== prev.length || JSON.stringify(msgs) !== JSON.stringify(prev)) {
+              return msgs;
+            }
+            return prev;
+          });
+        }
+      });
+    }, 4000);
+
     const unsub = chatStore.subscribeToMessages(activeChatId, (payload) => {
       if (!isMounted) return;
       if (payload.eventType === 'INSERT') {
@@ -78,14 +90,26 @@ export default function ManagerChat() {
     return () => {
       isMounted = false;
       unsub();
+      clearInterval(pollInterval);
     };
   }, [activeChatId]);
 
   // Global Subscription to all messages to update contact list (WhatsApp Style sorting)
   useEffect(() => {
+    const pollContacts = setInterval(() => {
+      chatStore.loadContacts(currentUserId).then(c => {
+        const otherContacts = c.filter(contact => contact.id !== currentUserId);
+        setContacts(prev => {
+          if (JSON.stringify(otherContacts) !== JSON.stringify(prev)) {
+            return otherContacts;
+          }
+          return prev;
+        });
+      });
+    }, 10000);
+
     const channel = chatStore.subscribeToMessages('*', (payload) => {
       if (payload.eventType === 'INSERT') {
-        // Refresh contacts to move the latest to the top
         chatStore.loadContacts(currentUserId).then(c => {
           const otherContacts = c.filter(contact => contact.id !== currentUserId);
           setContacts(otherContacts);
@@ -95,6 +119,7 @@ export default function ManagerChat() {
 
     return () => {
       channel();
+      clearInterval(pollContacts);
     };
   }, []);
 
