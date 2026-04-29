@@ -38,6 +38,8 @@ export interface Customer {
   rating?: number;
   foto_profil?: string;
   is_from_prospek?: boolean;
+  total_order_volume?: number;
+  target_volume?: number;
 }
 
 export interface Activity {

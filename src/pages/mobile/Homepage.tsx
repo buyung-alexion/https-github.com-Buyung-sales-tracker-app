@@ -111,12 +111,12 @@ export default function Homepage({ salesId }: Props) {
   const handleQuickOrder = async () => {
     if (!selectedCust) return;
     
-    const amountStr = prompt(`Masukkan nominal order untuk ${selectedCust.nama_toko} (Angka saja):`);
-    if (!amountStr) return;
+    const volumeStr = prompt(`Masukkan volume order untuk ${selectedCust.nama_toko} (Qty/Kg):`);
+    if (!volumeStr) return;
     
-    const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
+    const amount = parseFloat(volumeStr.replace(/[^0-9]/g, ''));
     if (isNaN(amount) || amount <= 0) {
-      alert('Nominal tidak valid.');
+      alert('Volume tidak valid.');
       return;
     }
 

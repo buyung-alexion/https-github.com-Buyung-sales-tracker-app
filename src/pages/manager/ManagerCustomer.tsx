@@ -704,6 +704,9 @@ export default function ManagerCustomer() {
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Area</th>
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sales PIC</th>
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Followup</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Target Vol</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Actual Vol</th>
+                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Progress</th>
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Last Order</th>
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Category</th>
                 <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Catatan</th>
@@ -771,6 +774,29 @@ export default function ManagerCustomer() {
                       ) : (
                         <span style={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 600 }}>Belum ada log</span>
                       )}
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>
+                        {(c as any).target_volume || 0}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>
+                        {(c as any).total_order_volume || 0}
+                      </div>
+                    </td>
+                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                      <div style={{ 
+                        fontSize: '11px', 
+                        fontWeight: 900, 
+                        color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#10b981' : '#f59e0b',
+                        background: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#edf7f1' : '#fff9eb',
+                        padding: '4px 8px',
+                        borderRadius: '6px',
+                        display: 'inline-block'
+                      }}>
+                        {Math.round((((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%
+                      </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

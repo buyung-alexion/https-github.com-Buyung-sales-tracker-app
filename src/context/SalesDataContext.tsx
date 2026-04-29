@@ -3,6 +3,9 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import type { SystemTargets, Prospek, Customer, Activity, Sales, SalesOrder } from '../types';
 
+
+
+
 interface SalesDataContextType {
   sales: Sales[];
   allSales: Sales[];
@@ -67,7 +70,21 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setSales(salesOnly);
       setAllSales(allSalesData);
       setProspek(resProspek.data || []);
-      setCustomers(resCustomer.data || []);
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      const customersWithTargets = (resCustomer.data || []).map((c: any) => {
+        let target_volume = 0;
+        if (c.status && c.status.startsWith(`TARGET_${currentMonthStr}:`)) {
+          target_volume = parseFloat(c.status.split(':')[1]) || 0;
+        }
+        return {
+          ...c,
+          target_volume,
+          total_order_volume: c.total_order_volume || 0
+        };
+      });
+      setCustomers(customersWithTargets);
       setActivities(resActivity.data || []);
       if (resTargets.data) setSystemTargets(resTargets.data);
       setMasterAreas(resMA.data || []);

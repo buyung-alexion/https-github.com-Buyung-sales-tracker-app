@@ -173,7 +173,7 @@ export const store = {
       target_type: 'customer',
       target_nama: targetNama,
       tipe_aksi: 'Order',
-      catatan_hasil: `SALES ORDER: Rp ${amount.toLocaleString('id-ID')}`
+      catatan_hasil: `SALES ORDER: ${amount.toLocaleString('id-ID')} Volume`
     });
 
     // 2. Insert into structured orders table
@@ -186,17 +186,34 @@ export const store = {
     }]);
     if (orderErr) console.error('logOrder table error:', orderErr);
 
-    // 3. Update Customer Table last_order_date
-    await supabase.from('customer').update({ last_order_date: new Date().toISOString() }).eq('id', targetId);
+    // 3. Update Customer Table last_order_date and total_order_volume
+    const { data: cust } = await supabase.from('customer').select('total_order_volume').eq('id', targetId).single();
+    const currentVolume = cust?.total_order_volume || 0;
+    const newVolume = currentVolume + amount;
+
+    await supabase.from('customer').update({ 
+      last_order_date: new Date().toISOString(),
+      total_order_volume: newVolume
+    }).eq('id', targetId);
   },
 
   async updateOrder(orderId: string, amount: number) {
-    const { error } = await supabase
-      .from('orders')
-      .update({ amount })
-      .eq('id', orderId);
-    
-    if (error) throw error;
+    const { data: oldOrder } = await supabase.from('orders').select('amount, customer_id').eq('id', orderId).single();
+    if (oldOrder) {
+      const diff = amount - (oldOrder.amount || 0);
+      
+      const { error } = await supabase
+        .from('orders')
+        .update({ amount })
+        .eq('id', orderId);
+      if (error) throw error;
+
+      const { data: cust } = await supabase.from('customer').select('total_order_volume').eq('id', oldOrder.customer_id).single();
+      const currentVolume = cust?.total_order_volume || 0;
+      const newVolume = currentVolume + diff;
+      
+      await supabase.from('customer').update({ total_order_volume: newVolume }).eq('id', oldOrder.customer_id);
+    }
   },
 
   async fetchOrders(salesId?: string): Promise<SalesOrder[]> {

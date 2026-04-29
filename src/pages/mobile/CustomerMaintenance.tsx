@@ -376,6 +376,62 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   </div>
                 </div>
 
+                {/* Sales Plan Metrics */}
+                <div style={{ 
+                  marginTop: '12px', 
+                  background: '#f8fafc', 
+                  borderRadius: '12px', 
+                  padding: '10px 12px', 
+                  border: '1px solid #e2e8f0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Target</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{c.target_volume || 0} Vol</div>
+                      <button 
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          const targetStr = prompt(`Masukkan Target Volume baru untuk ${c.nama_toko}:`);
+                          if (!targetStr) return;
+                          const targetVal = parseFloat(targetStr.replace(/[^0-9]/g, ''));
+                          if (isNaN(targetVal) || targetVal < 0) return alert('Target tidak valid.');
+                          
+                          const now = new Date();
+                          const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+                          const statusString = `TARGET_${currentMonthStr}:${targetVal}`;
+                          
+                          await store.updateCustomer(c.id, { status: statusString });
+                          alert('Target berhasil disimpan.');
+                          window.location.reload();
+                        }}
+                        style={{ border: 'none', background: '#eff6ff', color: '#3b82f6', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
+                      >
+                        SET
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }}></div>
+                  <div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Actual</div>
+                    <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{c.total_order_volume || 0} Vol</div>
+                  </div>
+                  <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }}></div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Progress</div>
+                    <div style={{ 
+                      fontSize: '13px', 
+                      fontWeight: 900, 
+                      color: ((c.total_order_volume || 0) / (c.target_volume || 1) >= 1) ? '#10b981' : '#f59e0b' 
+                    }}>
+                      {Math.round(((c.total_order_volume || 0) / (c.target_volume || 1)) * 100)}%
+                    </div>
+                  </div>
+                </div>
+
+
                 {/* Expanded Action Panel */}
                 <div style={{ 
                   maxHeight: isExpanded ? '300px' : '0', 
@@ -391,10 +447,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       style={{ width: '100%', background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '12px', padding: '14px', fontWeight: 900, fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }} 
                       onClick={async (e) => { 
                         e.stopPropagation(); 
-                        const amountStr = prompt(`Masukkan nominal order untuk ${c.nama_toko} (Angka saja):`);
-                        if (!amountStr) return;
-                        const amount = parseFloat(amountStr.replace(/[^0-9]/g, ''));
-                        if (isNaN(amount) || amount <= 0) return alert('Nominal tidak valid.');
+                        const volumeStr = prompt(`Masukkan volume order untuk ${c.nama_toko} (Qty/Kg):`);
+                        if (!volumeStr) return;
+                        const amount = parseFloat(volumeStr.replace(/[^0-9]/g, ''));
+                        if (isNaN(amount) || amount <= 0) return alert('Volume tidak valid.');
                         
                         await store.logOrder(salesId, c.id, c.nama_toko, amount, salesName);
                         window.location.href = 'intent:#Intent;package=com.cpssoft.mobile.alpha;end';
