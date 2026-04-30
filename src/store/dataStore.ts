@@ -164,7 +164,9 @@ export const store = {
     window.open(`tel:${noTelp}`, '_self');
   },
 
-  async logOrder(salesId: string, targetId: string, targetNama: string, amount: number, salesName?: string) {
+  async logOrder(salesId: string, targetId: string, targetNama: string, amount: number, salesName?: string, customDate?: string) {
+    const orderDate = customDate || new Date().toISOString();
+
     // 1. Log Activity
     await this.logActivity({
       id_sales: salesId,
@@ -173,7 +175,9 @@ export const store = {
       target_type: 'customer',
       target_nama: targetNama,
       tipe_aksi: 'Order',
-      catatan_hasil: `SALES ORDER: ${amount.toLocaleString('id-ID')} Volume`
+      catatan_hasil: `SALES ORDER: ${amount.toLocaleString('id-ID')} Volume`,
+      // activity timestamp is internal, let's keep it current or we can pass it if we modify logActivity
+      // but let's leave activity timestamp as is, it's just a log.
     });
 
     // 2. Insert into structured orders table
@@ -182,7 +186,7 @@ export const store = {
       customer_id: targetId,
       customer_name: targetNama,
       amount: amount,
-      created_at: new Date().toISOString()
+      created_at: orderDate
     }]);
     if (orderErr) console.error('logOrder table error:', orderErr);
 
@@ -192,19 +196,22 @@ export const store = {
     const newVolume = currentVolume + amount;
 
     await supabase.from('customer').update({ 
-      last_order_date: new Date().toISOString(),
+      last_order_date: orderDate,
       total_order_volume: newVolume
     }).eq('id', targetId);
   },
 
-  async updateOrder(orderId: string, amount: number) {
-    const { data: oldOrder } = await supabase.from('orders').select('amount, customer_id').eq('id', orderId).single();
+  async updateOrder(orderId: string, amount: number, customDate?: string) {
+    const { data: oldOrder } = await supabase.from('orders').select('amount, customer_id, created_at').eq('id', orderId).single();
     if (oldOrder) {
       const diff = amount - (oldOrder.amount || 0);
       
+      const updatePayload: any = { amount };
+      if (customDate) updatePayload.created_at = customDate;
+
       const { error } = await supabase
         .from('orders')
-        .update({ amount })
+        .update(updatePayload)
         .eq('id', orderId);
       if (error) throw error;
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { store } from '../../store/dataStore';
-import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, ChevronDown, ChevronRight, Edit3, BarChart2, FileText } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Search, Plus, X, Loader2, CheckCircle, ChevronDown, ChevronRight, Edit3, BarChart2, FileText, Calendar, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 
@@ -22,6 +22,9 @@ export default function OrderHistory() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderAmount, setOrderAmount] = useState('');
   const [editOrderId, setEditOrderId] = useState<string | null>(null);
+  
+  const [orderDate, setOrderDate] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  const [orderTime, setOrderTime] = useState(() => format(new Date(), 'HH:mm'));
 
   if (!user) return null;
 
@@ -92,6 +95,12 @@ export default function OrderHistory() {
     setSelectedCust(cust || { id: order.customer_id, nama_toko: order.customer_name });
     setEditOrderId(order.id);
     setOrderAmount(order.amount?.toString() || '');
+    
+    // Parse order date for editing
+    const d = new Date(order.created_at);
+    setOrderDate(format(d, 'yyyy-MM-dd'));
+    setOrderTime(format(d, 'HH:mm'));
+    
     setIsOrderModalOpen(true);
   };
 
@@ -104,12 +113,15 @@ export default function OrderHistory() {
       return;
     }
 
+    const dateObj = new Date(`${orderDate}T${orderTime}:00`);
+    const customDateIso = dateObj.toISOString();
+
     setIsSubmitting(true);
     try {
       if (editOrderId) {
-        await store.updateOrder(editOrderId, amount);
+        await store.updateOrder(editOrderId, amount, customDateIso);
       } else {
-        await store.logOrder(user.id, selectedCust.id, selectedCust.nama_toko, amount, user.nama);
+        await store.logOrder(user.id, selectedCust.id, selectedCust.nama_toko, amount, user.nama, customDateIso);
       }
       
       setOrderSuccess(true);
@@ -278,6 +290,8 @@ export default function OrderHistory() {
           setEditOrderId(null); 
           setSelectedCust(null); 
           setOrderAmount('');
+          setOrderDate(format(new Date(), 'yyyy-MM-dd'));
+          setOrderTime(format(new Date(), 'HH:mm'));
           setIsOrderModalOpen(true); 
         }}
         style={{ position: 'fixed', bottom: '110px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#3B82F6', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)', zIndex: 100 }}
@@ -373,6 +387,34 @@ export default function OrderHistory() {
                 <div style={{ background: '#fff', borderRadius: '24px', padding: '20px', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9' }}>
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detail Pesanan</div>
                   
+                  {/* Date & Time Pickers */}
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '8px' }}>TANGGAL</label>
+                      <div style={{ position: 'relative' }}>
+                        <Calendar size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <input 
+                          type="date" 
+                          style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 12px 12px 36px', fontSize: '14px', fontWeight: 700, outline: 'none', color: '#1e293b' }}
+                          value={orderDate}
+                          onChange={e => setOrderDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '8px' }}>JAM</label>
+                      <div style={{ position: 'relative' }}>
+                        <Clock size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                        <input 
+                          type="time" 
+                          style={{ width: '100%', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 12px 12px 36px', fontSize: '14px', fontWeight: 700, outline: 'none', color: '#1e293b' }}
+                          value={orderTime}
+                          onChange={e => setOrderTime(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', display: 'block', marginBottom: '8px' }}>VOLUME ORDER (QTY/KG)</label>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', padding: '16px', borderRadius: '16px', border: '2px solid #E2E8F0' }}>
