@@ -185,7 +185,7 @@ export default function OrderHistory() {
               </div>
               <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b', display: 'flex', alignItems: 'baseline', gap: '4px' }}>
                 <span>{myOrders.reduce((sum, o) => sum + (o.amount || 0), 0).toLocaleString('id-ID')}</span>
-                <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 700 }}>Vol</span>
+                <span style={{ fontSize: '13px', color: '#94a3b8', fontWeight: 700 }}>Kg</span>
               </div>
            </div>
         </div>
@@ -246,7 +246,7 @@ export default function OrderHistory() {
                       </div>
                     </div>
                     <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                       <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b' }}>{totalAmount.toLocaleString('id-ID')} Vol</div>
+                       <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b' }}>{totalAmount.toLocaleString('id-ID')} Kg</div>
                        {isExpanded ? <ChevronDown size={14} color="#94a3b8" /> : <ChevronRight size={14} color="#94a3b8" />}
                     </div>
                   </div>
@@ -264,7 +264,7 @@ export default function OrderHistory() {
                             <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8' }}>{format(new Date(order.created_at), 'HH:mm')}</div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{order.amount?.toLocaleString('id-ID')} Vol</div>
+                            <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{order.amount?.toLocaleString('id-ID')} Kg</div>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleOpenEdit(order); }}
                               style={{ border: 'none', background: 'none', padding: '4px', color: '#3B82F6', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 800, marginLeft: 'auto' }}
