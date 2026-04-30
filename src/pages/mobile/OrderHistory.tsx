@@ -47,13 +47,13 @@ export default function OrderHistory() {
 
   const myOrders = useMemo(() => {
     const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    // Start of current month
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     
     return orders.filter(o => {
       if (o.sales_id !== user.id) return false;
       const orderDate = new Date(o.created_at);
-      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+      return orderDate >= startOfCurrentMonth;
     });
   }, [orders, user.id]);
   
