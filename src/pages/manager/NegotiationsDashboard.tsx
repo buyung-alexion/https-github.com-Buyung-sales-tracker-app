@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, Loader2 } from 'lucide-react';
+import { Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, Loader2, MessageSquare } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function NegotiationsDashboard() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeView, setActiveView] = useState<'katalog' | 'penawaran'>('katalog');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [negotiations, setNegotiations] = useState<any[]>([]);
   
   // Product Management State
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -38,8 +40,10 @@ export default function NegotiationsDashboard() {
 
   const loadAllData = async () => {
     setLoading(true);
-    const { data } = await store.fetchProducts(false);
-    setProducts(data || []);
+    const { data: pData } = await store.fetchProducts(false);
+    setProducts(pData || []);
+    const { data: nData } = await store.fetchNegotiations();
+    setNegotiations(nData || []);
     setLoading(false);
   };
 
@@ -149,12 +153,26 @@ export default function NegotiationsDashboard() {
         </div>
 
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center', marginTop: '6px' }}>
-          <div style={{ color: '#fff', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s' }} className="tap-active">
-            <ShoppingCart size={32} />
-            <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#FFCC00', color: '#111827', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid #111827' }}>0</span>
+          <div 
+            onClick={() => setActiveView('penawaran')}
+            style={{ color: activeView === 'penawaran' ? '#FFCC00' : '#fff', position: 'relative', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+          >
+            <MessageSquare size={28} />
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.7 }}>INCOMING</span>
+              <span style={{ fontSize: '14px', fontWeight: 900 }}>PENAWARAN</span>
+            </div>
+            {negotiations.filter(n => n.status === 'pending').length > 0 && (
+              <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid #111827' }}>
+                {negotiations.filter(n => n.status === 'pending').length}
+              </span>
+            )}
           </div>
           <button 
-            onClick={() => openProductModal()} 
+            onClick={() => {
+              setActiveView('katalog');
+              openProductModal();
+            }} 
             style={{ background: '#FFCC00', color: '#111827', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 8px 20px rgba(255, 204, 0, 0.3)' }}
           >
             <Plus size={20} strokeWidth={3} /> TAMBAH PRODUK
@@ -205,70 +223,144 @@ export default function NegotiationsDashboard() {
         {/* MAIN CONTENT */}
         <div style={{ flex: 1 }}>
           
-          {/* IKT EXCLUSIVE (Replaces Shopee Mall) */}
-          <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', marginBottom: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ color: '#111827', fontWeight: 900, fontSize: '18px', letterSpacing: '0.5px' }}>IKT EXCLUSIVE</span>
-                <span style={{ background: '#FFCC00', color: '#111827', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '4px' }}>OFFICIAL</span>
-              </div>
-              <span style={{ color: '#111827', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: 0.7 }}>Lihat Semua &gt;</span>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px' }}>
-              {['Premium', 'Quality', 'Trusted', 'Family', 'Legacy', 'Global'].map(brand => (
-                <div key={brand} style={{ border: '1px solid #f1f5f9', borderRadius: '12px', padding: '16px', textAlign: 'center', color: '#111827', fontSize: '12px', fontWeight: 800, background: '#f8fafc' }}>
-                  {brand.toUpperCase()}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* SORT BAR */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '12px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1.5px solid #e2e8f0' }}>
-            <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>Urutkan</span>
-            <button style={{ background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 800 }}>Populer</button>
-            <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terbaru</button>
-            <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terlaris</button>
-            <select style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', flex: 1, maxWidth: '200px', fontWeight: 700 }}>
-              <option>Harga</option>
-              <option>Harga: Rendah ke Tinggi</option>
-              <option>Harga: Tinggi ke Rendah</option>
-            </select>
-          </div>
-
-          {/* PRODUCT GRID */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-            {loading ? (
-              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
-            ) : filteredProducts.map(p => (
-              <div 
-                key={p.id} 
-                style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'all 0.3s', position: 'relative', border: '1.5px solid #f1f5f9' }}
-                className="product-card-hover"
-                onClick={() => openProductModal(p)}
-              >
-                <div style={{ position: 'relative', paddingTop: '100%' }}>
-                  <img src={p.image_url} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                </div>
-                <div style={{ padding: '16px' }}>
-                  <div style={{ fontSize: '14px', color: '#111827', height: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '20px', marginBottom: '12px', fontWeight: 600 }}>
-                    <span style={{ background: '#111827', color: '#FFCC00', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginRight: '6px', fontWeight: 900 }}>PRO+</span>
-                    {p.name}
+          {activeView === 'katalog' ? (
+            <>
+              {/* IKT EXCLUSIVE (Replaces Shopee Mall) */}
+              <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', marginBottom: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ color: '#111827', fontWeight: 900, fontSize: '18px', letterSpacing: '0.5px' }}>IKT EXCLUSIVE</span>
+                    <span style={{ background: '#FFCC00', color: '#111827', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '4px' }}>OFFICIAL</span>
                   </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                    <div style={{ color: '#111827', fontSize: '20px', fontWeight: 900 }}>
-                      <span style={{ fontSize: '13px', color: '#64748b', marginRight: '2px' }}>Rp</span>{p.price.toLocaleString('id-ID')}
+                  <span style={{ color: '#111827', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: 0.7 }}>Lihat Semua &gt;</span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px' }}>
+                  {['Premium', 'Quality', 'Trusted', 'Family', 'Legacy', 'Global'].map(brand => (
+                    <div key={brand} style={{ border: '1px solid #f1f5f9', borderRadius: '12px', padding: '16px', textAlign: 'center', color: '#111827', fontSize: '12px', fontWeight: 800, background: '#f8fafc' }}>
+                      {brand.toUpperCase()}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SORT BAR */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '12px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1.5px solid #e2e8f0' }}>
+                <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>Urutkan</span>
+                <button style={{ background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 800 }}>Populer</button>
+                <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terbaru</button>
+                <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terlaris</button>
+                <select style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', flex: 1, maxWidth: '200px', fontWeight: 700 }}>
+                  <option>Harga</option>
+                  <option>Harga: Rendah ke Tinggi</option>
+                  <option>Harga: Tinggi ke Rendah</option>
+                </select>
+              </div>
+
+              {/* PRODUCT GRID */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+                {loading ? (
+                  <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
+                ) : filteredProducts.map(p => (
+                  <div 
+                    key={p.id} 
+                    style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', cursor: 'pointer', transition: 'all 0.3s', position: 'relative', border: '1.5px solid #f1f5f9' }}
+                    className="product-card-hover"
+                    onClick={() => openProductModal(p)}
+                  >
+                    <div style={{ position: 'relative', paddingTop: '100%' }}>
+                      <img src={p.image_url} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                    <div style={{ padding: '16px' }}>
+                      <div style={{ fontSize: '14px', color: '#111827', height: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '20px', marginBottom: '12px', fontWeight: 600 }}>
+                        <span style={{ background: '#111827', color: '#FFCC00', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', marginRight: '6px', fontWeight: 900 }}>PRO+</span>
+                        {p.name}
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                        <div style={{ color: '#111827', fontSize: '20px', fontWeight: 900 }}>
+                          <span style={{ fontSize: '13px', color: '#64748b', marginRight: '2px' }}>Rp</span>{p.price.toLocaleString('id-ID')}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ marginTop: '12px', fontSize: '11px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600 }}>
-                    <span style={{ color: '#FFCC00' }}><Star size={12} fill="currentColor" /></span>
-                    <span>5.0 | Best Seller</span>
-                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            /* NEGOTIATION LIST VIEW */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', border: '1.5px solid #e2e8f0' }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#111827', marginBottom: '20px' }}>DAFTAR PENAWARAN MASUK</h3>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ textAlign: 'left', borderBottom: '2px solid #f1f5f9' }}>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>TANGGAL</th>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>PRODUK</th>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>KONSUMEN</th>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>PENAWARAN</th>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>HANDLED BY</th>
+                        <th style={{ padding: '12px', fontSize: '12px', fontWeight: 800, color: '#64748b' }}>STATUS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {negotiations.length === 0 ? (
+                        <tr><td colSpan={6} style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', fontWeight: 600 }}>Belum ada penawaran masuk.</td></tr>
+                      ) : negotiations.map(n => {
+                        const product = products.find(p => p.id === n.product_id);
+                        return (
+                          <tr key={n.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                            <td style={{ padding: '16px 12px', fontSize: '13px', color: '#475569' }}>
+                              {new Date(n.created_at).toLocaleDateString('id-ID')}
+                            </td>
+                            <td style={{ padding: '16px 12px' }}>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <div style={{ width: '32px', height: '32px', borderRadius: '4px', background: '#f8fafc', overflow: 'hidden' }}>
+                                  <img src={product?.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{product?.name || 'Produk Dihapus'}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 12px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 700, color: '#111827' }}>{n.customer_name}</span>
+                                <span style={{ fontSize: '11px', color: '#64748b' }}>{n.customer_wa}</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 12px' }}>
+                              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '13px', fontWeight: 800, color: '#111827' }}>Rp{n.offered_price.toLocaleString('id-ID')}</span>
+                                <span style={{ fontSize: '11px', color: '#64748b' }}>Qty: {n.requested_qty} unit</span>
+                              </div>
+                            </td>
+                            <td style={{ padding: '16px 12px' }}>
+                              {n.sales_id ? (
+                                <span style={{ background: '#f1f5f9', color: '#111827', padding: '4px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 800 }}>
+                                  ID: {n.sales_id}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#94a3b8', fontSize: '11px', fontStyle: 'italic' }}>Direct / Admin</span>
+                              )}
+                            </td>
+                            <td style={{ padding: '16px 12px' }}>
+                              <span style={{ 
+                                background: n.status === 'pending' ? '#fff7ed' : n.status === 'approved' ? '#f0fdf4' : '#fef2f2',
+                                color: n.status === 'pending' ? '#c2410c' : n.status === 'approved' ? '#15803d' : '#b91c1c',
+                                padding: '4px 10px', borderRadius: '20px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase'
+                              }}>
+                                {n.status}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
       </div>
 
       {/* ADD/EDIT PRODUCT MODAL */}
