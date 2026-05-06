@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare, ShoppingBag, DollarSign } from 'lucide-react';
+import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare, ShoppingBag, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
@@ -21,6 +21,7 @@ export default function ManagerShell() {
   const navigate = useNavigate();
   const { unreadCount: chatUnread, newMsg, clearNewMsg } = useChatNotifications(user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [shellTitle, setShellTitle] = useState('');
   const [shellSub, setShellSub] = useState('');
 
@@ -91,31 +92,53 @@ export default function ManagerShell() {
         }} 
       />
       {/* Sidebar */}
-      <aside className={`manager-sidebar ${sidebarOpen ? 'open' : ''}`}>
+      <aside className={`manager-sidebar ${sidebarOpen ? 'open' : ''} ${sidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-logo">
           <div style={{ width: '40px', height: '40px', background: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
             <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <div style={{ minWidth: 0 }}>
-            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. INDUSTRI KELUARGA TIMUR</div>
-            <div className="logo-sub">Manager Dashboard</div>
-          </div>
+          {!sidebarCollapsed && (
+            <div style={{ minWidth: 0 }}>
+              <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. INDUSTRI KELUARGA TIMUR</div>
+              <div className="logo-sub">Manager Dashboard</div>
+            </div>
+          )}
+          <button 
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            style={{ 
+              marginLeft: sidebarCollapsed ? '0' : 'auto', 
+              background: 'rgba(0,0,0,0.05)', 
+              borderRadius: '8px', 
+              width: '28px', 
+              height: '28px', 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              color: '#111827',
+              transition: 'all 0.3s'
+            }}
+          >
+            {sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+          </button>
         </div>
 
         <nav className="sidebar-nav">
           {menuCategories.map((cat, idx) => (
             <div key={idx} style={{ marginBottom: '12px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(17,24,39,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 6px 16px' }}>{cat.category}</div>
+              {!sidebarCollapsed && <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(17,24,39,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 6px 16px' }}>{cat.category}</div>}
               {cat.items.map(item => item.action ? (
-                <a key={item.to} href="#" className="sidebar-link" onClick={handleLogout} style={{ color: '#ef4444' }}>
-                  {item.icon} <span style={{ color: '#ef4444' }}>{item.label}</span>
+                <a key={item.to} href="#" className="sidebar-link" onClick={handleLogout} style={{ color: '#ef4444', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
+                  {item.icon} {!sidebarCollapsed && <span style={{ color: '#ef4444' }}>{item.label}</span>}
                 </a>
               ) : (
-                <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative' }}>
-                  {item.icon} <span>{item.label}</span>
+                <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
+                  {item.icon} {!sidebarCollapsed && <span>{item.label}</span>}
                   {item.label === 'Live Chat' && chatUnread > 0 && (
                     <span style={{ 
-                      position: 'absolute', top: '12px', right: '16px', 
+                      position: 'absolute', 
+                      top: sidebarCollapsed ? '8px' : '12px', 
+                      right: sidebarCollapsed ? '12px' : '16px', 
                       background: '#ef4444', color: '#fff', fontSize: '10px', 
                       fontWeight: 900, minWidth: '18px', height: '18px', 
                       borderRadius: '50%', display: 'flex', alignItems: 'center', 
@@ -133,11 +156,13 @@ export default function ManagerShell() {
 
 
 
-        <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
-          <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.05em', opacity: 0.8 }}>
-            v1.1.0-DynamicRoles (23-04-23)
+        {!sidebarCollapsed && (
+          <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+            <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.05em', opacity: 0.8 }}>
+              v1.1.0-DynamicRoles (23-04-23)
+            </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
