@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, ShoppingBag } from 'lucide-react';
+import { RefreshCw, Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
@@ -81,6 +81,17 @@ export default function NegotiationsDashboard() {
       loadAllData();
     }
   };
+  
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductForm({ ...productForm, image_url: reader.result as string });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const filteredProducts = products.filter(p => {
     const matchesCat = selectedCategory === 'Semua' || p.category === selectedCategory;
@@ -91,30 +102,17 @@ export default function NegotiationsDashboard() {
   return (
     <div style={{ background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit', sans-serif" }}>
       
-      {/* BRAND TOP BAR (TINY) */}
-      <div style={{ background: '#0f172a', color: 'rgba(255,255,255,0.7)', fontSize: '11px', padding: '6px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ display: 'flex', gap: '20px', fontWeight: 600 }}>
-          <span style={{ color: '#FFCC00' }}>Seller Centre</span>
-          <span>Mulai Berjualan</span>
-          <span>Download App</span>
-          <span>Bantuan</span>
-        </div>
-        <div style={{ display: 'flex', gap: '20px', fontWeight: 600 }}>
-          <span>Notifikasi</span>
-          <span>Bahasa Indonesia</span>
-          <span style={{ color: '#FFCC00' }}>Daftar | Log In</span>
-        </div>
-      </div>
+
 
       {/* BRAND MAIN HEADER */}
-      <div style={{ background: '#111827', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: '48px', position: 'sticky', top: 0, zIndex: 100, paddingBottom: '32px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#fff', cursor: 'pointer' }}>
-          <div style={{ background: '#FFCC00', color: '#111827', padding: '10px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ShoppingBag size={32} strokeWidth={2.5} />
+      <div style={{ background: '#111827', padding: '24px 24px 32px', display: 'flex', alignItems: 'center', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#fff', cursor: 'pointer' }} onClick={() => window.location.reload()}>
+          <div style={{ background: '#FFCC00', color: '#111827', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '22px', boxShadow: '0 4px 15px rgba(255, 204, 0, 0.4)' }}>
+            IKT
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
-            <span style={{ fontSize: '24px', fontWeight: 900, color: '#FFCC00' }}>PT. INDUSTRI</span>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff', opacity: 0.9 }}>Keluarga Timur</span>
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+            <span style={{ fontSize: '24px', fontWeight: 900, color: '#FFCC00', letterSpacing: '0.5px' }}>PT. INDUSTRI</span>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff', opacity: 0.8 }}>Keluarga Timur</span>
           </div>
         </div>
         
@@ -133,10 +131,10 @@ export default function NegotiationsDashboard() {
           </div>
           <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 500 }}>
             <span style={{ color: '#FFCC00' }}>Produk Terlaris</span>
-            <span>Handphone</span>
-            <span>Elektronik</span>
-            <span>Aksesoris</span>
-            <span>Voucher</span>
+            <span>Beras Premium</span>
+            <span>Minyak Goreng</span>
+            <span>Gula Pasir</span>
+            <span>Sembako Murah</span>
           </div>
         </div>
 
@@ -182,10 +180,10 @@ export default function NegotiationsDashboard() {
 
           <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px solid #e2e8f0' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 800, color: '#111827', fontSize: '15px' }}>
-              <Filter size={20} /> FILTER
+              <Filter size={20} /> STATUS STOK
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {['Jabodetabek', 'DKI Jakarta', 'Jawa Barat', 'Jawa Timur'].map(loc => (
+              {['Ready Stock', 'Indent / Pre-Order', 'Premium Only', 'Promo Diskon'].map(loc => (
                 <label key={loc} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: '#475569', cursor: 'pointer', fontWeight: 500 }}>
                   <input type="checkbox" style={{ accentColor: '#111827', width: '16px', height: '16px' }} /> {loc}
                 </label>
@@ -363,18 +361,29 @@ export default function NegotiationsDashboard() {
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>URL Foto Produk</label>
-                    <div style={{ display: 'flex', gap: '16px' }}>
-                      <input 
-                        required
-                        placeholder="https://..."
-                        style={{ flex: 1, padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 600, background: '#f8fafc', outline: 'none' }}
-                        value={productForm.image_url}
-                        onChange={(e) => setProductForm({...productForm, image_url: e.target.value})}
-                      />
+                    <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Foto Produk (JPG/PNG)</label>
+                    <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <label style={{ flex: 1, cursor: 'pointer' }}>
+                        <div style={{ padding: '14px 18px', borderRadius: '12px', border: '2px dashed #cbd5e1', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', color: '#64748b', fontSize: '14px', fontWeight: 600 }}>
+                          <Plus size={18} /> {productForm.image_url ? 'Ganti Foto' : 'Pilih Foto'}
+                        </div>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          style={{ display: 'none' }} 
+                          onChange={handleImageUpload}
+                        />
+                      </label>
                       {productForm.image_url && (
-                        <div style={{ width: '50px', height: '50px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #f1f5f9', flexShrink: 0 }}>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '12px', overflow: 'hidden', border: '2px solid #f1f5f9', flexShrink: 0, position: 'relative' }}>
                           <img src={productForm.image_url} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <button 
+                            type="button" 
+                            onClick={() => setProductForm({...productForm, image_url: ''})}
+                            style={{ position: 'absolute', top: 0, right: 0, background: 'rgba(239, 68, 68, 0.9)', color: '#fff', border: 'none', borderRadius: '0 0 0 8px', padding: '2px', cursor: 'pointer' }}
+                          >
+                            <X size={12} />
+                          </button>
                         </div>
                       )}
                     </div>
