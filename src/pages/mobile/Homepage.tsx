@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, Share2 } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, ShoppingBag } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -268,7 +268,7 @@ export default function Homepage({ salesId }: Props) {
               { label: 'Chat', icon: MessageSquare, color: '#10b981', bg: '#ECFDF5', path: '/mobile/chat', badge: 0 },
               { label: 'Ranking', icon: Trophy, color: '#f59e0b', bg: '#FFFBEB', path: '/mobile/rank' },
               { label: 'Order', icon: ShoppingCart, color: '#ef4444', bg: '#FEF2F2', path: '/mobile/customer' },
-              { label: 'Marketplace', icon: Share2, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true },
+              { label: 'Marketplace', icon: ShoppingBag, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true },
             ].map((item) => (
               <div key={item.label} 
                 className="tap-active" 
