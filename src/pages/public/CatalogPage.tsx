@@ -12,6 +12,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Produk');
   const [activeFilter, setActiveFilter] = useState('Populer');
+  const [priceSort, setPriceSort] = useState<'asc' | 'desc'>('asc');
   const [followerCount, setFollowerCount] = useState(0);
 
   
@@ -84,6 +85,12 @@ export default function CatalogPage() {
     } else if (activeFilter === 'Terlaris') {
       // Mock sorting for now as we don't have sales count per product yet
       result.sort((a, b) => (b.price || 0) - (a.price || 0));
+    } else if (activeFilter === 'Harga') {
+      if (priceSort === 'asc') {
+        result.sort((a, b) => (a.price || 0) - (b.price || 0));
+      } else {
+        result.sort((a, b) => (b.price || 0) - (a.price || 0));
+      }
     }
 
     return result;
@@ -291,14 +298,24 @@ export default function CatalogPage() {
             {f} {f === 'Terbaru' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ee4d2d' }} />}
           </button>
         ))}
-        <button style={{ 
-          background: 'transparent', border: 'none', padding: 0,
-          fontSize: '14px', color: '#757575', fontWeight: 500,
-          marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px'
-        }}>
+        <button 
+          onClick={() => {
+            if (activeFilter === 'Harga') {
+              setPriceSort(priceSort === 'asc' ? 'desc' : 'asc');
+            } else {
+              setActiveFilter('Harga');
+              setPriceSort('asc');
+            }
+          }}
+          style={{ 
+            background: 'transparent', border: 'none', padding: 0,
+            fontSize: '14px', color: activeFilter === 'Harga' ? '#ee4d2d' : '#757575', fontWeight: activeFilter === 'Harga' ? 600 : 500,
+            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px'
+          }}
+        >
           Harga <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-             <ChevronDown size={10} style={{ transform: 'rotate(180deg)' }} />
-             <ChevronDown size={10} />
+             <ChevronDown size={10} style={{ transform: 'rotate(180deg)', color: (activeFilter === 'Harga' && priceSort === 'asc') ? '#ee4d2d' : '#757575' }} />
+             <ChevronDown size={10} style={{ color: (activeFilter === 'Harga' && priceSort === 'desc') ? '#ee4d2d' : '#757575' }} />
           </div>
         </button>
       </div>
