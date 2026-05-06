@@ -12,6 +12,7 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('');
   const [activeTab, setActiveTab] = useState('Produk');
   const [activeFilter, setActiveFilter] = useState('Populer');
+  const [followerCount, setFollowerCount] = useState(0);
   
   // Negotiation Modal State
   const [negoModalOpen, setNegoModalOpen] = useState(false);
@@ -27,6 +28,7 @@ export default function CatalogPage() {
 
   useEffect(() => {
     loadProducts();
+    loadFollowers();
   }, []);
 
   const loadProducts = async () => {
@@ -34,6 +36,11 @@ export default function CatalogPage() {
     const { data } = await store.fetchProducts();
     setProducts(data);
     setLoading(false);
+  };
+
+  const loadFollowers = async () => {
+    const count = await store.fetchCustomerCount();
+    setFollowerCount(count);
   };
 
   const filteredProducts = products.filter(p => {
@@ -50,6 +57,11 @@ export default function CatalogPage() {
       offered_price: product.price
     });
     setNegoModalOpen(true);
+  };
+
+  const handleChatToko = () => {
+    // Arahkan ke WhatsApp Admin/Owner
+    window.open('https://wa.me/6281234567890?text=Halo PT. Industri Keluarga Timur, saya ingin bertanya tentang produk di katalog.', '_blank');
   };
 
   const handleSubmitNego = async () => {
@@ -102,7 +114,7 @@ export default function CatalogPage() {
             <Search size={18} color="#757575" />
             <input 
               type="text" 
-              placeholder="Cari di Toko" 
+              placeholder="Cari di PT. IKT" 
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ 
@@ -136,13 +148,13 @@ export default function CatalogPage() {
              </div>
              <div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                 <h2 style={{ fontSize: '16px', fontWeight: 700, margin: 0 }}>AppliedRobotics®</h2>
+                 <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>PT. Industri Keluarga Timur</h2>
                  <ChevronLeft size={14} style={{ transform: 'rotate(180deg)' }} />
                </div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
                  <Star size={10} fill="#ffce3d" color="#ffce3d" />
                  <span style={{ fontSize: '12px', fontWeight: 500 }}>4.9</span>
-                 <span style={{ fontSize: '12px', opacity: 0.8, marginLeft: '8px' }}>60,6RB Pengikut</span>
+                 <span style={{ fontSize: '12px', opacity: 0.8, marginLeft: '8px' }}>{followerCount.toLocaleString('id-ID')} Pengikut</span>
                </div>
              </div>
           </div>
@@ -154,12 +166,15 @@ export default function CatalogPage() {
              }}>
                <CheckCircle size={12} /> Ikuti
              </button>
-             <button style={{ 
-               background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid #fff', 
-               borderRadius: '4px', padding: '6px 12px', fontSize: '12px', 
-               fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px',
-               backdropFilter: 'blur(4px)'
-             }}>
+             <button 
+               onClick={handleChatToko}
+               style={{ 
+                 background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid #fff', 
+                 borderRadius: '4px', padding: '6px 12px', fontSize: '12px', 
+                 fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px',
+                 backdropFilter: 'blur(4px)'
+               }}
+             >
                <MessageCircle size={12} /> Chat
              </button>
           </div>

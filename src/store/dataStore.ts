@@ -75,6 +75,12 @@ export const store = {
     return { data, error };
   },
 
+  async fetchCustomerCount() {
+    const { count, error } = await supabase.from('customer').select('*', { count: 'exact', head: true });
+    if (error) console.error('fetchCustomerCount error:', error);
+    return count || 0;
+  },
+
   // ─── CONVERT PROSPEK → CUSTOMER ─────────────────────────
   async convertToCustomer(prospek: Prospek, salesName?: string) {
     const nextId = await this.generateNextCustomerId();
