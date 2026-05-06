@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Check, X, RefreshCw, Phone, Clock, TrendingDown, Loader2, ShoppingCart, Plus, Edit2 } from 'lucide-react';
+import { RefreshCw, Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, ShoppingBag } from 'lucide-react';
 import { store } from '../../store/dataStore';
-import { formatCurrency, generateWALink } from '../../utils/wa_utils';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function NegotiationsDashboard() {
-  const [negotiations, setNegotiations] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('pending');
+  const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [searchQuery, setSearchQuery] = useState('');
   
   // Product Management State
   const [productModalOpen, setProductModalOpen] = useState(false);
@@ -19,7 +19,8 @@ export default function NegotiationsDashboard() {
     floor_price: 0,
     image_url: '',
     min_bulk_qty: 1,
-    is_active: true
+    is_active: true,
+    description: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -27,31 +28,16 @@ export default function NegotiationsDashboard() {
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { 
-      detail: { title: 'Marketplace', sub: 'Manajemen Penawaran Harga Pelanggan' } 
+      detail: { title: 'Marketplace Dashboard', sub: 'Preview & Manajemen Katalog Produk' } 
     }));
     loadAllData();
   }, []);
 
   const loadAllData = async () => {
     setLoading(true);
-    const { data } = await store.fetchNegotiations();
-    setNegotiations(data || []);
+    const { data } = await store.fetchProducts(false);
+    setProducts(data || []);
     setLoading(false);
-  };
-
-  const loadNegotiations = async () => {
-    setLoading(true);
-    const { data } = await store.fetchNegotiations();
-    setNegotiations(data);
-    setLoading(false);
-  };
-
-  const handleGoToCatalog = () => {
-    // Dispatch event to switch tab in ManagerShell if possible, 
-    // or tell user to go to Data Management
-    window.dispatchEvent(new CustomEvent('switchMgrTab', { detail: { tab: 'data' } }));
-    // We also need to tell DataManagement to open the 'products' tab specifically
-    localStorage.setItem('mgr_data_active_tab', 'products');
   };
 
   const openProductModal = (existingData?: any) => {
@@ -63,11 +49,12 @@ export default function NegotiationsDashboard() {
         floor_price: existingData.floor_price, 
         image_url: existingData.image_url, 
         min_bulk_qty: existingData.min_bulk_qty,
-        is_active: existingData.is_active 
+        is_active: existingData.is_active,
+        description: existingData.description || ''
       });
       setEditingProduct(existingData);
     } else {
-      setProductForm({ name: '', category: '', price: 0, floor_price: 0, image_url: '', min_bulk_qty: 1, is_active: true });
+      setProductForm({ name: '', category: '', price: 0, floor_price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '' });
       setEditingProduct(null);
     }
     setProductModalOpen(true);
@@ -95,181 +82,190 @@ export default function NegotiationsDashboard() {
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: any) => {
-    if (!window.confirm(`Yakin ingin mengubah status menjadi ${status}?`)) return;
-    const { error } = await store.updateNegotiationStatus(id, status);
-    if (error) alert('Gagal update status: ' + error.message);
-    else loadNegotiations();
-  };
-
-  const handleCounter = (nego: any) => {
-    const msg = `Halo ${nego.customer_name}, terkait penawaran Anda untuk ${nego.products.name} sebanyak ${nego.requested_qty} unit dengan harga Rp${nego.offered_price.toLocaleString()}, kami ingin mengajukan penawaran balik...`;
-    window.open(generateWALink(nego.customer_wa, msg), '_blank');
-  };
-
-  const filtered = negotiations.filter(n => filter === 'all' || n.status === filter);
+  const filteredProducts = products.filter(p => {
+    const matchesCat = selectedCategory === 'Semua' || p.category === selectedCategory;
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCat && matchesSearch;
+  });
 
   return (
-    <div style={{ padding: '24px' }}>
-      {/* Summary Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '32px' }}>
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.02)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Clock size={20} />
-            </div>
-            <span style={{ fontSize: '24px', fontWeight: 900, color: '#111827' }}>{negotiations.filter(n => n.status === 'pending').length}</span>
+    <div style={{ background: '#f5f5f5', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'sans-serif' }}>
+      
+      {/* SHOPEE TOP BAR (TINY) */}
+      <div style={{ background: '#ee4d2d', color: '#fff', fontSize: '12px', padding: '4px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <span>Seller Centre</span>
+          <span style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '16px' }}>Mulai Berjualan</span>
+          <span style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '16px' }}>Download</span>
+          <span style={{ borderLeft: '1px solid rgba(255,255,255,0.3)', paddingLeft: '16px' }}>Ikuti kami di <span style={{ fontWeight: 700 }}>f t i</span></span>
+        </div>
+        <div style={{ display: 'flex', gap: '16px' }}>
+          <span>Notifikasi</span>
+          <span>Bantuan</span>
+          <span>Bahasa Indonesia</span>
+          <span style={{ fontWeight: 700 }}>Daftar | Log In</span>
+        </div>
+      </div>
+
+      {/* SHOPEE MAIN HEADER */}
+      <div style={{ background: '#ee4d2d', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '48px', position: 'sticky', top: 0, zIndex: 100, paddingBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#fff', cursor: 'pointer' }}>
+          <ShoppingBag size={44} />
+          <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+            <span style={{ fontSize: '24px', fontWeight: 800 }}>PT. Industri</span>
+            <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.9 }}>Keluarga Timur</span>
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#64748b' }}>Menunggu Persetujuan</div>
+        </div>
+        
+        <div style={{ flex: 1, maxWidth: '800px' }}>
+          <div style={{ position: 'relative', marginBottom: '8px' }}>
+            <input 
+              type="text" 
+              placeholder="Daftar & Dapat Voucher Gratis" 
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '2px', border: 'none', fontSize: '14px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button style={{ position: 'absolute', right: '4px', top: '4px', bottom: '4px', background: '#ee4d2d', border: 'none', borderRadius: '2px', padding: '0 20px', color: '#fff', cursor: 'pointer' }}>
+              <Search size={20} />
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: '12px', color: 'rgba(255,255,255,0.9)', fontSize: '12px' }}>
+            <span>Celana Pants</span>
+            <span>Baju Kemeja Korean Style</span>
+            <span>Basreng 1 Kilo</span>
+            <span>Jam Tangan HP Android</span>
+            <span>Baju One Set Korean Style</span>
+          </div>
         </div>
 
-        <div 
-          onClick={handleGoToCatalog}
-          style={{ background: '#111827', padding: '20px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}
-          className="tap-active"
-        >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255, 204, 0, 0.1)', color: '#FFCC00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <ShoppingCart size={20} />
-            </div>
-            <div style={{ background: '#FFCC00', color: '#111827', padding: '4px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>MANAGE</div>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+          <div style={{ color: '#fff', position: 'relative', cursor: 'pointer' }}>
+            <ShoppingCart size={28} />
+            <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#fff', color: '#ee4d2d', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '1px solid #ee4d2d' }}>0</span>
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#94a3b8' }}>Kelola Katalog Produk</div>
-          <div style={{ fontSize: '11px', color: '#FFCC00', marginTop: '4px', fontWeight: 800 }}>Atur Harga & Stok →</div>
-        </div>
-      </div>      {/* Tabs & Controls */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '8px', background: '#e2e8f0', padding: '4px', borderRadius: '12px' }}>
-          {['pending', 'approved', 'rejected', 'countered', 'all'].map(t => (
-            <button
-              key={t}
-              onClick={() => setFilter(t)}
-              style={{ 
-                padding: '8px 16px', borderRadius: '10px', border: 'none', 
-                background: filter === t ? '#fff' : 'transparent',
-                color: filter === t ? '#111827' : '#64748b',
-                fontSize: '12px', fontWeight: 800, cursor: 'pointer',
-                boxShadow: filter === t ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
-                textTransform: 'capitalize'
-              }}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
           <button 
             onClick={() => openProductModal()} 
-            style={{ background: '#FFCC00', color: '#111827', border: 'none', borderRadius: '12px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 4px 12px rgba(255, 204, 0, 0.2)' }}
+            style={{ background: '#fff', color: '#ee4d2d', border: 'none', borderRadius: '4px', padding: '10px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
           >
-            <Plus size={16} strokeWidth={3} /> Tambah Produk
-          </button>
-          <button 
-            onClick={loadAllData} 
-            style={{ background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Refresh
+            <Plus size={18} /> Tambah Produk
           </button>
         </div>
       </div>
 
-      {/* Negotiation List */}
-      <div style={{ display: 'grid', gap: '16px' }}>
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
-        ) : filtered.length > 0 ? (
-          filtered.map(nego => (
-            <div key={nego.id} style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid rgba(0,0,0,0.02)', display: 'flex', gap: '24px', alignItems: 'center' }}>
-              {/* Product Info */}
-              <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flex: 1 }}>
-                <div style={{ position: 'relative' }}>
-                  <img 
-                    src={nego.products?.image_url} 
-                    alt="" 
-                    style={{ width: '64px', height: '64px', borderRadius: '14px', objectFit: 'cover', background: '#f1f5f9' }} 
-                  />
-                  <button 
-                    onClick={() => openProductModal(nego.products)}
-                    style={{ position: 'absolute', bottom: '-4px', right: '-4px', width: '24px', height: '24px', borderRadius: '50%', background: '#fff', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                  >
-                    <Edit2 size={12} color="#3b82f6" />
-                  </button>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', marginBottom: '2px' }}>{nego.products?.category}</div>
-                  <h4 style={{ fontSize: '16px', fontWeight: 900, color: '#111827', margin: 0 }}>{nego.products?.name}</h4>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '4px' }}>
-                    <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Qty: <span style={{ color: '#111827', fontWeight: 800 }}>{nego.requested_qty} kg</span></div>
-                    <div style={{ width: '4px', height: '4px', borderRadius: '50%', background: '#cbd5e1' }} />
-                    <div style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Harga Katalog: <span style={{ color: '#111827', fontWeight: 800 }}>{formatCurrency(nego.products?.price)}</span></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Offer Info */}
-              <div style={{ width: '200px', padding: '12px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', marginBottom: '4px' }}>Tawaran Pelanggan</div>
-                <div style={{ fontSize: '18px', fontWeight: 950, color: '#ef4444' }}>{formatCurrency(nego.offered_price)}</div>
-                {nego.offered_price < (nego.products?.floor_price || 0) && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px', color: '#f59e0b', fontSize: '10px', fontWeight: 800 }}>
-                    <TrendingDown size={12} /> DI BAWAH FLOOR PRICE
-                  </div>
-                )}
-              </div>
-
-              {/* Customer Info */}
-              <div style={{ width: '200px' }}>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827' }}>{nego.customer_name}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px', color: '#64748b', fontSize: '13px', fontWeight: 600 }}>
-                  <Phone size={14} /> {nego.customer_wa}
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {nego.status === 'pending' && (
-                  <>
-                    <button 
-                      onClick={() => handleStatusUpdate(nego.id, 'approved')}
-                      style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#10b981', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }}
-                      title="Approve"
-                    >
-                      <Check size={20} strokeWidth={3} />
-                    </button>
-                    <button 
-                      onClick={() => handleCounter(nego)}
-                      style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#3b82f6', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(59, 130, 246, 0.2)' }}
-                      title="Counter via WA"
-                    >
-                      <MessageCircle size={20} strokeWidth={2.5} />
-                    </button>
-                    <button 
-                      onClick={() => handleStatusUpdate(nego.id, 'rejected')}
-                      style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#ef4444', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(239, 68, 68, 0.2)' }}
-                      title="Reject"
-                    >
-                      <X size={20} strokeWidth={3} />
-                    </button>
-                  </>
-                )}
-                {nego.status !== 'pending' && (
-                  <div style={{ 
-                    padding: '8px 16px', borderRadius: '10px', 
-                    background: nego.status === 'approved' ? '#ECFDF5' : nego.status === 'rejected' ? '#FEF2F2' : '#F1F5F9',
-                    color: nego.status === 'approved' ? '#10B981' : nego.status === 'rejected' ? '#EF4444' : '#64748B',
-                    fontSize: '11px', fontWeight: 900, textTransform: 'uppercase'
-                  }}>
-                    {nego.status}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))
-        ) : (
-          <div style={{ textAlign: 'center', padding: '60px', background: '#fff', borderRadius: '20px', color: '#94a3b8', fontWeight: 700 }}>
-            Belum ada data penawaran.
+      <div style={{ display: 'flex', padding: '24px', gap: '24px', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
+        
+        {/* LEFT SIDEBAR */}
+        <div style={{ width: '200px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 700, color: '#212121' }}>
+            <List size={18} /> Semua Kategori
           </div>
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div 
+              onClick={() => setSelectedCategory('Semua')}
+              style={{ fontSize: '14px', cursor: 'pointer', color: selectedCategory === 'Semua' ? '#ee4d2d' : '#212121', fontWeight: selectedCategory === 'Semua' ? 700 : 400 }}
+            >
+              Semua Produk
+            </div>
+            {masterCategories.map((cat: any) => (
+              <div 
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.name)}
+                style={{ fontSize: '14px', cursor: 'pointer', color: selectedCategory === cat.name ? '#ee4d2d' : '#212121', fontWeight: selectedCategory === cat.name ? 700 : 400, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+              >
+                {cat.name}
+                {selectedCategory === cat.name && <ChevronRight size={14} />}
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #e8e8e8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', fontWeight: 700, color: '#212121' }}>
+              <Filter size={18} /> FILTER
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#212121' }}>
+                <input type="checkbox" /> Jabodetabek
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#212121' }}>
+                <input type="checkbox" /> DKI Jakarta
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#212121' }}>
+                <input type="checkbox" /> Jawa Barat
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* MAIN CONTENT */}
+        <div style={{ flex: 1 }}>
+          
+          {/* SHOPEE MALL BRANDS (DUMMY) */}
+          <div style={{ background: '#fff', borderRadius: '4px', padding: '20px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <span style={{ color: '#d0011b', fontWeight: 700, fontSize: '16px' }}>SHOPEE MALL</span>
+              <span style={{ color: '#ee4d2d', fontSize: '13px', cursor: 'pointer' }}>Lihat Semua &gt;</span>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '16px' }}>
+              {['Nubia', 'Advan', 'Garmin', 'Suunto', 'Anker', 'Lenovo'].map(brand => (
+                <div key={brand} style={{ border: '1px solid #f1f1f1', borderRadius: '4px', padding: '16px', textAlign: 'center', color: '#999', fontSize: '14px', fontWeight: 700 }}>
+                  {brand.toUpperCase()}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* SORT BAR */}
+          <div style={{ background: '#ededed', borderRadius: '4px', padding: '12px 20px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '14px', color: '#555' }}>Urutkan</span>
+            <button style={{ background: '#ee4d2d', color: '#fff', border: 'none', borderRadius: '2px', padding: '8px 16px', fontSize: '14px' }}>Populer</button>
+            <button style={{ background: '#fff', color: '#212121', border: 'none', borderRadius: '2px', padding: '8px 16px', fontSize: '14px' }}>Terbaru</button>
+            <button style={{ background: '#fff', color: '#212121', border: 'none', borderRadius: '2px', padding: '8px 16px', fontSize: '14px' }}>Terlaris</button>
+            <select style={{ background: '#fff', color: '#212121', border: 'none', borderRadius: '2px', padding: '8px 16px', fontSize: '14px', flex: 1, maxWidth: '200px' }}>
+              <option>Harga</option>
+              <option>Harga: Rendah ke Tinggi</option>
+              <option>Harga: Tinggi ke Rendah</option>
+            </select>
+          </div>
+
+          {/* PRODUCT GRID */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
+            {loading ? (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
+            ) : filteredProducts.map(p => (
+              <div 
+                key={p.id} 
+                style={{ background: '#fff', borderRadius: '2px', overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.1)', cursor: 'pointer', transition: 'transform 0.2s', position: 'relative' }}
+                className="product-card-hover"
+                onClick={() => openProductModal(p)}
+              >
+                <div style={{ position: 'relative', paddingTop: '100%' }}>
+                  <img src={p.image_url} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                  {p.price > p.floor_price && (
+                    <div style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(255,212,36,.9)', color: '#ee4d2d', padding: '2px 4px', fontSize: '10px', fontWeight: 700, borderRadius: '2px' }}>
+                      PROMO
+                    </div>
+                  )}
+                </div>
+                <div style={{ padding: '8px' }}>
+                  <div style={{ fontSize: '12px', color: '#212121', height: '32px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '16px', marginBottom: '8px' }}>
+                    <span style={{ background: '#ee4d2d', color: '#fff', fontSize: '10px', padding: '1px 3px', borderRadius: '2px', marginRight: '4px' }}>Star+</span>
+                    {p.name}
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                    <div style={{ color: '#ee4d2d', fontSize: '16px', fontWeight: 500 }}>
+                      <span style={{ fontSize: '11px' }}>Rp</span>{p.price.toLocaleString('id-ID')}
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#757575', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ color: '#ffce3d' }}><Star size={10} fill="currentColor" /></span>
+                    <span>4.8 | 10RB+ terjual</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* PRODUCT MODAL (Shopee Style) */}
@@ -448,5 +444,11 @@ export default function NegotiationsDashboard() {
         </div>
       )}
     </div>
+  );
+}
+
+function Loader2({ className }: { className: string }) {
+  return (
+    <RefreshCw className={className} />
   );
 }
