@@ -603,7 +603,13 @@ export const store = {
   },
 
   async addProduct(p: Omit<Product, 'id' | 'created_at'>) {
-    const { data, error } = await supabase.from('products').upsert([p]).select();
+    const productData = {
+      ...p,
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString()
+    };
+    const { data, error } = await supabase.from('products').insert([productData]).select();
+    if (error) console.error('addProduct error:', error);
     return { data, error };
   },
 

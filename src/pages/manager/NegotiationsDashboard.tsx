@@ -46,7 +46,6 @@ export default function NegotiationsDashboard() {
         name: existingData.name, 
         category: existingData.category, 
         price: existingData.price, 
-        floor_price: existingData.floor_price, 
         image_url: existingData.image_url, 
         min_bulk_qty: existingData.min_bulk_qty,
         is_active: existingData.is_active,
@@ -54,7 +53,7 @@ export default function NegotiationsDashboard() {
       });
       setEditingProduct(existingData);
     } else {
-      setProductForm({ name: '', category: '', price: 0, floor_price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '' });
+      setProductForm({ name: '', category: '', price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '' });
       setEditingProduct(null);
     }
     setProductModalOpen(true);
@@ -65,13 +64,18 @@ export default function NegotiationsDashboard() {
     setIsSubmitting(true);
     try {
       if (editingProduct) {
-        await store.updateProduct(editingProduct.id, productForm);
+        const { error } = await store.updateProduct(editingProduct.id, productForm);
+        if (error) throw error;
       } else {
-        await store.addProduct(productForm as any);
+        const { error } = await store.addProduct(productForm as any);
+        if (error) throw error;
       }
       setProductModalOpen(false);
       loadAllData();
-    } catch (err: any) { alert(err.message); }
+    } catch (err: any) { 
+      console.error('Save Product Error:', err);
+      alert('Gagal menyimpan produk: ' + (err.message || 'Cek koneksi atau ukuran gambar.')); 
+    }
     finally { setIsSubmitting(false); }
   };
 
@@ -309,6 +313,11 @@ export default function NegotiationsDashboard() {
                       <option value="">Pilih Kategori</option>
                       {masterProductCategories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
                     </select>
+                    {masterProductCategories.length === 0 && (
+                      <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', fontWeight: 700 }}>
+                        ⚠️ Belum ada kategori. Buat di Data Management {'>'} Kategori Produk.
+                      </p>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
