@@ -268,7 +268,6 @@ export default function Homepage({ salesId }: Props) {
               { label: 'Chat', icon: MessageSquare, color: '#10b981', bg: '#ECFDF5', path: '/mobile/chat', badge: 0 },
               { label: 'Ranking', icon: Trophy, color: '#f59e0b', bg: '#FFFBEB', path: '/mobile/rank' },
               { label: 'Order', icon: ShoppingCart, color: '#ef4444', bg: '#FEF2F2', path: '/mobile/customer' },
-              { label: 'Profile', icon: User, color: '#3b82f6', bg: '#eff6ff', path: '/mobile/profile' },
               { label: 'Marketplace', icon: Share2, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true },
             ].map((item) => (
               <div key={item.label} 
