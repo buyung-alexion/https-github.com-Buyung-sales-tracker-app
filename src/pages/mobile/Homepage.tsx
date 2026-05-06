@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, ShoppingBag } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, ShoppingBag, Share } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -21,7 +21,8 @@ export default function Homepage({ salesId }: Props) {
   const navigate = useNavigate();
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
-  const [selectedCust, setSelectedCust] = useState<any>(null); // To be replaced by Customer after import check
+  const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
+  const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -296,9 +297,7 @@ export default function Homepage({ salesId }: Props) {
                     if (item.label === 'Order') {
                       navigate('/mobile/order-history');
                     } else if (item.label === 'Marketplace') {
-                      const mode = window.confirm('Buka Katalog (OK) atau Bagikan Link ke Konsumen (Cancel)?');
-                      if (mode) navigate('/catalog');
-                      else handleShareMarketplace();
+                      setMarketplaceModalOpen(true);
                     } else {
                       navigate(item.path);
                     }
@@ -600,6 +599,55 @@ export default function Homepage({ salesId }: Props) {
                   {isSubmittingOrder ? <Loader2 className="animate-spin" size={24} /> : orderSuccess ? <><CheckCircle size={24} /> Order Berhasil!</> : 'Konfirmasi & Kirim Order'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Marketplace Selector Drawer */}
+      {marketplaceModalOpen && (
+        <div className="modal-overlay" onClick={() => setMarketplaceModalOpen(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
+            borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
+            padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' 
+          }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: '#f0f9ff', color: '#0ea5e9', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ShoppingBag size={20} strokeWidth={3} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px' }}>Marketplace IKT</h3>
+              </div>
+              <button className="tap-active" onClick={() => setMarketplaceModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+               <button 
+                 className="tap-active"
+                 onClick={() => { setMarketplaceModalOpen(false); navigate('/catalog'); }}
+                 style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
+               >
+                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><ShoppingBag size={24} /></div>
+                 <div style={{ flex: 1 }}>
+                   <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Buka Katalog</div>
+                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Lihat semua produk IKT sekarang</div>
+                 </div>
+                 <ChevronRight size={18} color="#cbd5e1" />
+               </button>
+
+               <button 
+                 className="tap-active"
+                 onClick={() => { setMarketplaceModalOpen(false); handleShareMarketplace(); }}
+                 style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
+               >
+                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><Share size={24} /></div>
+                 <div style={{ flex: 1 }}>
+                   <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Bagikan Link Sales</div>
+                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Kirim link personal ke konsumen</div>
+                 </div>
+                 <ChevronRight size={18} color="#cbd5e1" />
+               </button>
             </div>
           </div>
         </div>
