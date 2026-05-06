@@ -105,7 +105,7 @@ export default function NegotiationsDashboard() {
 
 
       {/* BRAND MAIN HEADER */}
-      <div style={{ background: '#111827', padding: '24px 24px 32px', display: 'flex', alignItems: 'center', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+      <div style={{ background: '#111827', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-start', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#fff', cursor: 'pointer' }} onClick={() => window.location.reload()}>
           <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)', background: '#fff' }}>
             <img src="/assets/image/logo_ikt.png" alt="IKT Logo" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
@@ -138,7 +138,7 @@ export default function NegotiationsDashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '32px', alignItems: 'center', marginTop: '6px' }}>
           <div style={{ color: '#fff', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s' }} className="tap-active">
             <ShoppingCart size={32} />
             <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#FFCC00', color: '#111827', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid #111827' }}>0</span>
