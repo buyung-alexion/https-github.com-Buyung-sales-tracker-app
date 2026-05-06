@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, Loader2, MessageSquare } from 'lucide-react';
+import { Plus, X, Search, Filter, ChevronRight, List, Loader2, MessageSquare } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
@@ -18,7 +18,6 @@ export default function NegotiationsDashboard() {
     name: '',
     category: '',
     price: 0,
-    floor_price: 0,
     image_url: '',
     min_bulk_qty: 1,
     is_active: true,
@@ -360,7 +359,6 @@ export default function NegotiationsDashboard() {
             </div>
           )}
         </div>
-      </div>
       </div>
 
       {/* ADD/EDIT PRODUCT MODAL */}
