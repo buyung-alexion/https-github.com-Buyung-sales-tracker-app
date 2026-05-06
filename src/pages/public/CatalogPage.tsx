@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Search, Loader2, X, CheckCircle, ChevronLeft, MoreVertical, MessageCircle, Star, ChevronDown, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Product } from '../../types';
@@ -13,6 +13,7 @@ export default function CatalogPage() {
   const [activeTab, setActiveTab] = useState('Produk');
   const [activeFilter, setActiveFilter] = useState('Populer');
   const [followerCount, setFollowerCount] = useState(0);
+
   
   // Negotiation Modal State
   const [negoModalOpen, setNegoModalOpen] = useState(false);
@@ -25,11 +26,19 @@ export default function CatalogPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     loadProducts();
     loadFollowers();
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    const data = await store.fetchMasterProductCategories();
+    setCategories(data);
+  };
 
   const loadProducts = async () => {
     setLoading(true);
@@ -43,10 +52,29 @@ export default function CatalogPage() {
     setFollowerCount(count);
   };
 
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
-    return matchesSearch;
-  });
+  const filteredProducts = useMemo(() => {
+    let result = [...products];
+
+    // 1. Search Filter
+    if (search) {
+      result = result.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    // 2. Category Filter (If in Kategori tab and category selected)
+    if (activeTab === 'Kategori' && selectedCategory) {
+      result = result.filter(p => p.category === selectedCategory);
+    }
+
+    // 3. Sorting
+    if (activeFilter === 'Terbaru') {
+      result.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+    } else if (activeFilter === 'Terlaris') {
+      // Mock sorting for now as we don't have sales count per product yet
+      result.sort((a, b) => (b.price || 0) - (a.price || 0));
+    }
+
+    return result;
+  }, [products, search, activeTab, selectedCategory, activeFilter]);
 
   const handleOpenDetail = (product: Product) => {
     setSelectedProduct(product);
@@ -259,30 +287,66 @@ export default function CatalogPage() {
         </button>
       </div>
 
-      {/* Product Grid */}
+      {/* Product Grid / Categories List */}
       <div style={{ padding: '8px' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
             <Loader2 className="animate-spin" size={32} color="#ee4d2d" />
           </div>
-        ) : filteredProducts.length > 0 ? (
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(2, 1fr)', 
-            gap: '8px' 
-          }}>
-            {filteredProducts.map(product => (
-              <ProductCard 
-                key={product.id} 
-                product={product} 
-                onClick={handleOpenDetail}
-              />
+        ) : activeTab === 'Kategori' && !selectedCategory ? (
+          /* Categories Selection View */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px' }}>
+            {categories.map(cat => (
+              <div 
+                key={cat.id}
+                className="tap-active"
+                onClick={() => setSelectedCategory(cat.name)}
+                style={{ 
+                  background: '#fff', padding: '20px', borderRadius: '12px',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)', fontWeight: 700
+                }}
+              >
+                <span>{cat.name}</span>
+                <ChevronLeft size={18} style={{ transform: 'rotate(180deg)', opacity: 0.3 }} />
+              </div>
             ))}
           </div>
         ) : (
-          <div style={{ textAlign: 'center', padding: '100px 0', color: '#94a3b8' }}>
-            <p style={{ fontWeight: 700 }}>Produk tidak ditemukan.</p>
-          </div>
+          /* Products Grid View */
+          <>
+            {selectedCategory && activeTab === 'Kategori' && (
+              <div style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <button 
+                  onClick={() => setSelectedCategory(null)}
+                  style={{ background: '#eee', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}
+                >
+                  <ChevronLeft size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Kembali
+                </button>
+                <span style={{ fontSize: '14px', fontWeight: 800 }}>Kategori: {selectedCategory}</span>
+              </div>
+            )}
+            
+            {filteredProducts.length > 0 ? (
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(2, 1fr)', 
+                gap: '8px' 
+              }}>
+                {filteredProducts.map(product => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onClick={handleOpenDetail}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '100px 0', color: '#94a3b8' }}>
+                <p style={{ fontWeight: 700 }}>Produk tidak ditemukan.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
