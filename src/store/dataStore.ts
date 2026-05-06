@@ -373,6 +373,12 @@ export const store = {
     return { error };
   },
 
+  async fetchSalesPublicInfo(id: string) {
+    const { data, error } = await supabase.from('sales').select('id, nama, no_wa').eq('id', id).single();
+    if (error) console.error('fetchSalesPublicInfo error:', error);
+    return { data, error };
+  },
+
   // ─── ROLES ──────────────────────────────────────────────
   async fetchRoles() {
     const { data, error } = await supabase.from('roles').select('*');

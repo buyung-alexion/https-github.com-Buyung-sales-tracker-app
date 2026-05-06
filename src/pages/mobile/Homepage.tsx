@@ -141,6 +141,26 @@ export default function Homepage({ salesId }: Props) {
     }
   };
 
+  const handleShareMarketplace = async () => {
+    const shareUrl = `${window.location.origin}/catalog?ref=${salesId}`;
+    const shareData = {
+      title: 'IKT Marketplace',
+      text: `Halo! Cek produk IKT terbaru di katalog saya. Hubungi saya langsung untuk penawaran terbaik!`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Link katalog personal Anda berhasil disalin!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+
   const myCustomers = customers.filter(c => c.sales_pic === salesId);
   const filteredCustomers = myCustomers.filter(c => 
     c.nama_toko.toLowerCase().includes(orderSearch.toLowerCase()) ||
@@ -276,7 +296,9 @@ export default function Homepage({ salesId }: Props) {
                     if (item.label === 'Order') {
                       navigate('/mobile/order-history');
                     } else if (item.label === 'Marketplace') {
-                      navigate('/catalog');
+                      const mode = window.confirm('Buka Katalog (OK) atau Bagikan Link ke Konsumen (Cancel)?');
+                      if (mode) navigate('/catalog');
+                      else handleShareMarketplace();
                     } else {
                       navigate(item.path);
                     }

@@ -164,6 +164,7 @@ export interface Product {
 export interface LeadNegotiation {
   id: string;
   product_id: string;
+  sales_id?: string; // ID of the sales person who referred the lead
   customer_name: string;
   customer_wa: string;
   requested_qty: number;

@@ -28,12 +28,25 @@ export default function CatalogPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [referrerSales, setReferrerSales] = useState<any>(null);
 
   useEffect(() => {
     loadProducts();
     loadFollowers();
     loadCategories();
+    checkReferrer();
   }, []);
+
+  const checkReferrer = async () => {
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      const { data } = await store.fetchSalesPublicInfo(ref);
+      if (data) {
+        setReferrerSales(data);
+      }
+    }
+  };
 
   const loadCategories = async () => {
     const data = await store.fetchMasterProductCategories();
@@ -88,8 +101,10 @@ export default function CatalogPage() {
   };
 
   const handleChatToko = () => {
-    // Arahkan ke WhatsApp Admin/Owner
-    window.open('https://wa.me/6281234567890?text=Halo PT. Industri Keluarga Timur, saya ingin bertanya tentang produk di katalog.', '_blank');
+    // Arahkan ke WhatsApp Sales (Referrer) atau Admin/Owner jika tidak ada referrer
+    const waNumber = referrerSales?.no_wa || '6281234567890';
+    const message = encodeURIComponent(`Halo ${referrerSales?.nama || 'Admin'}, saya ingin bertanya tentang produk di katalog PT. Industri Keluarga Timur.`);
+    window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
   };
 
   const handleShareCatalog = async () => {
@@ -120,6 +135,7 @@ export default function CatalogPage() {
     setIsSubmitting(true);
     const { error } = await store.submitNegotiation({
       product_id: selectedProduct.id,
+      sales_id: referrerSales?.id || null,
       customer_name: negoForm.customer_name,
       customer_wa: negoForm.customer_wa,
       requested_qty: negoQty,
@@ -460,7 +476,11 @@ export default function CatalogPage() {
 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
                   <button 
-                    onClick={() => window.open(`https://wa.me/6281234567890?text=Halo, saya ingin bertanya tentang ${selectedProduct.name}`, '_blank')}
+                    onClick={() => {
+                      const waNumber = referrerSales?.no_wa || '6281234567890';
+                      const message = encodeURIComponent(`Halo, saya ingin bertanya tentang ${selectedProduct.name}`);
+                      window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+                    }}
                     style={{ 
                       flex: 1, padding: '14px', borderRadius: '4px', 
                       background: '#00bfa5', color: '#fff', 
