@@ -20,7 +20,10 @@ export default function NegotiationsDashboard() {
     image_url: '',
     min_bulk_qty: 1,
     is_active: true,
-    description: ''
+    description: '',
+    discount_percent: 0,
+    stock: 0,
+    sold_count: 0
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,11 +52,14 @@ export default function NegotiationsDashboard() {
         image_url: existingData.image_url, 
         min_bulk_qty: existingData.min_bulk_qty,
         is_active: existingData.is_active,
-        description: existingData.description || ''
+        description: existingData.description || '',
+        discount_percent: existingData.discount_percent || 0,
+        stock: existingData.stock || 0,
+        sold_count: existingData.sold_count || 0
       });
       setEditingProduct(existingData);
     } else {
-      setProductForm({ name: '', category: '', price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '' });
+      setProductForm({ name: '', category: '', price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '', discount_percent: 0, stock: 0, sold_count: 0 });
       setEditingProduct(null);
     }
     setProductModalOpen(true);
@@ -335,20 +341,55 @@ export default function NegotiationsDashboard() {
                 {/* RIGHT COL: SALES & MEDIA */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div style={{ borderLeft: '4px solid #111827', paddingLeft: '16px', marginBottom: '8px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', marginBottom: '2px' }}>HARGA & MEDIA</h4>
+                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', marginBottom: '2px' }}>HARGA, STOK & MEDIA</h4>
                     <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Pengaturan penjualan dan foto</p>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Harga Jual (Rp)</label>
-                    <input 
-                      type="number"
-                      required
-                      placeholder="0"
-                      style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
-                      value={productForm.price}
-                      onChange={(e) => setProductForm({...productForm, price: parseInt(e.target.value) || 0})}
-                    />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Harga Jual (Rp)</label>
+                      <input 
+                        type="number"
+                        required
+                        placeholder="0"
+                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
+                        value={productForm.price}
+                        onChange={(e) => setProductForm({...productForm, price: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Diskon (%)</label>
+                      <input 
+                        type="number"
+                        placeholder="0"
+                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#EF4444' }}
+                        value={productForm.discount_percent}
+                        onChange={(e) => setProductForm({...productForm, discount_percent: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Stok Tersedia</label>
+                      <input 
+                        type="number"
+                        placeholder="0"
+                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
+                        value={productForm.stock}
+                        onChange={(e) => setProductForm({...productForm, stock: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Jumlah Terjual</label>
+                      <input 
+                        type="number"
+                        placeholder="0"
+                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#64748b' }}
+                        value={productForm.sold_count}
+                        onChange={(e) => setProductForm({...productForm, sold_count: parseInt(e.target.value) || 0})}
+                      />
+                    </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

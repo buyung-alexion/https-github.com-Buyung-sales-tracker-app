@@ -7,9 +7,9 @@ interface Props {
 }
 
 export default function ProductCard({ product, onClick }: Props) {
-  // Simulating Shopee-style data
-  const rating = 4.9;
-  const soldCount = "203";
+  const rating = 5.0;
+  const hasDiscount = (product.discount_percent || 0) > 0;
+  const originalPrice = hasDiscount ? Math.round(product.price / (1 - (product.discount_percent / 100))) : product.price;
 
   return (
     <div 
@@ -43,14 +43,14 @@ export default function ProductCard({ product, onClick }: Props) {
         <div style={{ 
           position: 'absolute', 
           top: 0, left: 0,
-          background: '#ee4d2d',
-          color: '#fff',
-          padding: '2px 4px',
+          background: '#111827',
+          color: '#FFCC00',
+          padding: '2px 6px',
           fontSize: '10px',
-          fontWeight: 900,
+          fontWeight: 950,
           borderBottomRightRadius: '4px'
         }}>
-          MALL
+          IKT
         </div>
       </div>
 
@@ -81,10 +81,16 @@ export default function ProductCard({ product, onClick }: Props) {
              </span>
           </div>
           
-          {/* Discount simulation */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-            <div style={{ fontSize: '9px', padding: '1px 3px', background: '#feeeea', color: '#ee4d2d', fontWeight: 800, borderRadius: '2px' }}>-10%</div>
-          </div>
+          {hasDiscount && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+              <span style={{ fontSize: '10px', color: '#94a3b8', textDecoration: 'line-through' }}>
+                Rp{originalPrice.toLocaleString('id-ID')}
+              </span>
+              <div style={{ fontSize: '9px', padding: '1px 4px', background: '#feeeea', color: '#ee4d2d', fontWeight: 900, borderRadius: '2px' }}>
+                -{product.discount_percent}%
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Rating & Sold */}
@@ -94,8 +100,20 @@ export default function ProductCard({ product, onClick }: Props) {
             <span style={{ fontSize: '11px', color: '#757575', fontWeight: 500 }}>{rating}</span>
           </div>
           <div style={{ width: '1px', height: '10px', background: '#e8e8e8' }} />
-          <span style={{ fontSize: '11px', color: '#757575', fontWeight: 500 }}>{soldCount} terjual</span>
+          <span style={{ fontSize: '10px', color: '#757575', fontWeight: 500 }}>{(product.sold_count || 0).toLocaleString('id-ID')} terjual</span>
         </div>
+
+        {/* Stock Status (if low) */}
+        {product.stock !== undefined && product.stock <= 5 && product.stock > 0 && (
+          <div style={{ fontSize: '9px', color: '#F59E0B', fontWeight: 800, marginTop: '2px' }}>
+            Sisa {product.stock} stok lagi!
+          </div>
+        )}
+        {product.stock === 0 && (
+          <div style={{ fontSize: '9px', color: '#EF4444', fontWeight: 800, marginTop: '2px' }}>
+            Stok Habis
+          </div>
+        )}
       </div>
     </div>
   );

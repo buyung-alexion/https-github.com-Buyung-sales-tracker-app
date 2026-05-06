@@ -153,7 +153,9 @@ export interface Product {
   price: number;
   image_url?: string;
   min_bulk_qty: number;
-  floor_price: number;
+  discount_percent: number;
+  stock: number;
+  sold_count: number;
   description?: string;
   is_active: boolean;
   created_at?: string;
