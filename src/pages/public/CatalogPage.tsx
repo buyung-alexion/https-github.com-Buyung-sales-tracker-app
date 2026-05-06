@@ -64,6 +64,25 @@ export default function CatalogPage() {
     window.open('https://wa.me/6281234567890?text=Halo PT. Industri Keluarga Timur, saya ingin bertanya tentang produk di katalog.', '_blank');
   };
 
+  const handleShareCatalog = async () => {
+    const shareData = {
+      title: 'Katalog PT. Industri Keluarga Timur',
+      text: 'Cek katalog produk terbaru kami di PT. Industri Keluarga Timur!',
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        alert('Link katalog berhasil disalin ke clipboard!');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+
   const handleSubmitNego = async () => {
     if (!selectedProduct || !negoForm.customer_name || !negoForm.customer_wa || negoForm.offered_price <= 0) {
       alert('Mohon lengkapi semua data.');
@@ -125,7 +144,10 @@ export default function CatalogPage() {
             />
           </div>
           
-          <button style={{ background: 'transparent', border: 'none', padding: 0 }}>
+          <button 
+            onClick={handleShareCatalog}
+            style={{ background: 'transparent', border: 'none', padding: 0 }}
+          >
             <MoreVertical size={24} color="#757575" />
           </button>
         </div>
@@ -133,32 +155,33 @@ export default function CatalogPage() {
 
       {/* Store Profile Section */}
       <div style={{ 
-        background: '#fff', padding: '20px 16px', 
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")',
+        background: '#fff', padding: '24px 16px', 
+        backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")',
         backgroundSize: 'cover', backgroundPosition: 'center',
         color: '#fff'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
              <div style={{ 
-               width: '56px', height: '56px', borderRadius: '50%', 
-               border: '2px solid #fff', overflow: 'hidden', background: '#fff' 
+               width: '64px', height: '64px', borderRadius: '50%', 
+               border: '2px solid #fff', overflow: 'hidden', background: '#fff',
+               flexShrink: 0, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center'
              }}>
                <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
              </div>
              <div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                 <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0 }}>PT. Industri Keluarga Timur</h2>
+                 <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0, lineHeight: 1.2 }}>PT. Industri Keluarga Timur</h2>
                  <ChevronLeft size={14} style={{ transform: 'rotate(180deg)' }} />
                </div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
                  <Star size={10} fill="#ffce3d" color="#ffce3d" />
                  <span style={{ fontSize: '12px', fontWeight: 500 }}>4.9</span>
-                 <span style={{ fontSize: '12px', opacity: 0.8, marginLeft: '8px' }}>{followerCount.toLocaleString('id-ID')} Pengikut</span>
+                 <span style={{ fontSize: '12px', opacity: 0.9, marginLeft: '8px' }}>{followerCount.toLocaleString('id-ID')} Pengikut</span>
                </div>
              </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px' }}>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
              <button style={{ 
                background: '#ee4d2d', color: '#fff', border: 'none', 
                borderRadius: '4px', padding: '6px 12px', fontSize: '12px', 
