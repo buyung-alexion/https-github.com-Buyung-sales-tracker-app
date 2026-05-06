@@ -160,7 +160,7 @@ export default function CatalogPage() {
         backgroundSize: 'cover', backgroundPosition: 'center',
         color: '#fff'
       }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
              <div style={{ 
                width: '64px', height: '64px', borderRadius: '50%', 
@@ -169,9 +169,9 @@ export default function CatalogPage() {
              }}>
                <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
              </div>
-             <div>
+             <div style={{ flex: 1 }}>
                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                 <h2 style={{ fontSize: '15px', fontWeight: 700, margin: 0, lineHeight: 1.2 }}>PT. Industri Keluarga Timur</h2>
+                 <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>PT. Industri Keluarga Timur</h2>
                  <ChevronLeft size={14} style={{ transform: 'rotate(180deg)' }} />
                </div>
                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
@@ -181,24 +181,19 @@ export default function CatalogPage() {
                </div>
              </div>
           </div>
-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-             <button style={{ 
-               background: '#ee4d2d', color: '#fff', border: 'none', 
-               borderRadius: '4px', padding: '6px 12px', fontSize: '12px', 
-               fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' 
-             }}>
-               <CheckCircle size={12} /> Ikuti
-             </button>
+          
+          <div style={{ display: 'flex', gap: '8px' }}>
              <button 
                onClick={handleChatToko}
                style={{ 
+                 flex: 1,
                  background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid #fff', 
-                 borderRadius: '4px', padding: '6px 12px', fontSize: '12px', 
-                 fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px',
+                 borderRadius: '4px', padding: '8px 12px', fontSize: '14px', 
+                 fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                  backdropFilter: 'blur(4px)'
                }}
              >
-               <MessageCircle size={12} /> Chat
+               <MessageCircle size={16} /> Chat Sekarang
              </button>
           </div>
         </div>
