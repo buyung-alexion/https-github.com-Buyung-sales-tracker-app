@@ -154,6 +154,7 @@ export interface Product {
   image_url?: string;
   min_bulk_qty: number;
   floor_price: number;
+  description?: string;
   is_active: boolean;
   created_at?: string;
 }
