@@ -169,7 +169,10 @@ export default function ManagerShell() {
 
       {/* Main */}
       <div className="manager-main">
-        <header className="manager-topbar">
+        <header className="manager-topbar" style={{ 
+          display: shellTitle ? 'flex' : (window.innerWidth <= 768 ? 'flex' : 'none'),
+          padding: shellTitle ? '20px 32px 10px' : '10px 16px'
+        }}>
           <button className="hamburger" onClick={() => setSidebarOpen(o => !o)}>
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
@@ -256,7 +259,7 @@ export default function ManagerShell() {
           </div>
         )}
 
-        <main className="manager-content">
+        <main className="manager-content" style={{ paddingTop: shellTitle ? '10px' : '0' }}>
           <Routes>
             <Route index element={<LiveActivityFeed />} />
             <Route path="activity" element={<LiveActivityFeed />} />
