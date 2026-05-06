@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart, Loader2 } from 'lucide-react';
+import { Shield, Users, Target, Edit2, Trash2, X, Plus, MapPin, TrendingUp, ShoppingCart, ShoppingBag, Loader2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function DataManagement() {
-  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'channel' | 'status' | 'action'>('role');
-  const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
+  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'channel' | 'status' | 'action' | 'products'>('role');
+  const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any, products: [] as any[] });
   const [isLoading, setIsLoading] = useState(true);
 
   const { allSales, masterAreas, masterCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
@@ -16,6 +16,8 @@ export default function DataManagement() {
         setIsLoading(true);
         const roles = await store.fetchRoles();
         let targets = await store.fetchSystemTargets();
+        const { data: products } = await store.fetchProducts(false);
+        
         if (!targets) {
           targets = { 
             ind_poin: 150, 
@@ -46,7 +48,8 @@ export default function DataManagement() {
             bClosing: targets.b_closing || 20,
             bOrder: targets.b_order || 5,
             bChat: targets.b_chat || 1
-          }
+          },
+          products: products || []
         }));
       } catch (error) {
         console.error('DataManagement load error:', error);
@@ -74,6 +77,7 @@ export default function DataManagement() {
     { id: 'channel', label: 'Sumber / Channel', icon: <TrendingUp size={16} /> },
     { id: 'status', label: 'Status Prospek', icon: <Target size={16} /> },
     { id: 'action', label: 'Tipe Aktivitas', icon: <Users size={16} /> },
+    { id: 'products', label: 'Katalog Produk', icon: <ShoppingBag size={16} /> },
   ];
 
   // --- MODAL STATES ---
@@ -85,6 +89,9 @@ export default function DataManagement() {
 
   const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
   const [masterForm, setMasterForm] = useState({ id: '', name: '' });
+  
+  const [productModal, setProductModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
+  const [productForm, setProductForm] = useState({ name: '', category: '', price: 0, floor_price: 0, image_url: '', min_bulk_qty: 1, is_active: true });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -261,6 +268,48 @@ export default function DataManagement() {
       await refreshGlobal();
     } catch (err: any) { alert(err.message); }
   };
+  
+  const openProductModal = (existingData?: any) => {
+    if (existingData) {
+      setProductForm({ 
+        name: existingData.name, 
+        category: existingData.category, 
+        price: existingData.price, 
+        floor_price: existingData.floor_price, 
+        image_url: existingData.image_url, 
+        min_bulk_qty: existingData.min_bulk_qty,
+        is_active: existingData.is_active 
+      });
+      setProductModal({ isOpen: true, data: existingData });
+    } else {
+      setProductForm({ name: '', category: '', price: 0, floor_price: 0, image_url: '', min_bulk_qty: 1, is_active: true });
+      setProductModal({ isOpen: true, data: null });
+    }
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      if (productModal.data) {
+        await store.updateProduct(productModal.data.id, productForm);
+      } else {
+        await store.addProduct(productForm as any);
+      }
+      setProductModal({ isOpen: false, data: null });
+      const { data: prods } = await store.fetchProducts(false);
+      setData(d => ({ ...d, products: prods }));
+    } catch (err: any) { alert(err.message); }
+    finally { setIsSubmitting(false); }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (window.confirm('Hapus produk ini?')) {
+      await store.deleteProduct(id);
+      const { data: prods } = await store.fetchProducts(false);
+      setData(d => ({ ...d, products: prods }));
+    }
+  };
 
   // --- STYLES ---
   const overlayStyle: React.CSSProperties = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)' };
@@ -397,6 +446,30 @@ export default function DataManagement() {
               </div>
             )}
 
+            {activeTab === 'products' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Katalog Produk Marketplace</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>KELOLA PRODUK UNTUK KATALOG PUBLIK</p></div>
+                  <button onClick={() => openProductModal()} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH PRODUK</button>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
+                  {data.products.map((p: any) => (
+                    <div key={p.id} style={{ background: '#fff', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                      <img src={p.image_url} style={{ width: '60px', height: '60px', borderRadius: '12px', objectFit: 'cover', background: '#f8fafc' }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 900, color: '#1e293b' }}>{p.name}</div>
+                        <div style={{ fontSize: '12px', color: '#64748b' }}>{p.category} • Rp{p.price.toLocaleString()}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => openProductModal(p)} style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f0f9ff', border: 'none', cursor: 'pointer' }}><Edit2 size={14} color="#0ea5e9" /></button>
+                        <button onClick={() => handleDeleteProduct(p.id)} style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={14} color="#ef4444" /></button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
@@ -480,6 +553,55 @@ export default function DataManagement() {
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button type="button" onClick={() => setRoleModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
                 <button type="submit" className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 900 }}>Simpan</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* PRODUCT MODAL */}
+      {productModal.isOpen && (
+        <div style={overlayStyle}>
+          <div style={{...modalStyle, maxWidth: '500px'}}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontWeight: 900 }}>{productModal.data ? 'Edit Produk' : 'Tambah Produk Baru'}</h3>
+              <button onClick={() => setProductModal({isOpen: false, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
+            </div>
+            <form onSubmit={handleSaveProduct}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <label style={labelStyle}>Nama Produk</label>
+                  <input required style={inputStyle} value={productForm.name} onChange={e => setProductForm({...productForm, name: e.target.value})} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Kategori</label>
+                  <input required style={inputStyle} value={productForm.category} onChange={e => setProductForm({...productForm, category: e.target.value})} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Harga Katalog</label>
+                  <input type="number" required style={inputStyle} value={productForm.price} onChange={e => setProductForm({...productForm, price: parseInt(e.target.value) || 0})} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Harga Dasar (Floor)</label>
+                  <input type="number" required style={inputStyle} value={productForm.floor_price} onChange={e => setProductForm({...productForm, floor_price: parseInt(e.target.value) || 0})} />
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={labelStyle}>URL Image Produk</label>
+                  <input required style={inputStyle} value={productForm.image_url} onChange={e => setProductForm({...productForm, image_url: e.target.value})} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Min Bulk Qty</label>
+                  <input type="number" style={inputStyle} value={productForm.min_bulk_qty} onChange={e => setProductForm({...productForm, min_bulk_qty: parseInt(e.target.value) || 1})} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', marginTop: '40px' }}>
+                   <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontWeight: 800, fontSize: '13px' }}>
+                      <input type="checkbox" checked={productForm.is_active} onChange={e => setProductForm({...productForm, is_active: e.target.checked})} />
+                      Tampilkan di Katalog
+                   </label>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                <button type="button" onClick={() => setProductModal({isOpen: false, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
+                <button type="submit" disabled={isSubmitting} className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', fontWeight: 900 }}>Simpan Produk</button>
               </div>
             </form>
           </div>

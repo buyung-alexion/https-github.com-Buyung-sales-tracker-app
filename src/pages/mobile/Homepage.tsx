@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, Share2 } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, Share2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -276,15 +276,7 @@ export default function Homepage({ salesId }: Props) {
                     if (item.label === 'Order') {
                       navigate('/mobile/order-history');
                     } else if (item.label === 'Marketplace') {
-                      if (navigator.share) {
-                        navigator.share({
-                          title: 'Marketplace PT. Industri Keluarga Timur',
-                          text: 'Halo, silakan cek katalog produk terbaru kami di sini:',
-                          url: window.location.origin + '/catalog'
-                        });
-                      } else {
-                        window.open('/catalog', '_blank');
-                      }
+                      navigate('/catalog');
                     } else {
                       navigate(item.path);
                     }

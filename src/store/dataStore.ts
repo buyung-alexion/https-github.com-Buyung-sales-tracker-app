@@ -575,8 +575,18 @@ export const store = {
   },
 
   async addProduct(p: Omit<Product, 'id' | 'created_at'>) {
-    const { data, error } = await supabase.from('products').insert([p]).select();
+    const { data, error } = await supabase.from('products').upsert([p]).select();
     return { data, error };
+  },
+
+  async updateProduct(id: string, updates: Partial<Product>) {
+    const { data, error } = await supabase.from('products').update(updates).eq('id', id).select();
+    return { data, error };
+  },
+
+  async deleteProduct(id: string) {
+    const { error } = await supabase.from('products').delete().eq('id', id);
+    return { error };
   },
 
   // ─── NEGOTIATIONS ───────────────────────────────────────
