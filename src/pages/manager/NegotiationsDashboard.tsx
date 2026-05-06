@@ -239,11 +239,6 @@ export default function NegotiationsDashboard() {
               >
                 <div style={{ position: 'relative', paddingTop: '100%' }}>
                   <img src={p.image_url} alt="" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                  {p.price > p.floor_price && (
-                    <div style={{ position: 'absolute', top: '10px', right: '10px', background: '#FFCC00', color: '#111827', padding: '4px 8px', fontSize: '10px', fontWeight: 900, borderRadius: '6px', boxShadow: '0 4px 10px rgba(255, 204, 0, 0.3)' }}>
-                      IKT DEAL
-                    </div>
-                  )}
                 </div>
                 <div style={{ padding: '16px' }}>
                   <div style={{ fontSize: '14px', color: '#111827', height: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', lineHeight: '20px', marginBottom: '12px', fontWeight: 600 }}>
@@ -335,29 +330,16 @@ export default function NegotiationsDashboard() {
                     <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Pengaturan penjualan dan foto</p>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Harga Jual (Rp)</label>
-                      <input 
-                        type="number"
-                        required
-                        placeholder="0"
-                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
-                        value={productForm.price}
-                        onChange={(e) => setProductForm({...productForm, price: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Harga Dasar (Rp)</label>
-                      <input 
-                        type="number"
-                        required
-                        placeholder="0"
-                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#64748b' }}
-                        value={productForm.floor_price}
-                        onChange={(e) => setProductForm({...productForm, floor_price: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Harga Jual (Rp)</label>
+                    <input 
+                      type="number"
+                      required
+                      placeholder="0"
+                      style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
+                      value={productForm.price}
+                      onChange={(e) => setProductForm({...productForm, price: parseInt(e.target.value) || 0})}
+                    />
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -391,7 +373,7 @@ export default function NegotiationsDashboard() {
 
                   <div style={{ background: '#fffbeb', padding: '16px', borderRadius: '16px', border: '1px dashed #fcd34d' }}>
                     <p style={{ fontSize: '11px', color: '#92400e', fontWeight: 700, lineHeight: '1.5' }}>
-                      💡 TIPS: Gunakan gambar dengan rasio 1:1 untuk tampilan marketplace yang lebih optimal. Harga dasar digunakan sebagai batas minimal negosiasi sistem.
+                      💡 TIPS: Gunakan gambar dengan rasio 1:1 untuk tampilan marketplace yang lebih optimal.
                     </p>
                   </div>
                 </div>

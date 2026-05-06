@@ -287,7 +287,6 @@ export default function MasterDataSettings() {
 
   return (
     <div className="mgr-page" style={{ position: 'relative', paddingBottom: '100px' }}>
-      <div style={{ background: '#ef4444', color: '#fff', padding: '10px', textAlign: 'center', fontWeight: 900 }}>VERSION: 2.1 - MASTER DATA CLEANUP</div>
       <div style={{ display: 'flex', gap: '40px', alignItems: 'flex-start', marginTop: '24px' }}>
         
         {/* SIDEBAR */}
