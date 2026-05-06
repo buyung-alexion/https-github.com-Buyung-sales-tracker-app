@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ShoppingCart, MessageCircle, Info } from 'lucide-react';
-import { Product } from '../../types';
+import type { Product } from '../../types';
 import { formatCurrency, generateWALink } from '../../utils/wa_utils';
 
 interface Props {

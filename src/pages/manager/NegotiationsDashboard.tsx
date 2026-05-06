@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ShoppingBag, MessageCircle, Check, X, RefreshCw, Phone, Clock, TrendingDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageCircle, Check, X, RefreshCw, Phone, Clock, TrendingDown, Loader2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatCurrency, generateWALink } from '../../utils/wa_utils';
 

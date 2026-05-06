@@ -6,7 +6,6 @@ import {
   MapPin, 
   Clock, 
   DollarSign, 
-  Calendar,
   ChevronRight,
   AlertCircle,
   CheckCircle2,
@@ -14,7 +13,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { AreaRate, AttendanceRecord } from '../../types';
+import type { AreaRate, AttendanceRecord } from '../../types';
 
 interface WorkerAttendanceProps {
   userId: string;
@@ -87,7 +86,7 @@ export default function WorkerAttendance({ userId }: WorkerAttendanceProps) {
     const initialTotal = baseRate + outOfCityBonus;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('attendance_records')
         .insert({
           user_id: userId,

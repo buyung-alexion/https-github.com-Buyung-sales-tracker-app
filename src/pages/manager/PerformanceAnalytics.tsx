@@ -9,7 +9,7 @@ import {
 import { 
   Calendar, User, MapPin, Wrench, Target, Users, CheckCircle, Zap, 
   TrendingUp, TrendingDown, Flame, Snowflake, 
-  CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X 
+  CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X, Trophy
 } from 'lucide-react';
 
 
@@ -148,12 +148,12 @@ export default function PerformanceAnalytics() {
           target,
           actual,
           progress,
-          salesName: allSales.find(s => s.id == c.sales_pic)?.nama || 'No PIC'
+          salesName: sales.find((s: any) => s.id == c.sales_pic)?.nama || 'No PIC'
         };
       })
       .sort((a, b) => b.progress - a.progress)
       .slice(0, 10);
-  }, [customers, allSales]);
+  }, [customers, sales]);
 
   // Master Aggregation for KPI Cards
   const totalProspekCount = masterStats.breakdown.newProspek;

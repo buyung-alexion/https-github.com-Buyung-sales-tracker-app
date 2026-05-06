@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, MapPin, BarChart2, MessageSquare, Menu, X, LogOut, User as UserIcon, Clock } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';

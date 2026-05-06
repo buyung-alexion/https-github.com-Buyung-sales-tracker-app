@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Edit3, Camera, Target, LogOut, Check, User, Phone, Activity, TrendingUp, Lock, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase';
 import { store } from '../../store/dataStore';
 import { calculateSalesPoints } from '../../utils/points';
 
@@ -91,7 +92,7 @@ export default function Profile() {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
-      const { data, error } = await store.supabase.from('sales').select('*').eq('id', user.id).single();
+      const { data, error } = await supabase.from('sales').select('*').eq('id', user.id).single();
       if (error) throw error;
       if (data) {
         updateUser(data);

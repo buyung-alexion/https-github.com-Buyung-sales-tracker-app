@@ -5,11 +5,8 @@ import {
   FileText, 
   DollarSign, 
   Users, 
-  Clock, 
-  MapPin, 
-  ChevronRight, 
-  Calendar,
-  Search,
+  Clock,
+  MapPin,
   Plus,
   Edit2,
   Trash2,
@@ -18,7 +15,6 @@ import {
   Loader2
 } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { id } from 'date-fns/locale';
 
 export default function PayrollManagement() {
   const [activeTab, setActiveTab] = useState<'rekap' | 'areas' | 'settings'>('rekap');
@@ -26,7 +22,7 @@ export default function PayrollManagement() {
   const [attendance, setAttendance] = useState<any[]>([]);
   const [areaRates, setAreaRates] = useState<any[]>([]);
   const [payrollSettings, setPayrollSettings] = useState<any[]>([]);
-  const [dateRange, setDateRange] = useState({
+  const [dateRange] = useState({
     start: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
     end: format(endOfMonth(new Date()), 'yyyy-MM-dd')
   });

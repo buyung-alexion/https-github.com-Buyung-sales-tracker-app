@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, Loader2, X, Send, CheckCircle } from 'lucide-react';
-import { Product, LeadNegotiation } from '../../types';
+import type { Product } from '../../types';
 import { store } from '../../store/dataStore';
 import ProductCard from '../../components/public/ProductCard';
 

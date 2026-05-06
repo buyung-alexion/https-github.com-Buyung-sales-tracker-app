@@ -3,36 +3,16 @@ import { useSalesData } from '../../hooks/useSalesData';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Camera, Loader2, MapPin, CheckCircle, Crosshair, AlertTriangle, X, Truck, Wrench, FileText } from 'lucide-react';
+import { Camera, Loader2, Crosshair, X, Truck, Wrench, FileText } from 'lucide-react';
 import { store } from '../../store/dataStore';
 
 interface Props { salesId: string; onSuccess?: () => void; }
-
-const AREA_CONFIG: { area: string; center: [number, number] }[] = [
-  { area: 'SMD', center: [-0.4948, 117.1436] },
-  { area: 'BPN', center: [-1.2654, 116.8312] },
-  { area: 'PJM', center: [-1.2427, 116.7118] },
-  { area: 'SPK', center: [-0.920, 116.75] },
-  { area: 'TNG', center: [-1.9056, 116.1914] },
-  { area: 'BTG', center: [0.1333, 117.5] },
-  { area: 'BK', center: [2.15, 117.48] },
-];
-
-function getDistanceFromLatLonInM(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371e3;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return Math.round(R * c);
-}
 
 const createIcon = (color: string) => L.divIcon({
   html: `<div style="background-color:${color};width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 10px ${color}"></div>`,
   className: '', iconSize: [20, 20], iconAnchor: [10, 10]
 });
 const iconBlue = createIcon('#3b82f6');
-const iconGreen = createIcon('#10b981');
 
 export default function WorkerActivityReport({ salesId, onSuccess }: Props) {
   const { customers, masterAreas, sales = [], refresh } = useSalesData();
