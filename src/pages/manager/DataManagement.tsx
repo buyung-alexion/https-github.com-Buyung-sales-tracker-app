@@ -12,50 +12,58 @@ export default function DataManagement() {
 
   useEffect(() => {
     const loadData = async () => {
-      setIsLoading(true);
-      const roles = await store.fetchRoles();
-      const sales = allSales;
-      let targets = await store.fetchSystemTargets();
-      if (!targets) {
-        targets = { 
-          ind_poin: 150, 
-          b_visit: 5, 
-          b_prospek: 5, 
-          b_closing: 20, 
-          b_order: 20, 
-          b_chat: 5 
-        };
-      }
-
-      setData({
-        roles: roles,
-        teams: (sales || []).map((s:any) => ({ 
-          id: s.id, 
-          nama: s.nama, 
-          username: s.username, 
-          pass: s.password, 
-          role: s.role,
-          foto_profil: s.foto_profil,
-          no_wa: s.no_wa
-        })),
-        targets: {
-          indPoin: targets.ind_poin || 150,
-          bVisit: targets.b_visit || 5,
-          bProspek: targets.b_prospek || 5,
-          bClosing: targets.b_closing || 20,
-          bOrder: targets.b_order || 5,
-          bChat: targets.b_chat || 1
+      try {
+        setIsLoading(true);
+        const roles = await store.fetchRoles();
+        let targets = await store.fetchSystemTargets();
+        if (!targets) {
+          targets = { 
+            ind_poin: 150, 
+            b_visit: 5, 
+            b_prospek: 5, 
+            b_closing: 20, 
+            b_order: 20, 
+            b_chat: 5 
+          };
         }
-      });
-      setIsLoading(false);
+
+        setData(prev => ({
+          ...prev,
+          roles: roles || [],
+          teams: (allSales || []).map((s:any) => ({ 
+            id: s.id, 
+            nama: s.nama, 
+            username: s.username, 
+            pass: s.password, 
+            role: s.role,
+            foto_profil: s.foto_profil,
+            no_wa: s.no_wa
+          })),
+          targets: {
+            indPoin: targets.ind_poin || 150,
+            bVisit: targets.b_visit || 5,
+            bProspek: targets.b_prospek || 5,
+            bClosing: targets.b_closing || 20,
+            bOrder: targets.b_order || 5,
+            bChat: targets.b_chat || 1
+          }
+        }));
+      } catch (error) {
+        console.error('DataManagement load error:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
     loadData();
 
-    window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: 'Data Management', sub: 'Kelola Struktur Tim, Role Akun, Kredensial Login, dan Bobot Target' } }));
+    window.dispatchEvent(new CustomEvent('setMgrTitle', { 
+      detail: { title: 'Data Management', sub: 'Kelola Struktur Tim, Role Akun, Kredensial Login, dan Bobot Target' } 
+    }));
     return () => {
       window.dispatchEvent(new CustomEvent('setMgrTitle', { detail: { title: '', sub: '' } }));
     };
-  }, []);
+  }, [allSales]);
 
   const tabs = [
     { id: 'role', label: 'Role Team', icon: <Shield size={16} /> },
@@ -115,7 +123,7 @@ export default function DataManagement() {
         id: existingData.id,
         nama: existingData.nama,
         username: existingData.username,
-        pass: existingData.pass,
+        pass: existingData.pass || existingData.password || '',
         role: existingData.role,
         foto_profil: existingData.foto_profil,
         no_wa: existingData.no_wa
@@ -318,9 +326,9 @@ export default function DataManagement() {
                   <button onClick={() => openTeamModal()} className="btn-primary" style={{ flex: 'none', padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}><Plus size={18} /> TAMBAH KARYAWAN</button>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {data.teams.map((u: any) => (
+                  {(allSales || []).map((u: any) => (
                     <div key={u.id} style={{ background: '#fff', borderRadius: '24px', padding: '24px 32px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', overflow: 'hidden' }}>{u.foto_profil ? <img src={u.foto_profil} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Users size={24} />}</div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.nama}</h4><div style={{ fontSize: '12px', color: '#64748b' }}>ID: <span style={{ color: '#1e293b', fontWeight: 900 }}>{u.id}</span> | ROLE: {u.role}</div></div></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{u.foto_profil ? <img src={u.foto_profil} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <Users size={24} color="#cbd5e1" />}</div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.nama}</h4><div style={{ fontSize: '12px', color: '#64748b' }}>ID: <span style={{ color: '#1e293b', fontWeight: 900 }}>{u.id}</span> | ROLE: {u.role}</div></div></div>
                       <div style={{ display: 'flex', gap: '12px' }}><button onClick={() => openTeamModal(u)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', border: 'none', cursor: 'pointer' }}><Edit2 size={16} color="#3b82f6" /></button><button onClick={() => handleDeleteTeam(u.id)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#ef4444" /></button></div>
                     </div>
                   ))}

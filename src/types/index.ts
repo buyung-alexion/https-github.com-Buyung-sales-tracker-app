@@ -1,6 +1,6 @@
 export type Area = string; // Stores AreaId (e.g., 'A001')
 export type StatusProspek = 'Cold' | 'Warm' | 'Hot';
-export type TipeAksi = 'WA' | 'Visit' | 'Call' | 'Order' | 'Note';
+export type TipeAksi = 'WA' | 'Visit' | 'Call' | 'Order' | 'Note' | 'Delivery' | 'Maintenance';
 
 export interface Prospek {
   id: string;
@@ -120,3 +120,51 @@ export interface SalesOrder {
   amount: number;
 }
 
+export interface AreaRate {
+  id: string;
+  area_name: string;
+  daily_rate: number;
+  overtime_rate_per_hour: number;
+  created_at?: string;
+}
+
+export interface AttendanceRecord {
+  id: string;
+  user_id: string;
+  worker_name?: string; // Denormalized for display
+  date: string; // YYYY-MM-DD
+  area_id?: string;
+  area_name?: string; // Denormalized
+  check_in?: string; // ISO string
+  check_out?: string; // ISO string
+  overtime_hours: number;
+  daily_rate_applied: number;
+  overtime_rate_applied: number;
+  total_pay: number;
+  is_out_of_city: boolean;
+  status: 'Hadir' | 'Izin' | 'Sakit' | 'Alpa';
+  notes?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  image_url?: string;
+  min_bulk_qty: number;
+  floor_price: number;
+  is_active: boolean;
+  created_at?: string;
+}
+
+export interface LeadNegotiation {
+  id: string;
+  product_id: string;
+  customer_name: string;
+  customer_wa: string;
+  requested_qty: number;
+  offered_price: number;
+  status: 'pending' | 'approved' | 'rejected' | 'countered';
+  created_at?: string;
+}

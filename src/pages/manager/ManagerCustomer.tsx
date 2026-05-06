@@ -786,16 +786,33 @@ export default function ManagerCustomer() {
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
-                      <div style={{ 
-                        fontSize: '11px', 
-                        fontWeight: 900, 
-                        color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#10b981' : '#f59e0b',
-                        background: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#edf7f1' : '#fff9eb',
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        display: 'inline-block'
-                      }}>
-                        {Math.round((((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%
+                      <div style={{ width: '120px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ 
+                            fontSize: '11px', 
+                            fontWeight: 950, 
+                            color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#059669' : '#d97706'
+                          }}>
+                            {Math.round((((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%
+                          </span>
+                          <span style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>
+                            {(c as any).total_order_volume || 0} / {(c as any).target_volume || 0} KG
+                          </span>
+                        </div>
+                        <div style={{ width: '100%', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f8fafc' }}>
+                          <div style={{ 
+                            width: `${Math.min(100, (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%`, 
+                            height: '100%', 
+                            background: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) 
+                              ? 'linear-gradient(90deg, #10b981, #34d399)' 
+                              : 'linear-gradient(90deg, #f59e0b, #fbbf24)',
+                            borderRadius: '10px',
+                            boxShadow: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1)
+                              ? '0 0 8px rgba(16, 185, 129, 0.3)'
+                              : '0 0 8px rgba(245, 158, 11, 0.2)',
+                            transition: 'width 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                          }} />
+                        </div>
                       </div>
                     </td>
                     <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>

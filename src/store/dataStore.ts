@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { Sales, Prospek, Customer, Activity, Area, SalesOrder } from '../types';
+import type { Sales, Prospek, Customer, Activity, Area, SalesOrder, Product, LeadNegotiation } from '../types';
 
 // Sequential ID generation for Prospects and Customers
 // Prefixes: P for Prospect, C for Customer, S for Sales
@@ -516,8 +516,88 @@ export const store = {
     return { data, error };
   },
   async deleteMasterAction(id: string) {
-    const { error } = await supabase.from('master_actions').delete().eq('id', id);
+      const { error } = await supabase.from('master_actions').delete().eq('id', id);
     if (error) console.error('deleteMasterAction error:', error);
     return { error };
+  },
+
+  // --- PAYROLL SETTINGS ---
+  async fetchPayrollSettings() {
+    const { data, error } = await supabase.from('payroll_settings').select('*').order('setting_key');
+    if (error) console.error('fetchPayrollSettings error:', error);
+    return data || [];
+  },
+  async updatePayrollSetting(key: string, value: number) {
+    const { error } = await supabase.from('payroll_settings').update({ setting_value: value }).eq('setting_key', key);
+    if (error) console.error('updatePayrollSetting error:', error);
+    return { error };
+  },
+  async addPayrollSetting(key: string, value: number, description: string) {
+    const { data, error } = await supabase.from('payroll_settings').insert([{ setting_key: key, setting_value: value, description }]).select();
+    if (error) console.error('addPayrollSetting error:', error);
+    return { data, error };
+  },
+  async deletePayrollSetting(key: string) {
+    const { error } = await supabase.from('payroll_settings').delete().eq('setting_key', key);
+    if (error) console.error('deletePayrollSetting error:', error);
+    return { error };
+  },
+
+  // --- AREA RATES ---
+  async fetchAreaRates() {
+    const { data, error } = await supabase.from('area_rates').select('*').order('area_name');
+    if (error) console.error('fetchAreaRates error:', error);
+    return data || [];
+  },
+  async addAreaRate(rate: { area_name: string; daily_rate: number; overtime_rate_per_hour: number }) {
+    const { data, error } = await supabase.from('area_rates').insert([rate]).select();
+    if (error) console.error('addAreaRate error:', error);
+    return { data, error };
+  },
+  async updateAreaRate(id: string, updates: Partial<{ area_name: string; daily_rate: number; overtime_rate_per_hour: number }>) {
+    const { data, error } = await supabase.from('area_rates').update(updates).eq('id', id).select();
+    if (error) console.error('updateAreaRate error:', error);
+    return { data, error };
+  },
+  async deleteAreaRate(id: string) {
+    const { error } = await supabase.from('area_rates').delete().eq('id', id);
+    if (error) console.error('deleteAreaRate error:', error);
+    return { error };
+  },
+
+  // ─── PUBLIC CATALOG ────────────────────────────────────
+  async fetchProducts(activeOnly = true) {
+    let query = supabase.from('products').select('*').order('name');
+    if (activeOnly) query = query.eq('is_active', true);
+    const { data, error } = await query;
+    if (error) console.error('fetchProducts error:', error);
+    return { data: (data || []) as Product[], error };
+  },
+
+  async addProduct(p: Omit<Product, 'id' | 'created_at'>) {
+    const { data, error } = await supabase.from('products').insert([p]).select();
+    return { data, error };
+  },
+
+  // ─── NEGOTIATIONS ───────────────────────────────────────
+  async fetchNegotiations() {
+    const { data, error } = await supabase.from('leads_negotiations').select('*, products(*)').order('created_at', { ascending: false });
+    if (error) console.error('fetchNegotiations error:', error);
+    return { data: (data || []) as any[], error };
+  },
+
+  async submitNegotiation(n: Omit<LeadNegotiation, 'id' | 'created_at' | 'status'>) {
+    const negotiationData = {
+      ...n,
+      status: 'pending',
+      created_at: new Date().toISOString()
+    };
+    const { data, error } = await supabase.from('leads_negotiations').insert([negotiationData]).select();
+    return { data, error };
+  },
+
+  async updateNegotiationStatus(id: string, status: LeadNegotiation['status']) {
+    const { data, error } = await supabase.from('leads_negotiations').update({ status }).eq('id', id).select();
+    return { data, error };
   },
 };

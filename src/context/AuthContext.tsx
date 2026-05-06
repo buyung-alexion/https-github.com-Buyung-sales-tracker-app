@@ -35,13 +35,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Sync with Supabase session in the background on load
   useEffect(() => {
     const syncUser = async () => {
-      if (!user?.id) return;
+      const currentId = user?.id || localStorage.getItem('st_current_sales');
+      if (!currentId) return;
       
       try {
         const { data, error } = await supabase
           .from('sales')
           .select('*')
-          .eq('id', user.id)
+          .eq('id', currentId)
           .single();
         
         if (data && !error) {
@@ -56,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     syncUser();
-  }, [user?.id]);
+  }, []);
 
   const login = async (username: string, password: string): Promise<{ success: boolean; message?: string }> => {
     try {

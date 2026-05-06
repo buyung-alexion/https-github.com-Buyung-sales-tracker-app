@@ -87,6 +87,23 @@ export default function Profile() {
     }
   };
 
+  const handleSync = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const { data, error } = await store.supabase.from('sales').select('*').eq('id', user.id).single();
+      if (error) throw error;
+      if (data) {
+        updateUser(data);
+        alert('Data Profil & Role telah disinkronkan!');
+      }
+    } catch (err: any) {
+      alert('Gagal Sinkron: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -266,12 +283,26 @@ export default function Profile() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             <div style={{ background: '#F1F5F9', color: '#64748B', fontSize: '11px', fontWeight: 900, padding: '4px 12px', borderRadius: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Sales Team
+              {user.role || 'Sales Team'}
             </div>
             <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '11px', fontWeight: 900, padding: '4px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid #D1FAE5' }}>
               <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px #10B981' }} /> ONLINE
             </div>
           </div>
+
+          <button 
+            onClick={handleSync}
+            className="tap-active"
+            style={{ 
+              marginTop: '16px', background: '#F1F5F9', border: 'none', 
+              borderRadius: '10px', padding: '6px 12px', fontSize: '11px', 
+              fontWeight: 800, color: '#64748B', display: 'inline-flex', 
+              alignItems: 'center', gap: '6px' 
+            }}
+          >
+            {isSubmitting ? <Loader2 size={12} className="animate-spin" /> : <TrendingUp size={12} />}
+            REFRESH PROFIL & ROLE
+          </button>
 
           {/* Premium Stats Grid */}
           <div style={{ display: 'flex', justifyContent: 'space-between', margin: '32px 0 0', gap: '10px' }}>

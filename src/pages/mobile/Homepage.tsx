@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, User, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, Share2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -267,17 +267,26 @@ export default function Homepage({ salesId }: Props) {
               { label: 'Analytic', icon: BarChart3, color: '#a855f7', bg: '#FAF5FF', path: '/mobile/analytic' },
               { label: 'Chat', icon: MessageSquare, color: '#10b981', bg: '#ECFDF5', path: '/mobile/chat', badge: 0 },
               { label: 'Ranking', icon: Trophy, color: '#f59e0b', bg: '#FFFBEB', path: '/mobile/rank' },
-              { label: 'Order', icon: ShoppingCart, color: '#ef4444', bg: '#FEF2F2', path: '/mobile/customer' },
-              { label: 'Profile', icon: User, color: '#64748b', bg: '#F8FAFC', path: '/mobile/profile' },
+              { label: 'Marketplace', icon: Share2, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true },
             ].map((item) => (
               <div key={item.label} 
                 className="tap-active" 
                 onClick={() => {
-                  if (item.label === 'Order') {
-                    navigate('/mobile/order-history');
-                  } else {
-                    navigate(item.path);
-                  }
+                    if (item.label === 'Order') {
+                      navigate('/mobile/order-history');
+                    } else if (item.label === 'Marketplace') {
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'Marketplace PT. Industri Keluarga Timur',
+                          text: 'Halo, silakan cek katalog produk terbaru kami di sini:',
+                          url: window.location.origin + '/catalog'
+                        });
+                      } else {
+                        window.open('/catalog', '_blank');
+                      }
+                    } else {
+                      navigate(item.path);
+                    }
                 }}
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
               >
@@ -589,7 +598,7 @@ export default function Homepage({ salesId }: Props) {
         letterSpacing: '0.05em',
         opacity: 0.8
       }}>
-        vDeploy 1.0.24.0424 • STABLE
+        vDeploy 1.0.26.0506 • STABLE
       </div>
     </div>
   );

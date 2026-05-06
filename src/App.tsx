@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import MobileShell from './pages/mobile/MobileShell';
 import ManagerShell from './pages/manager/ManagerShell';
 import LoginPage from './pages/LoginPage';
+import CatalogPage from './pages/public/CatalogPage';
 
 // Custom guard to manage the Root ('/') path behavior cleanly
 function RootRedirector() {
@@ -43,6 +44,7 @@ export default function App() {
           without going through the root evaluation logic.
       */}
       <Route path="/login" element={<Navigate to="/" replace />} />
+      <Route path="/catalog" element={<CatalogPage />} />
 
       {/* 
           DAHSBOARD ROUTES:

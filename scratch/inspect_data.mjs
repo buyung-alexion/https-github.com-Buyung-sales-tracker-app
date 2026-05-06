@@ -13,11 +13,11 @@ async function inspect() {
   
   const supabase = createClient(url, key);
   
-  const { data: activities } = await supabase.from('activity').select('*').limit(5);
-  console.log('Activities:', activities);
+  const { data: settings, error: sError } = await supabase.from('payroll_settings').select('*');
+  console.log('Payroll Settings:', settings, sError);
   
-  const { data: customers } = await supabase.from('customer').select('*').limit(5);
-  console.log('Customers:', customers);
+  const { data: area_rates, error: aError } = await supabase.from('area_rates').select('*');
+  console.log('Area Rates:', area_rates, aError);
 }
 
 inspect();

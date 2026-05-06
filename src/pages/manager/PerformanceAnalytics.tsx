@@ -136,6 +136,25 @@ export default function PerformanceAnalytics() {
     }).sort((a,b) => b.points - a.points);
   }, [sales, realActivities, realProspek, systemTargets, selectedPeriod, selectedArea, selectedCategory, realCustomers]);
 
+  // Master Aggregation for Customer Progress
+  const customerProgressStats = useMemo(() => {
+    return customers
+      .map(c => {
+        const target = (c as any).target_volume || 0;
+        const actual = (c as any).total_order_volume || 0;
+        const progress = target > 0 ? (actual / target) * 100 : 0;
+        return {
+          ...c,
+          target,
+          actual,
+          progress,
+          salesName: allSales.find(s => s.id == c.sales_pic)?.nama || 'No PIC'
+        };
+      })
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 10);
+  }, [customers, allSales]);
+
   // Master Aggregation for KPI Cards
   const totalProspekCount = masterStats.breakdown.newProspek;
   const totalCustomer = customers.length;
@@ -1217,6 +1236,76 @@ export default function PerformanceAnalytics() {
                <span>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
                <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
             </button>
+          </div>
+        </div>
+
+        {/* Customer Progress Leaderboard */}
+        <div style={{ 
+          background: '#fff', 
+          borderRadius: '24px', 
+          padding: '32px', 
+          boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
+          border: '1px solid #f1f5f9', 
+          display: 'flex', 
+          flexDirection: 'column' 
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <div>
+              <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Top Customer Progress</div>
+              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>10 Toko dengan Progress Terbaik</div>
+            </div>
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={20} color="#fff" />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9', gap: '12px' }}>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase' }}>Nama Toko</div>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center' }}>Target vs Actual</div>
+              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'right' }}>Progress</div>
+            </div>
+
+            {customerProgressStats.map((c, idx) => (
+              <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', alignItems: 'center', gap: '12px', padding: '4px 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 900, color: '#3b82f6', border: '1px solid #f1f5f9' }}>
+                    {idx + 1}
+                  </div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.nama_toko}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>PIC: {c.salesName.split(' ')[0]}</div>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#475569' }}>
+                    {c.actual} <span style={{ color: '#cbd5e1', fontSize: '10px' }}>/</span> {c.target}
+                  </div>
+                  <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8' }}>KG</div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 950, color: c.progress >= 100 ? '#10b981' : '#f59e0b' }}>
+                    {Math.round(c.progress)}%
+                  </div>
+                  <div style={{ width: '80px', height: '4px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ 
+                      width: `${Math.min(100, c.progress)}%`, 
+                      height: '100%', 
+                      background: c.progress >= 100 ? '#10b981' : '#f59e0b',
+                      borderRadius: '4px'
+                    }} />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {customerProgressStats.length === 0 && (
+              <div style={{ padding: '40px 0', textAlign: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
+                Belum ada data target customer
+              </div>
+            )}
           </div>
         </div>
       </div>
