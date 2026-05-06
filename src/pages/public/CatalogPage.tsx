@@ -428,7 +428,31 @@ export default function CatalogPage() {
                       onClick={() => setNegoQty(Math.max(1, negoQty - 1))}
                       style={{ padding: '8px 12px', border: 'none', background: '#fff', fontSize: '18px' }}
                     >-</button>
-                    <div style={{ width: '40px', textAlign: 'center', fontSize: '14px', borderLeft: '1px solid #e8e8e8', borderRight: '1px solid #e8e8e8' }}>{negoQty}</div>
+                    <input 
+                      type="number"
+                      value={negoQty}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        setNegoQty(isNaN(val) ? 0 : val);
+                      }}
+                      onBlur={() => {
+                        if (negoQty < 1) setNegoQty(1);
+                      }}
+                      style={{ 
+                        width: '50px', 
+                        textAlign: 'center', 
+                        fontSize: '14px', 
+                        borderLeft: '1px solid #e8e8e8', 
+                        borderRight: '1px solid #e8e8e8', 
+                        borderTop: 'none', 
+                        borderBottom: 'none', 
+                        outline: 'none',
+                        background: '#fff',
+                        fontWeight: 700,
+                        WebkitAppearance: 'none',
+                        margin: 0
+                      }}
+                    />
                     <button 
                       onClick={() => setNegoQty(negoQty + 1)}
                       style={{ padding: '8px 12px', border: 'none', background: '#fff', fontSize: '18px' }}
@@ -462,13 +486,16 @@ export default function CatalogPage() {
                   
                   {negoQty >= (selectedProduct.min_bulk_qty || 1) && (
                     <div style={{ position: 'relative' }}>
-                      <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 600, color: '#212121', fontSize: '14px' }}>Rp</span>
+                      <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px', fontWeight: 700, color: '#212121' }}>Rp</div>
                       <input 
                         type="number" 
-                        placeholder="Harga Tawaran Anda"
-                        value={negoForm.offered_price}
-                        onChange={e => setNegoForm({...negoForm, offered_price: parseInt(e.target.value) || 0})}
-                        style={{ width: '100%', padding: '12px 12px 12px 36px', borderRadius: '4px', border: '1px solid #ee4d2d', fontSize: '14px' }}
+                        placeholder="Harga yang Anda tawarkan"
+                        style={{ width: '100%', padding: '14px 16px 14px 40px', borderRadius: '4px', border: '1px solid #ee4d2d', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+                        value={negoForm.offered_price || ''}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value.replace(/^0+/, ''));
+                          setNegoForm({...negoForm, offered_price: isNaN(val) ? 0 : val});
+                        }}
                       />
                     </div>
                   )}
