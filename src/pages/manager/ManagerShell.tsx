@@ -9,7 +9,7 @@ import ManagerCustomer from './ManagerCustomer';
 import ManagerInbox from './ManagerInbox';
 import Leaderboard from './Leaderboard';
 import ManagerSettings from './ManagerSettings';
-import DataManagement from './DataManagement';
+import MasterDataSettings from './MasterDataSettings';
 import ManagerChat from './ManagerChat';
 import PayrollManagement from './PayrollManagement';
 import NegotiationsDashboard from './NegotiationsDashboard';
@@ -97,7 +97,7 @@ export default function ManagerShell() {
             <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. Industri Keluarga Timur</div>
+            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. IKT (v2.1-REBOOT)</div>
             <div className="logo-sub">Manager Dashboard</div>
           </div>
         </div>
@@ -243,7 +243,7 @@ export default function ManagerShell() {
             <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="payroll" element={<PayrollManagement />} />
             <Route path="settings" element={<ManagerSettings />} />
-            <Route path="data" element={<DataManagement />} />
+            <Route path="data" element={<MasterDataSettings />} />
             <Route path="negotiations" element={<NegotiationsDashboard />} />
           </Routes>
         </main>

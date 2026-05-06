@@ -522,8 +522,30 @@ export const store = {
     return { data, error };
   },
   async deleteMasterAction(id: string) {
-      const { error } = await supabase.from('master_actions').delete().eq('id', id);
+    const { error } = await supabase.from('master_actions').delete().eq('id', id);
     if (error) console.error('deleteMasterAction error:', error);
+    return { error };
+  },
+
+  async fetchMasterProductCategories() {
+    const { data, error } = await supabase.from('master_product_categories').select('*').order('name');
+    if (error) console.error('fetchMasterProductCategories error:', error);
+    return data || [];
+  },
+  async addMasterProductCategory(name: string, customId?: string) {
+    const id = customId?.trim() || crypto.randomUUID();
+    const { data, error } = await supabase.from('master_product_categories').insert([{ id, name }]).select();
+    if (error) console.error('addMasterProductCategory error:', error);
+    return { data, error };
+  },
+  async updateMasterProductCategory(id: string, updates: { id?: string; name?: string }) {
+    const { data, error } = await supabase.from('master_product_categories').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterProductCategory error:', error);
+    return { data, error };
+  },
+  async deleteMasterProductCategory(id: string) {
+    const { error } = await supabase.from('master_product_categories').delete().eq('id', id);
+    if (error) console.error('deleteMasterProductCategory error:', error);
     return { error };
   },
 

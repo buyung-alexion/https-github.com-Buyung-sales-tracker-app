@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { RefreshCw, Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart } from 'lucide-react';
+import { Plus, X, Search, Filter, ChevronRight, List, Star, ShoppingCart, Loader2 } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
@@ -24,7 +24,7 @@ export default function NegotiationsDashboard() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { masterCategories } = useSalesData();
+  const { masterProductCategories } = useSalesData();
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { 
@@ -166,7 +166,7 @@ export default function NegotiationsDashboard() {
             >
               Semua Produk
             </div>
-            {masterCategories.map((cat: any) => (
+            {masterProductCategories.map((cat: any) => (
               <div 
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.name)}
@@ -312,7 +312,7 @@ export default function NegotiationsDashboard() {
                       onChange={(e) => setProductForm({...productForm, category: e.target.value})}
                     >
                       <option value="">Pilih Kategori</option>
-                      {masterCategories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
+                      {masterProductCategories.map((c: any) => <option key={c.id} value={c.name}>{c.name}</option>)}
                     </select>
                   </div>
 
@@ -434,8 +434,3 @@ export default function NegotiationsDashboard() {
   );
 }
 
-function Loader2({ className }: { className: string }) {
-  return (
-    <RefreshCw className={className} />
-  );
-}
