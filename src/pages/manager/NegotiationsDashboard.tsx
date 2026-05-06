@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MessageCircle, Check, X, RefreshCw, Phone, Clock, TrendingDown, Loader2 } from 'lucide-react';
+import { MessageCircle, Check, X, RefreshCw, Phone, Clock, TrendingDown, Loader2, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatCurrency, generateWALink } from '../../utils/wa_utils';
 
@@ -20,6 +20,14 @@ export default function NegotiationsDashboard() {
     const { data } = await store.fetchNegotiations();
     setNegotiations(data);
     setLoading(false);
+  };
+
+  const handleGoToCatalog = () => {
+    // Dispatch event to switch tab in ManagerShell if possible, 
+    // or tell user to go to Data Management
+    window.dispatchEvent(new CustomEvent('switchMgrTab', { detail: { tab: 'data' } }));
+    // We also need to tell DataManagement to open the 'products' tab specifically
+    localStorage.setItem('mgr_data_active_tab', 'products');
   };
 
   const handleStatusUpdate = async (id: string, status: any) => {
@@ -50,14 +58,19 @@ export default function NegotiationsDashboard() {
           <div style={{ fontSize: '13px', fontWeight: 700, color: '#64748b' }}>Menunggu Persetujuan</div>
         </div>
 
-        <div style={{ background: '#fff', padding: '20px', borderRadius: '20px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.02)' }}>
+        <div 
+          onClick={handleGoToCatalog}
+          style={{ background: '#111827', padding: '20px', borderRadius: '20px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', transition: 'transform 0.2s' }}
+          className="tap-active"
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Check size={20} />
+            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(255, 204, 0, 0.1)', color: '#FFCC00', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <ShoppingCart size={20} />
             </div>
-            <span style={{ fontSize: '24px', fontWeight: 900, color: '#111827' }}>{negotiations.filter(n => n.status === 'approved').length}</span>
+            <div style={{ background: '#FFCC00', color: '#111827', padding: '4px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>MANAGE</div>
           </div>
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#64748b' }}>Disetujui</div>
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#94a3b8' }}>Kelola Katalog Produk</div>
+          <div style={{ fontSize: '11px', color: '#FFCC00', marginTop: '4px', fontWeight: 800 }}>Atur Harga & Stok →</div>
         </div>
       </div>
 
