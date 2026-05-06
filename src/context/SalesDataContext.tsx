@@ -66,6 +66,9 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       if (resCustomer.error) console.error('Customer fetch error:', resCustomer.error);
       if (resProspek.error) console.error('Prospek fetch error:', resProspek.error);
       if (resActivity.error) console.error('Activity fetch error:', resActivity.error);
+      if (resMPC.error) console.error('Master Product Category fetch error (Table might be missing):', resMPC.error);
+      if (resMS.error) console.error('Master Status fetch error:', resMS.error);
+      if (resMAC.error) console.error('Master Actions fetch error:', resMAC.error);
 
       const allSalesData = resSales.data || [];
       const salesOnly = allSalesData.filter(s => (s.role || '').toLowerCase() === 'sales');
