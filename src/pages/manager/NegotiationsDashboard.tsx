@@ -28,7 +28,7 @@ export default function NegotiationsDashboard() {
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { 
-      detail: { title: 'Marketplace Dashboard', sub: 'Preview & Manajemen Katalog Produk' } 
+      detail: { title: '', sub: '' } 
     }));
     loadAllData();
   }, []);
@@ -107,8 +107,8 @@ export default function NegotiationsDashboard() {
       {/* BRAND MAIN HEADER */}
       <div style={{ background: '#111827', padding: '24px 24px 32px', display: 'flex', alignItems: 'center', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#fff', cursor: 'pointer' }} onClick={() => window.location.reload()}>
-          <div style={{ background: '#FFCC00', color: '#111827', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '22px', boxShadow: '0 4px 15px rgba(255, 204, 0, 0.4)' }}>
-            IKT
+          <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)', background: '#fff' }}>
+            <img src="/assets/image/logo_ikt.png" alt="IKT Logo" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
             <span style={{ fontSize: '24px', fontWeight: 900, color: '#FFCC00', letterSpacing: '0.5px' }}>PT. INDUSTRI</span>
