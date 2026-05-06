@@ -1,36 +1,31 @@
-import { useState } from 'react';
-import { ShoppingCart, MessageCircle, Info } from 'lucide-react';
+import { Star } from 'lucide-react';
 import type { Product } from '../../types';
-import { formatCurrency, generateWALink } from '../../utils/wa_utils';
 
 interface Props {
   product: Product;
-  onNegotiate: (product: Product, qty: number) => void;
+  onClick: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onNegotiate }: Props) {
-  const [qty, setQty] = useState(1);
-
-  const handlePesanLangsung = () => {
-    const msg = `Halo, saya ingin memesan ${product.name} sebanyak ${qty} unit. Mohon info ketersediaannya.`;
-    window.open(generateWALink('6281234567890', msg), '_blank'); // Replace with real admin number or dynamic
-  };
-
-  const isBulk = qty >= product.min_bulk_qty;
+export default function ProductCard({ product, onClick }: Props) {
+  // Simulating Shopee-style data
+  const rating = 4.9;
+  const soldCount = "203";
 
   return (
-    <div style={{ 
-      background: '#fff', 
-      borderRadius: '20px', 
-      overflow: 'hidden', 
-      boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      transition: 'transform 0.2s ease',
-      border: '1px solid rgba(0,0,0,0.03)'
-    }}
-    className="product-card-hover"
+    <div 
+      onClick={() => onClick(product)}
+      style={{ 
+        background: '#fff', 
+        borderRadius: '8px', 
+        overflow: 'hidden', 
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        cursor: 'pointer',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+        border: '1px solid rgba(0,0,0,0.05)'
+      }}
+      className="tap-active"
     >
       {/* Product Image */}
       <div style={{ position: 'relative', width: '100%', paddingTop: '100%', background: '#f8fafc' }}>
@@ -44,112 +39,62 @@ export default function ProductCard({ product, onNegotiate }: Props) {
             objectFit: 'cover' 
           }}
         />
+        {/* Mall Tag */}
         <div style={{ 
           position: 'absolute', 
-          top: '12px', right: '12px',
-          background: 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(4px)',
-          padding: '4px 10px',
-          borderRadius: '10px',
-          fontSize: '11px',
-          fontWeight: 800,
-          color: '#111827'
+          top: 0, left: 0,
+          background: '#ee4d2d',
+          color: '#fff',
+          padding: '2px 4px',
+          fontSize: '10px',
+          fontWeight: 900,
+          borderBottomRightRadius: '4px'
         }}>
-          {product.category}
+          MALL
         </div>
       </div>
 
       {/* Product Details */}
-      <div style={{ padding: '16px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#111827', margin: '0 0 4px 0', lineHeight: 1.3 }}>
+      <div style={{ padding: '8px', flex: 1, display: 'flex', flexDirection: 'column', gap: '4px' }}>
+        {/* Title - 2 Lines max */}
+        <h3 style={{ 
+          fontSize: '12px', 
+          fontWeight: 500, 
+          color: '#111827', 
+          margin: 0, 
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          minHeight: '31px'
+        }}>
           {product.name}
         </h3>
-        <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--brand-yellow)', marginBottom: '12px' }}>
-          {formatCurrency(product.price)}
-          <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}> / unit</span>
-        </div>
 
-        {/* Qty Input */}
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Jumlah Pesanan</span>
-            <span style={{ fontSize: '12px', fontWeight: 800, color: '#111827' }}>{qty} unit</span>
-          </div>
-          <input 
-            type="range" 
-            min="1" 
-            max="100" 
-            value={qty} 
-            onChange={(e) => setQty(parseInt(e.target.value))}
-            style={{ 
-              width: '100%',
-              accentColor: 'var(--brand-yellow)',
-              cursor: 'pointer'
-            }}
-          />
-          {product.min_bulk_qty > 0 && (
-            <div style={{ 
-              marginTop: '6px', 
-              fontSize: '10px', 
-              color: isBulk ? '#059669' : '#64748b',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <Info size={12} />
-              Min. {product.min_bulk_qty} unit untuk fitur Nego Harga
-            </div>
-          )}
-        </div>
-
-        {/* Actions */}
+        {/* Price Section */}
         <div style={{ marginTop: 'auto' }}>
-          {isBulk ? (
-            <button 
-              onClick={() => onNegotiate(product, qty)}
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                borderRadius: '12px', 
-                background: '#111827', 
-                color: '#FFCC00', 
-                border: 'none', 
-                fontWeight: 900,
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)'
-              }}
-            >
-              <MessageCircle size={18} /> Ajukan Harga Nego
-            </button>
-          ) : (
-            <button 
-              onClick={handlePesanLangsung}
-              style={{ 
-                width: '100%', 
-                padding: '12px', 
-                borderRadius: '12px', 
-                background: 'var(--brand-yellow)', 
-                color: '#111827', 
-                border: 'none', 
-                fontWeight: 900,
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(255, 204, 0, 0.2)'
-              }}
-            >
-              <ShoppingCart size={18} /> Pesan Langsung (WA)
-            </button>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+             <span style={{ fontSize: '10px', fontWeight: 700, color: '#ee4d2d' }}>Rp</span>
+             <span style={{ fontSize: '16px', fontWeight: 800, color: '#ee4d2d' }}>
+               {product.price.toLocaleString('id-ID')}
+             </span>
+          </div>
+          
+          {/* Discount simulation */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+            <div style={{ fontSize: '9px', padding: '1px 3px', background: '#feeeea', color: '#ee4d2d', fontWeight: 800, borderRadius: '2px' }}>-10%</div>
+          </div>
+        </div>
+
+        {/* Rating & Sold */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+            <Star size={10} fill="#ffce3d" color="#ffce3d" />
+            <span style={{ fontSize: '11px', color: '#757575', fontWeight: 500 }}>{rating}</span>
+          </div>
+          <div style={{ width: '1px', height: '10px', background: '#e8e8e8' }} />
+          <span style={{ fontSize: '11px', color: '#757575', fontWeight: 500 }}>{soldCount} terjual</span>
         </div>
       </div>
     </div>
