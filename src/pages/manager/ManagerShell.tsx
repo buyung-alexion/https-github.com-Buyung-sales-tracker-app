@@ -97,7 +97,7 @@ export default function ManagerShell() {
             <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. IKT (v2.1-REBOOT)</div>
+            <div className="logo-title" style={{ fontSize: '13px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>PT. INDUSTRI KELUARGA TIMUR</div>
             <div className="logo-sub">Manager Dashboard</div>
           </div>
         </div>
