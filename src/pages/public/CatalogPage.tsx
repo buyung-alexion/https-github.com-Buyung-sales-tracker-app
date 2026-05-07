@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Loader2, X, CheckCircle, ChevronLeft, MoreVertical, MessageCircle, Star, ChevronDown, Info, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { Product } from '../../types';
+import type { Product, LeadNegotiation, Sales } from '../../types';
 import { store } from '../../store/dataStore';
+import { chatStore } from '../../store/chatStore';
 import ProductCard from '../../components/public/ProductCard';
 
 export default function CatalogPage() {
@@ -186,6 +187,20 @@ export default function CatalogPage() {
       );
 
       await Promise.all(promises);
+
+      // Send Chat Notification to Sales if referred
+      if (referrerSales) {
+        const orderSummary = cart.map(item => `- ${item.product.name} (Qty: ${item.qty})`).join('\n');
+        const chatId = chatStore.getChatId('Manager-1', referrerSales.id);
+        
+        await chatStore.sendMessage({
+          chat_id: chatId,
+          sender_id: 'Manager-1',
+          sender_name: 'System Marketplace',
+          text: `🔔 *PESANAN BARU DARI LINK ANDA!*\n\n*Konsumen:* ${negoForm.customer_name}\n*No. WA:* ${negoForm.customer_wa}\n\n*Detail Produk:*\n${orderSummary}\n\nSilakan cek detail lengkapnya di dashboard atau segera hubungi konsumen.`
+        });
+      }
+
       setSubmitSuccess(true);
       setCart([]);
       setTimeout(() => {
