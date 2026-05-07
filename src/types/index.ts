@@ -120,31 +120,7 @@ export interface SalesOrder {
   amount: number;
 }
 
-export interface AreaRate {
-  id: string;
-  area_name: string;
-  daily_rate: number;
-  overtime_rate_per_hour: number;
-  created_at?: string;
-}
 
-export interface AttendanceRecord {
-  id: string;
-  user_id: string;
-  worker_name?: string; // Denormalized for display
-  date: string; // YYYY-MM-DD
-  area_id?: string;
-  area_name?: string; // Denormalized
-  check_in?: string; // ISO string
-  check_out?: string; // ISO string
-  overtime_hours: number;
-  daily_rate_applied: number;
-  overtime_rate_applied: number;
-  total_pay: number;
-  is_out_of_city: boolean;
-  status: 'Hadir' | 'Izin' | 'Sakit' | 'Alpa';
-  notes?: string;
-}
 
 export interface Product {
   id: string;

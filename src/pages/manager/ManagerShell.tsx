@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare, ShoppingBag, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
@@ -11,7 +11,6 @@ import Leaderboard from './Leaderboard';
 import ManagerSettings from './ManagerSettings';
 import MasterDataSettings from './MasterDataSettings';
 import ManagerChat from './ManagerChat';
-import PayrollManagement from './PayrollManagement';
 import NegotiationsDashboard from './NegotiationsDashboard';
 import { useChatNotifications } from '../../hooks/useChatNotifications';
 import ChatNotificationPopup from '../../components/ChatNotificationPopup';
@@ -58,7 +57,6 @@ export default function ManagerShell() {
         { to: '/manager/activity', icon: <Activity size={18} />, label: 'Live Activity' },
         { to: '/manager/prospek', icon: <Users size={18} />, label: 'Data Prospek' },
         { to: '/manager/customer', icon: <Users size={18} />, label: 'Data Customer' },
-        { to: '/manager/payroll', icon: <DollarSign size={18} />, label: 'Payroll & Absensi' },
         { to: '/manager/inbox', icon: <Mail size={18} />, label: 'Info Tim' },
         { to: '/manager/chat', icon: <MessageCircle size={18} />, label: 'Live Chat' },
         { to: '/manager/negotiations', icon: <ShoppingBag size={18} />, label: 'Marketplace' },
@@ -269,7 +267,6 @@ export default function ManagerShell() {
             <Route path="inbox" element={<ManagerInbox />} />
             <Route path="chat" element={<ManagerChat />} />
             <Route path="leaderboard" element={<Leaderboard />} />
-            <Route path="payroll" element={<PayrollManagement />} />
             <Route path="settings" element={<ManagerSettings />} />
             <Route path="data" element={<MasterDataSettings />} />
             <Route path="negotiations" element={<NegotiationsDashboard />} />

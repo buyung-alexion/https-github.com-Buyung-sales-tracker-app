@@ -254,51 +254,7 @@ export const store = {
     });
   },
 
-  // ─── ATTENDANCE (CLOCK IN/OUT) ──────────────────────────
-  async getTodayAttendance(salesId: string) {
-    const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await supabase
-      .from('attendance')
-      .select('*')
-      .eq('sales_id', salesId)
-      .gte('check_in', `${today}T00:00:00Z`)
-      .lte('check_in', `${today}T23:59:59Z`)
-      .maybeSingle();
-    return { data, error };
-  },
-  async fetchRecentAttendance() {
-    const today = new Date().toISOString().split('T')[0];
-    const { data, error } = await supabase
-      .from('attendance')
-      .select('*')
-      .gte('check_in', `${today}T00:00:00Z`)
-      .order('check_in', { ascending: false });
-    return { data, error };
-  },
 
-  async clockIn(salesId: string, loc: { lat: number, lng: number, area: string }, photo: string, salesName?: string) {
-    const attendanceData = {
-      id: crypto.randomUUID(),
-      sales_id: salesId,
-      sales_name: salesName,
-      check_in: new Date().toISOString(),
-      loc_in: loc,
-      photo_in: photo,
-      status: 'active'
-    };
-    const { error } = await supabase.from('attendance').insert([attendanceData]);
-    return { error };
-  },
-
-  async clockOut(id: string, loc: { lat: number, lng: number, area: string }, photo: string) {
-    const { error } = await supabase.from('attendance').update({
-      check_out: new Date().toISOString(),
-      loc_out: loc,
-      photo_out: photo,
-      status: 'completed'
-    }).eq('id', id);
-    return { error };
-  },
 
   async logNote(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, catatan: string, salesName?: string) {
     await this.logActivity({
@@ -555,49 +511,7 @@ export const store = {
     return { error };
   },
 
-  // --- PAYROLL SETTINGS ---
-  async fetchPayrollSettings() {
-    const { data, error } = await supabase.from('payroll_settings').select('*').order('setting_key');
-    if (error) console.error('fetchPayrollSettings error:', error);
-    return data || [];
-  },
-  async updatePayrollSetting(key: string, value: number) {
-    const { error } = await supabase.from('payroll_settings').update({ setting_value: value }).eq('setting_key', key);
-    if (error) console.error('updatePayrollSetting error:', error);
-    return { error };
-  },
-  async addPayrollSetting(key: string, value: number, description: string) {
-    const { data, error } = await supabase.from('payroll_settings').insert([{ setting_key: key, setting_value: value, description }]).select();
-    if (error) console.error('addPayrollSetting error:', error);
-    return { data, error };
-  },
-  async deletePayrollSetting(key: string) {
-    const { error } = await supabase.from('payroll_settings').delete().eq('setting_key', key);
-    if (error) console.error('deletePayrollSetting error:', error);
-    return { error };
-  },
 
-  // --- AREA RATES ---
-  async fetchAreaRates() {
-    const { data, error } = await supabase.from('area_rates').select('*').order('area_name');
-    if (error) console.error('fetchAreaRates error:', error);
-    return data || [];
-  },
-  async addAreaRate(rate: { area_name: string; daily_rate: number; overtime_rate_per_hour: number }) {
-    const { data, error } = await supabase.from('area_rates').insert([rate]).select();
-    if (error) console.error('addAreaRate error:', error);
-    return { data, error };
-  },
-  async updateAreaRate(id: string, updates: Partial<{ area_name: string; daily_rate: number; overtime_rate_per_hour: number }>) {
-    const { data, error } = await supabase.from('area_rates').update(updates).eq('id', id).select();
-    if (error) console.error('updateAreaRate error:', error);
-    return { data, error };
-  },
-  async deleteAreaRate(id: string) {
-    const { error } = await supabase.from('area_rates').delete().eq('id', id);
-    if (error) console.error('deleteAreaRate error:', error);
-    return { error };
-  },
 
   // ─── PUBLIC CATALOG ────────────────────────────────────
   async fetchProducts(activeOnly = true) {
