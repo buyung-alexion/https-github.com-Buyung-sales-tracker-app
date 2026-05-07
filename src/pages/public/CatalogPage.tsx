@@ -107,7 +107,7 @@ export default function CatalogPage() {
     setNegoModalOpen(true);
   };
 
-  const addToCart = () => {
+  const addToCart = (openCart = false) => {
     if (!selectedProduct) return;
     
     const existingIndex = cart.findIndex(item => item.product.id === selectedProduct.id);
@@ -120,6 +120,9 @@ export default function CatalogPage() {
       setCart([...cart, { product: selectedProduct, qty: negoQty, offered_price: negoForm.offered_price }]);
     }
     setNegoModalOpen(false);
+    if (openCart) {
+      setCartModalOpen(true);
+    }
   };
 
   const removeFromCart = (productId: string) => {
@@ -553,22 +556,35 @@ export default function CatalogPage() {
                   )}
                 </div>
 
+                <div style={{ display: 'flex', gap: '10px' }}>
                   <button 
-                    onClick={addToCart}
+                    onClick={() => addToCart(false)}
                     style={{ 
-                      width: '100%', padding: '14px', borderRadius: '4px', 
+                      flex: 1, padding: '14px', borderRadius: '4px', 
+                      background: '#fff', color: '#ee4d2d', 
+                      border: '1px solid #ee4d2d', fontWeight: 600, fontSize: '13px',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
+                    }}
+                  >
+                    <ShoppingCart size={16} /> +Keranjang
+                  </button>
+                  <button 
+                    onClick={() => addToCart(true)}
+                    style={{ 
+                      flex: 1.5, padding: '14px', borderRadius: '4px', 
                       background: '#ee4d2d', color: '#fff', 
-                      border: 'none', fontWeight: 600, fontSize: '14px',
+                      border: 'none', fontWeight: 700, fontSize: '14px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                     }}
                   >
-                    Tambah ke Keranjang
+                    Beli & Pesan
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-        )}
+        </div>
+      )}
 
       {/* Floating Cart Button */}
       {cart.length > 0 && !cartModalOpen && (
