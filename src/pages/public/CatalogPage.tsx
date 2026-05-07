@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Search, Loader2, X, CheckCircle, ChevronLeft, MoreVertical, MessageCircle, Star, ChevronDown, Info, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { Product, LeadNegotiation, Sales } from '../../types';
+import type { Product, Sales } from '../../types';
 import { store } from '../../store/dataStore';
 import { chatStore } from '../../store/chatStore';
 import ProductCard from '../../components/public/ProductCard';
@@ -31,7 +31,7 @@ export default function CatalogPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [referrerSales, setReferrerSales] = useState<any>(null);
+  const [referrerSales, setReferrerSales] = useState<Sales | null>(null);
 
   useEffect(() => {
     loadProducts();
@@ -178,7 +178,7 @@ export default function CatalogPage() {
       const promises = cart.map(item => 
         store.submitNegotiation({
           product_id: item.product.id,
-          sales_id: referrerSales?.id || null,
+          sales_id: referrerSales?.id || undefined,
           customer_name: negoForm.customer_name,
           customer_wa: negoForm.customer_wa,
           requested_qty: item.qty,
