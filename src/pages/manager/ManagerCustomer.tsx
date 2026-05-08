@@ -600,34 +600,6 @@ export default function ManagerCustomer() {
           </div>
         </div>
 
-        <div style={{ width: '1px', height: '40px', background: '#e2e8f0' }} />
-
-        {/* Action Button */}
-        <button 
-          onClick={handleOpenAdd}
-          style={{ 
-            height: '48px', 
-            padding: '0 24px', 
-            borderRadius: '16px', 
-            background: '#1e293b', 
-            color: '#fff', 
-            border: 'none', 
-            fontWeight: 900, 
-            fontSize: '13px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '10px', 
-            cursor: 'pointer',
-            boxShadow: '0 10px 20px rgba(30, 41, 59, 0.15)',
-            transition: 'all 0.2s ease',
-            marginLeft: 'auto'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(30, 41, 59, 0.2)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(30, 41, 59, 0.15)'; }}
-        >
-          <UserCheck size={18} color="#fff" /> 
-          TAMBAH CUSTOMER
-        </button>
       </div>
 
       <CustomerOverviewCharts 
