@@ -27,6 +27,7 @@ export default function Homepage({ salesId }: Props) {
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+  const [negoTab, setNegoTab] = useState<'pending' | 'processed'>('pending');
 
   useEffect(() => {
     if (marketplaceModalOpen || incomingOrdersModalOpen) {
@@ -43,7 +44,14 @@ export default function Homepage({ salesId }: Props) {
     setLoadingNego(false);
   };
 
-  const handleProcessNego = (nego: any) => {
+  const handleProcessNego = async (nego: any) => {
+    // 1. Update status to processed in DB
+    await store.updateNegotiationStatus(nego.id, 'processed');
+    
+    // 2. Refresh local list
+    loadMyNegotiations();
+
+    // 3. Open WhatsApp
     const message = encodeURIComponent(`Halo ${nego.customer_name}, saya dari PT. IKT—mengenai pesanan Anda untuk produk ${nego.products?.name}. Ada yang bisa kami bantu untuk proses selanjutnya?`);
     window.open(`https://wa.me/${nego.customer_wa}?text=${message}`, '_blank');
   };
@@ -714,17 +722,45 @@ export default function Homepage({ salesId }: Props) {
               <button className="tap-active" onClick={() => setIncomingOrdersModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
 
+            {/* Tab Switcher */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: '#F1F5F9', padding: '6px', borderRadius: '16px' }}>
+              <button 
+                className="tap-active"
+                onClick={() => setNegoTab('pending')}
+                style={{ 
+                  flex: 1, padding: '10px', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 900,
+                  background: negoTab === 'pending' ? '#fff' : 'transparent',
+                  color: negoTab === 'pending' ? '#111827' : '#64748b',
+                  boxShadow: negoTab === 'pending' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none'
+                }}
+              >
+                Perlu Diproses ({myNegotiations.filter(n => n.status === 'pending').length})
+              </button>
+              <button 
+                className="tap-active"
+                onClick={() => setNegoTab('processed')}
+                style={{ 
+                  flex: 1, padding: '10px', borderRadius: '12px', border: 'none', fontSize: '12px', fontWeight: 900,
+                  background: negoTab === 'processed' ? '#fff' : 'transparent',
+                  color: negoTab === 'processed' ? '#111827' : '#64748b',
+                  boxShadow: negoTab === 'processed' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none'
+                }}
+              >
+                Sudah Diproses ({myNegotiations.filter(n => n.status === 'processed').length})
+              </button>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {loadingNego ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
-              ) : myNegotiations.length === 0 ? (
+              ) : myNegotiations.filter(n => n.status === negoTab).length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
                   <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
-                  <div style={{ fontSize: '14px', fontWeight: 800 }}>Belum ada pesanan masuk</div>
-                  <div style={{ fontSize: '12px', fontWeight: 600 }}>Bagikan link sales Anda untuk mulai berjualan.</div>
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>Belum ada data</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600 }}>Semua pesanan di tab ini kosong.</div>
                 </div>
               ) : (
-                myNegotiations.map(nego => (
+                myNegotiations.filter(n => n.status === negoTab).map(nego => (
                   <div key={nego.id} style={{ background: '#F8FAFC', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                       <span style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8' }}>{new Date(nego.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -732,7 +768,7 @@ export default function Homepage({ salesId }: Props) {
                         fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px',
                         background: nego.status === 'pending' ? '#FFFBEB' : '#F0FDF4',
                         color: nego.status === 'pending' ? '#F59E0B' : '#10B981'
-                      }}>{nego.status.toUpperCase()}</span>
+                      }}>{nego.status === 'pending' ? 'BELUM DIPROSES' : 'TERPROSES'}</span>
                     </div>
                     
                     <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
@@ -750,22 +786,30 @@ export default function Homepage({ salesId }: Props) {
                         <div style={{ fontSize: '13px', fontWeight: 900, color: '#111827' }}>{nego.customer_name}</div>
                         <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>{nego.customer_wa}</div>
                       </div>
-                      <button 
-                        className="tap-active"
-                        onClick={() => handleProcessNego(nego)}
-                        style={{ 
-                          background: '#111827', color: '#FFCC00', border: 'none', 
-                          borderRadius: '12px', padding: '10px 20px', fontSize: '12px', 
-                          fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' 
-                        }}
-                      >
-                        PROSES <ChevronRight size={14} />
-                      </button>
+                      {nego.status === 'pending' && (
+                        <button 
+                          className="tap-active"
+                          onClick={() => handleProcessNego(nego)}
+                          style={{ 
+                            background: '#111827', color: '#FFCC00', border: 'none', 
+                            borderRadius: '12px', padding: '10px 20px', fontSize: '12px', 
+                            fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' 
+                          }}
+                        >
+                          PROSES <ChevronRight size={14} />
+                        </button>
+                      )}
+                      {nego.status === 'processed' && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10B981', fontSize: '12px', fontWeight: 900 }}>
+                          <CheckCircle size={16} /> SELESAI
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
               )}
             </div>
+
           </div>
         </div>
       

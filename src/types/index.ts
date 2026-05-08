@@ -145,6 +145,6 @@ export interface LeadNegotiation {
   customer_wa: string;
   requested_qty: number;
   offered_price: number;
-  status: 'pending' | 'approved' | 'rejected' | 'countered';
+  status: 'pending' | 'approved' | 'rejected' | 'countered' | 'processed';
   created_at?: string;
 }
