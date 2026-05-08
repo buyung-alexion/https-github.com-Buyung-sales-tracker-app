@@ -55,7 +55,14 @@ export default function Homepage({ salesId }: Props) {
     if (error) {
       console.error('Fetch Nego Error:', error);
     }
-    const filtered = (data || []).filter(n => n.sales_id === user.id);
+    const allNego = data || [];
+    const filtered = allNego.filter(n => String(n.sales_id) === String(user.id));
+    
+    // Debug Log
+    console.log('DEBUG: User ID:', user.id);
+    console.log('DEBUG: Total Nego in DB:', allNego.length);
+    console.log('DEBUG: Filtered Nego:', filtered.length);
+
     setMyNegotiations(filtered);
     setLoadingNego(false);
   };
@@ -706,6 +713,7 @@ export default function Homepage({ salesId }: Props) {
                  <div style={{ flex: 1 }}>
                    <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
+                   <div style={{ fontSize: '10px', color: '#cbd5e1' }}>Debug: ID {user?.id} | MyNego: {myNegotiations.length}</div>
                  </div>
                  {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
                    <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
@@ -792,55 +800,38 @@ export default function Homepage({ salesId }: Props) {
                         <img src={nego.products?.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#111827' }}>{nego.products?.name}</div>
-                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Rp{nego.offered_price.toLocaleString('id-ID')} • {nego.requested_qty} Unit</div>
+                        <div style={{ fontSize: '14px', fontWeight: 950, color: '#111827' }}>{nego.customer_name}</div>
+                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{nego.products?.name} • {nego.requested_qty} Kg</div>
                       </div>
                     </div>
 
-                    <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px dashed #e2e8f0' }}>
                       <div>
-                        <div style={{ fontSize: '13px', fontWeight: 900, color: '#111827' }}>{nego.customer_name}</div>
-                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>{nego.customer_wa}</div>
+                        <div style={{ fontSize: '9px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.05em' }}>OFFERED PRICE</div>
+                        <div style={{ fontSize: '15px', fontWeight: 950, color: '#111827' }}>Rp {nego.offered_price?.toLocaleString('id-ID')}</div>
                       </div>
+                      
                       {nego.status === 'pending' && (
                         <button 
                           className="tap-active"
                           onClick={() => handleProcessNego(nego)}
                           style={{ 
-                            background: '#111827', color: '#FFCC00', border: 'none', 
-                            borderRadius: '12px', padding: '10px 20px', fontSize: '12px', 
-                            fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' 
+                            background: 'var(--brand-yellow)', color: '#111827', border: 'none',
+                            padding: '8px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 950,
+                            boxShadow: '0 4px 12px rgba(255, 204, 0, 0.3)'
                           }}
                         >
-                          PROSES <ChevronRight size={14} />
+                          PROSES
                         </button>
-                      )}
-                      {nego.status === 'processed' && (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10B981', fontSize: '12px', fontWeight: 900 }}>
-                          <CheckCircle size={16} /> SELESAI
-                        </div>
                       )}
                     </div>
                   </div>
                 ))
               )}
             </div>
-
           </div>
         </div>
-      
       )}
-      <div style={{ 
-        padding: '24px 20px 48px', 
-        textAlign: 'center', 
-        fontSize: '11px', 
-        fontWeight: 800, 
-        color: '#94a3b8', 
-        letterSpacing: '0.05em',
-        opacity: 0.8
-      }}>
-        vDeploy 1.0.26.0506 • STABLE
-      </div>
     </div>
   );
 }
