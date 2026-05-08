@@ -24,6 +24,7 @@ export default function Homepage({ salesId }: Props) {
   const [myNegotiations, setMyNegotiations] = useState<any[]>([]);
   const [allNegoCount, setAllNegoCount] = useState(0); // DEBUG TOTAL
   const [loadingNego, setLoadingNego] = useState(false);
+  const [negoError, setNegoError] = useState<string | null>(null);
   const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -52,9 +53,11 @@ export default function Homepage({ salesId }: Props) {
   const loadMyNegotiations = async () => {
     if (!salesId) return;
     setLoadingNego(true);
+    setNegoError(null);
     const { data, error } = await store.fetchNegotiations();
     if (error) {
       console.error('Fetch Nego Error:', error);
+      setNegoError(error.message);
     }
     const allNego = data || [];
     setAllNegoCount(allNego.length); // SIMPAN TOTAL UNTUK DEBUG
@@ -62,11 +65,6 @@ export default function Homepage({ salesId }: Props) {
     // Gunakan salesId (prop) yang berisi S007, bukan user.id
     const filtered = allNego.filter(n => String(n.sales_id) === String(salesId));
     
-    // Debug Log
-    console.log('DEBUG: Sales ID:', salesId);
-    console.log('DEBUG: Total Nego in DB:', allNego.length);
-    console.log('DEBUG: Filtered Nego:', filtered.length);
-
     setMyNegotiations(filtered);
     setLoadingNego(false);
   };
