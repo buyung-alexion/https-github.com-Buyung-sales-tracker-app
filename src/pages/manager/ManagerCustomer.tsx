@@ -407,21 +407,6 @@ export default function ManagerCustomer() {
     return customerWithStats.slice(0, 20);
   }, [customerWithStats, viewAll]);
 
-  const handleOpenAdd = () => {
-    setAddForm({
-      nama_toko: '',
-      nama_pic: '',
-      no_wa: '',
-      area: 'SMD',
-      kategori: 'Retail',
-      link_map: '',
-      rating: 5,
-      foto_profil: ''
-    });
-    setSaveError(null);
-    setSaveSuccess(false);
-    setAddModal(true);
-  };
 
   const handleOpenEdit = (c: any) => {
     setEditForm({

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, Plus, X, ChevronRight } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, X, ChevronRight } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -235,23 +235,6 @@ export default function ManagerProspek() {
     return sortedFiltered.slice(0, 20);
   }, [sortedFiltered, viewAll]);
 
-  const handleOpenAdd = () => {
-    setAddForm({
-      nama_toko: '',
-      nama_pic: '',
-      no_wa: '',
-      area: 'SMD',
-      status: 'Cold',
-      link_map: '',
-      kategori: 'Retail',
-      rating: 5,
-      foto_profil: '',
-      channel: 'Canvasing'
-    });
-    setSaveError(null);
-    setSaveSuccess(false);
-    setAddModal(true);
-  };
 
   const handleOpenEdit = (p: any) => {
     setEditForm({

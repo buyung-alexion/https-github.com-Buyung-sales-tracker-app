@@ -130,7 +130,6 @@ export default function LiveActivityFeed() {
     { name: 'Prospek', value: filteredProspek.length, color: '#9a3412' },
   ], [filtered, filteredProspek]);
   
-  const totalActs = useMemo(() => pieData.reduce((acc, curr) => acc + curr.value, 0), [pieData]);
   
   
   
