@@ -23,6 +23,9 @@ export default function Homepage({ salesId }: Props) {
   const [incomingOrdersModalOpen, setIncomingOrdersModalOpen] = useState(false);
   const [myNegotiations, setMyNegotiations] = useState<any[]>([]);
   const [loadingNego, setLoadingNego] = useState(false);
+  
+  const salesName = user?.nama || currentSales?.nama;
+  const salesDisplayName = salesName?.split(' ')[0] || 'Sales';
   const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -71,7 +74,11 @@ export default function Homepage({ salesId }: Props) {
     // 2. Refresh local list
     loadMyNegotiations();
 
-    // 3. Open WhatsApp with formatted number
+    // 3. Find all other pending negotiations for the same customer to group them in the message
+    const otherItems = myNegotiations.filter(n => n.customer_wa === nego.customer_wa && n.status === 'pending');
+    const productList = otherItems.map(item => `- ${item.products?.name || 'Produk'} (${item.requested_qty} Unit)`).join('\n');
+
+    // 4. Open WhatsApp with formatted number
     let phone = nego.customer_wa || '';
     // Format 08... to 628...
     if (phone.startsWith('0')) {
@@ -81,12 +88,12 @@ export default function Homepage({ salesId }: Props) {
     }
     const cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
     
-    const message = encodeURIComponent(`Halo ${nego.customer_name}, saya dari PT. IKT—mengenai pesanan Anda untuk produk ${nego.products?.name}. Ada yang bisa kami bantu untuk proses selanjutnya?`);
+    const message = encodeURIComponent(
+      `Hallo *${nego.customer_name}*, Saya *${salesName}* dari PT. Industri Keluarga Timur, saya mau konfirmasi orderannya dengan item sebagai berikut:\n\n${productList}\n\nApakah sudah sesuai dan ada yang mau ditambah?`
+    );
     window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
-  const salesName = user?.nama || currentSales?.nama;
-  const salesDisplayName = salesName?.split(' ')[0] || 'Sales';
 
   
 
