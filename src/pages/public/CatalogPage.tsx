@@ -1,704 +1,292 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Search, Loader2, X, CheckCircle, ChevronLeft, MoreVertical, MessageCircle, Star, ChevronDown, Info, ShoppingCart } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import type { Product, Sales } from '../../types';
+import { useState, useEffect } from 'react';
+import { ShoppingBag, Star, ChevronLeft, Send, Search, Loader2, CheckCircle, Info, MessageCircle, AlertCircle } from 'lucide-react';
 import { store } from '../../store/dataStore';
-import ProductCard from '../../components/public/ProductCard';
+import { useNavigate } from 'react-router-dom';
 
 export default function CatalogPage() {
   const navigate = useNavigate();
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('Produk');
-  const [activeFilter, setActiveFilter] = useState('Populer');
-  const [priceSort, setPriceSort] = useState<'asc' | 'desc'>('asc');
-  const [followerCount, setFollowerCount] = useState(0);
-
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [referrerSales, setReferrerSales] = useState<any>(null);
   
-  const [negoModalOpen, setNegoModalOpen] = useState(false);
-  const [cartModalOpen, setCartModalOpen] = useState(false);
-  const [cart, setCart] = useState<{product: Product, qty: number, offered_price: number}[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [negoQty, setNegoQty] = useState(1);
-  const [negoForm, setNegoForm] = useState({
-    customer_name: '',
-    customer_wa: '',
-    offered_price: 0
+  const [formData, setFormData] = useState({
+    name: '',
+    whatsapp: '',
+    quantity: '',
+    price: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [referrerSales, setReferrerSales] = useState<Sales | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   useEffect(() => {
     loadProducts();
-    loadFollowers();
-    loadCategories();
     checkReferrer();
   }, []);
+
+  const loadProducts = async () => {
+    setLoading(true);
+    const { data } = await store.fetchProducts();
+    setProducts(data || []);
+    setLoading(false);
+  };
 
   const checkReferrer = async () => {
     const params = new URLSearchParams(window.location.search);
     const ref = params.get('ref');
+    console.log('DEBUG: Referral Parameter from URL:', ref);
     if (ref) {
-      const { data } = await store.fetchSalesPublicInfo(ref);
+      const { data, error } = await store.fetchSalesPublicInfo(ref);
+      if (error) {
+        console.error('DEBUG: Fetch Sales Info Error:', error);
+      }
+      console.log('DEBUG: Sales Data Found:', data);
       if (data) {
         setReferrerSales(data);
       }
     }
   };
 
-  const loadCategories = async () => {
-    const data = await store.fetchMasterProductCategories();
-    setCategories(data);
-  };
+  const handleSubmitNegotiation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedProduct || isSubmitting) return;
 
-  const loadProducts = async () => {
-    setLoading(true);
-    const { data } = await store.fetchProducts();
-    setProducts(data);
-    setLoading(false);
-  };
+    setIsSubmitting(true);
+    setErrorMsg('');
 
-  const loadFollowers = async () => {
-    const count = await store.fetchCustomerCount();
-    setFollowerCount(count);
-  };
-
-  const filteredProducts = useMemo(() => {
-    let result = [...products];
-
-    // 1. Search Filter
-    if (search) {
-      result = result.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-    }
-
-    // 2. Category Filter (If in Kategori tab and category selected)
-    if (activeTab === 'Kategori' && selectedCategory) {
-      result = result.filter(p => p.category === selectedCategory);
-    }
-
-    // 3. Sorting
-    if (activeFilter === 'Terbaru') {
-      result.sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
-    } else if (activeFilter === 'Terlaris') {
-      // Mock sorting for now as we don't have sales count per product yet
-      result.sort((a, b) => (b.price || 0) - (a.price || 0));
-    } else if (activeFilter === 'Harga') {
-      if (priceSort === 'asc') {
-        result.sort((a, b) => (a.price || 0) - (b.price || 0));
-      } else {
-        result.sort((a, b) => (b.price || 0) - (a.price || 0));
-      }
-    }
-
-    return result;
-  }, [products, search, activeTab, selectedCategory, activeFilter]);
-
-  const handleOpenDetail = (product: Product) => {
-    setSelectedProduct(product);
-    setNegoQty(1);
-    setNegoForm({
-      ...negoForm,
-      offered_price: product.price
-    });
-    setNegoModalOpen(true);
-  };
-
-  const addToCart = (openCart = false) => {
-    if (!selectedProduct) return;
+    console.log('DEBUG: Submitting Order with Sales ID:', referrerSales?.id || 'NULL');
     
-    const existingIndex = cart.findIndex(item => item.product.id === selectedProduct.id);
-    if (existingIndex > -1) {
-      const newCart = [...cart];
-      newCart[existingIndex].qty += negoQty;
-      newCart[existingIndex].offered_price = negoForm.offered_price;
-      setCart(newCart);
-    } else {
-      setCart([...cart, { product: selectedProduct, qty: negoQty, offered_price: negoForm.offered_price }]);
-    }
-    setNegoModalOpen(false);
-    if (openCart) {
-      setCartModalOpen(true);
-    }
-  };
-
-  const removeFromCart = (productId: string) => {
-    setCart(cart.filter(item => item.product.id !== productId));
-  };
-
-  const updateCartQty = (productId: string, delta: number) => {
-    setCart(cart.map(item => {
-      if (item.product.id === productId) {
-        return { ...item, qty: Math.max(1, item.qty + delta) };
-      }
-      return item;
-    }));
-  };
-
-  const handleChatToko = () => {
-    // Arahkan ke WhatsApp Sales (Referrer) atau Admin/Owner jika tidak ada referrer
-    const waNumber = referrerSales?.no_wa || '6281234567890';
-    const message = encodeURIComponent(`Halo ${referrerSales?.nama || 'Admin'}, saya ingin bertanya tentang produk di katalog PT. Industri Keluarga Timur.`);
-    window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
-  };
-
-  const handleShareCatalog = async () => {
-    const shareData = {
-      title: 'Katalog PT. Industri Keluarga Timur',
-      text: 'Cek katalog produk terbaru kami di PT. Industri Keluarga Timur!',
-      url: window.location.href,
+    const payload = {
+      product_id: selectedProduct.id,
+      sales_id: referrerSales?.id ? String(referrerSales.id) : null,
+      customer_name: formData.name,
+      customer_wa: formData.whatsapp,
+      requested_qty: parseFloat(formData.quantity),
+      offered_price: parseFloat(formData.price),
+      status: 'pending'
     };
 
     try {
-      if (navigator.share) {
-        await navigator.share(shareData);
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Link katalog berhasil disalin ke clipboard!');
+      const { error } = await store.submitNegotiation(payload);
+      if (error) {
+        console.error('DEBUG: Submit Error Details:', error);
+        throw error;
       }
-    } catch (err) {
-      console.error('Error sharing:', err);
-    }
-  };
-
-  const handleSubmitNego = async () => {
-    if (cart.length === 0 || !negoForm.customer_name || !negoForm.customer_wa) {
-      alert('Mohon lengkapi data pemesan dan pastikan keranjang tidak kosong.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Loop through cart to submit each as a negotiation
-      const promises = cart.map(item => 
-        store.submitNegotiation({
-          product_id: item.product.id,
-          sales_id: referrerSales?.id || undefined,
-          customer_name: negoForm.customer_name,
-          customer_wa: negoForm.customer_wa,
-          requested_qty: item.qty,
-          offered_price: item.offered_price
-        })
-      );
-
-      const results = await Promise.all(promises);
-      const errors = results.filter(r => r.error);
-      
-      if (errors.length > 0) {
-        const errorMsg = errors[0].error?.message || 'Unknown Error';
-        console.error('Submission Errors:', errors);
-        alert(`Gagal menyimpan pesanan: ${errorMsg}`);
-        setIsSubmitting(false);
-        return;
-      }
-
-      setSubmitSuccess(true);
-      setCart([]);
+      setSuccess(true);
       setTimeout(() => {
-        setCartModalOpen(false);
-        setSubmitSuccess(false);
-      }, 2000);
-    } catch (err) {
-      console.error(err);
-      alert('Gagal mengirim penawaran. Mohon coba lagi.');
+        setShowForm(false);
+        setSuccess(false);
+        setSelectedProduct(null);
+        setFormData({ name: '', whatsapp: '', quantity: '', price: '' });
+      }, 3000);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Gagal mengirim pesanan. Silakan coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(search.toLowerCase()) ||
+    p.category.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f5', paddingBottom: '40px' }}>
-      
-      {/* Shopee-style Header Overlay */}
-      <div style={{ 
-        position: 'sticky', top: 0, zIndex: 100, 
-        background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(10px)',
-        padding: '12px 16px', borderBottom: '1px solid #f1f1f1'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button onClick={() => navigate(-1)} style={{ background: 'transparent', border: 'none', padding: 0 }}>
-            <ChevronLeft size={24} color="#ee4d2d" />
-          </button>
-          
-          <div style={{ 
-            flex: 1, background: '#f5f5f5', borderRadius: '4px', 
-            display: 'flex', alignItems: 'center', padding: '0 12px',
-            border: '1px solid #e8e8e8'
-          }}>
-            <Search size={18} color="#757575" />
+    <div className="min-h-screen bg-slate-50 pb-10">
+      {/* Header */}
+      <div className="bg-white px-5 py-6 shadow-sm sticky top-0 z-50">
+        <div className="max-w-md mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-brand-yellow rounded-xl flex items-center justify-center shadow-lg shadow-yellow-200">
+                <ShoppingBag size={20} className="text-black" />
+              </div>
+              <div>
+                <h1 className="text-xl font-black text-slate-900 tracking-tight leading-tight">IKT Marketplace</h1>
+                {referrerSales && (
+                   <div className="flex items-center gap-1 mt-0.5">
+                      <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partner: {referrerSales.nama}</p>
+                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
-              placeholder="Cari di PT. IKT" 
+              placeholder="Cari daging, ayam, atau produk lainnya..." 
+              className="w-full pl-12 pr-4 py-4 bg-slate-100 border-none rounded-2xl text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-yellow transition-all"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ 
-                border: 'none', background: 'transparent', flex: 1, 
-                padding: '8px 10px', fontSize: '14px', outline: 'none',
-                color: '#212121'
-              }}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
-          <button 
-            onClick={handleShareCatalog}
-            style={{ background: 'transparent', border: 'none', padding: 0 }}
-          >
-            <MoreVertical size={24} color="#757575" />
-          </button>
         </div>
       </div>
 
-      {/* Store Profile Section */}
-      <div style={{ 
-        background: '#fff', padding: '24px 16px', 
-        backgroundImage: 'linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url("https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=1000")',
-        backgroundSize: 'cover', backgroundPosition: 'center',
-        color: '#fff'
-      }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-             <div style={{ 
-               width: '64px', height: '64px', borderRadius: '50%', 
-               border: '2px solid #fff', overflow: 'hidden', background: '#fff',
-               flexShrink: 0, padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center'
-             }}>
-               <img src="/assets/image/logo_ikt.png" alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-             </div>
-             <div style={{ flex: 1 }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                 <h2 style={{ fontSize: '18px', fontWeight: 800, margin: 0, lineHeight: 1.2 }}>PT. Industri Keluarga Timur</h2>
-                 <ChevronLeft size={14} style={{ transform: 'rotate(180deg)' }} />
-               </div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '4px' }}>
-                 <Star size={10} fill="#ffce3d" color="#ffce3d" />
-                 <span style={{ fontSize: '12px', fontWeight: 500 }}>4.9</span>
-                 <span style={{ fontSize: '12px', opacity: 0.9, marginLeft: '8px' }}>{followerCount.toLocaleString('id-ID')} Pengikut</span>
-               </div>
-             </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '8px' }}>
-             <button 
-               onClick={handleChatToko}
-               style={{ 
-                 flex: 1,
-                 background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid #fff', 
-                 borderRadius: '4px', padding: '8px 12px', fontSize: '14px', 
-                 fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                 backdropFilter: 'blur(4px)'
-               }}
-             >
-               <MessageCircle size={16} /> Chat Sekarang
-             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Tabs */}
-      <div style={{ 
-        background: '#fff', display: 'flex', 
-        borderBottom: '1px solid #f1f1f1' 
-      }}>
-        {['Toko', 'Produk', 'Kategori'].map(tab => (
-          <button 
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            style={{ 
-              flex: 1, padding: '14px 0', border: 'none', 
-              background: 'transparent', fontSize: '14px', 
-              color: activeTab === tab ? '#ee4d2d' : '#757575',
-              fontWeight: activeTab === tab ? 700 : 500,
-              position: 'relative'
-            }}
-          >
-            {tab}
-            {activeTab === tab && (
-              <div style={{ 
-                position: 'absolute', bottom: 0, left: '20%', right: '20%', 
-                height: '2px', background: '#ee4d2d' 
-              }} />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Sub-tabs / Filters */}
-      <div style={{ 
-        background: '#fff', display: 'flex', 
-        padding: '12px 16px', gap: '24px',
-        borderBottom: '1px solid #f1f1f1'
-      }}>
-        {['Populer', 'Terbaru', 'Terlaris'].map(f => (
-          <button 
-            key={f}
-            onClick={() => setActiveFilter(f)}
-            style={{ 
-              background: 'transparent', border: 'none', padding: 0,
-              fontSize: '14px', color: activeFilter === f ? '#ee4d2d' : '#757575',
-              fontWeight: activeFilter === f ? 600 : 500,
-              display: 'flex', alignItems: 'center', gap: '2px'
-            }}
-          >
-            {f} {f === 'Terbaru' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ee4d2d' }} />}
-          </button>
-        ))}
-        <button 
-          onClick={() => {
-            if (activeFilter === 'Harga') {
-              setPriceSort(priceSort === 'asc' ? 'desc' : 'asc');
-            } else {
-              setActiveFilter('Harga');
-              setPriceSort('asc');
-            }
-          }}
-          style={{ 
-            background: 'transparent', border: 'none', padding: 0,
-            fontSize: '14px', color: activeFilter === 'Harga' ? '#ee4d2d' : '#757575', fontWeight: activeFilter === 'Harga' ? 600 : 500,
-            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px'
-          }}
-        >
-          Harga <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-             <ChevronDown size={10} style={{ transform: 'rotate(180deg)', color: (activeFilter === 'Harga' && priceSort === 'asc') ? '#ee4d2d' : '#757575' }} />
-             <ChevronDown size={10} style={{ color: (activeFilter === 'Harga' && priceSort === 'desc') ? '#ee4d2d' : '#757575' }} />
-          </div>
-        </button>
-      </div>
-
-      {/* Product Grid / Categories List */}
-      <div style={{ padding: '8px' }}>
+      <div className="max-w-md mx-auto px-5 py-8">
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-            <Loader2 className="animate-spin" size={32} color="#ee4d2d" />
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <Loader2 className="animate-spin mb-4" size={32} />
+            <p className="text-sm font-bold">Memuat Katalog Produk...</p>
           </div>
-        ) : activeTab === 'Kategori' && !selectedCategory ? (
-          /* Categories Selection View */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px' }}>
-            {categories.map(cat => (
-              <div 
-                key={cat.id}
-                className="tap-active"
-                onClick={() => setSelectedCategory(cat.name)}
-                style={{ 
-                  background: '#fff', padding: '20px', borderRadius: '12px',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)', fontWeight: 700
-                }}
-              >
-                <span>{cat.name}</span>
-                <ChevronLeft size={18} style={{ transform: 'rotate(180deg)', opacity: 0.3 }} />
+        ) : filteredProducts.length === 0 ? (
+          <div className="text-center py-20 px-10">
+             <div className="w-20 h-20 bg-slate-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Search size={32} className="text-slate-300" />
+             </div>
+             <h3 className="text-lg font-black text-slate-800 mb-2">Produk Tidak Ditemukan</h3>
+             <p className="text-slate-500 text-sm font-medium">Coba gunakan kata kunci lain atau hubungi admin kami.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {filteredProducts.map(product => (
+              <div key={product.id} className="bg-white rounded-[32px] overflow-hidden shadow-xl shadow-slate-200/60 border border-slate-100 group transition-all active:scale-95">
+                <div className="aspect-square relative overflow-hidden">
+                  <img src={product.image_url} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                  <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full shadow-lg">
+                    <div className="flex items-center gap-1">
+                      <Star size={12} className="fill-yellow-400 text-yellow-400" />
+                      <span className="text-[10px] font-black text-slate-800">4.9 (120+)</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <span className="text-[10px] font-black text-brand-yellow bg-yellow-50 px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">{product.category}</span>
+                      <h3 className="text-lg font-black text-slate-900 leading-tight">{product.name}</h3>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xs font-bold text-slate-400 block mb-1">Mulai Dari</span>
+                      <span className="text-xl font-black text-slate-900 tracking-tighter">Rp {product.base_price.toLocaleString('id-ID')}<span className="text-sm text-slate-400 font-bold">/kg</span></span>
+                    </div>
+                  </div>
+                  <p className="text-slate-500 text-xs font-medium leading-relaxed mb-6 line-clamp-2">{product.description}</p>
+                  
+                  <button 
+                    onClick={() => { setSelectedProduct(product); setShowForm(true); }}
+                    className="w-full py-4 bg-slate-900 text-white rounded-2xl text-sm font-black tracking-wide flex items-center justify-center gap-2 hover:bg-black transition-colors shadow-lg shadow-slate-200"
+                  >
+                    AJUKAN PENAWARAN <Send size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
-        ) : (
-          /* Products Grid View */
-          <>
-            {selectedCategory && activeTab === 'Kategori' && (
-              <div style={{ padding: '8px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <button 
-                  onClick={() => setSelectedCategory(null)}
-                  style={{ background: '#eee', border: 'none', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 700 }}
-                >
-                  <ChevronLeft size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /> Kembali
-                </button>
-                <span style={{ fontSize: '14px', fontWeight: 800 }}>Kategori: {selectedCategory}</span>
-              </div>
-            )}
-            
-            {filteredProducts.length > 0 ? (
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(2, 1fr)', 
-                gap: '8px' 
-              }}>
-                {filteredProducts.map(product => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    onClick={handleOpenDetail}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '100px 0', color: '#94a3b8' }}>
-                <p style={{ fontWeight: 700 }}>Produk tidak ditemukan.</p>
-              </div>
-            )}
-          </>
         )}
       </div>
 
-      {/* Negotiation/Detail Modal (Shopee Style Bottom Sheet) */}
-      {negoModalOpen && selectedProduct && (
-        <div style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'flex-end', zIndex: 1000
-        }} onClick={() => !isSubmitting && setNegoModalOpen(false)}>
-          <div 
-            style={{ 
-              width: '100%', 
-              background: '#fff', 
-              borderTopLeftRadius: '16px', borderTopRightRadius: '16px',
-              padding: '20px 16px calc(30px + env(safe-area-inset-bottom))',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 -10px 40px rgba(0,0,0,0.2)'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-               <img 
-                 src={selectedProduct.image_url} 
-                 alt="" 
-                 style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #f1f1f1' }}
-               />
-               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                 <div style={{ fontSize: '18px', fontWeight: 700, color: '#ee4d2d' }}>
-                   Rp{selectedProduct.price.toLocaleString('id-ID')}
-                 </div>
-                 <div style={{ fontSize: '12px', color: '#757575', marginTop: '4px' }}>
-                   Stok: 99+
-                 </div>
-               </div>
-               <button onClick={() => setNegoModalOpen(false)} style={{ background: 'transparent', border: 'none', padding: 0, height: 'fit-content' }}>
-                 <X size={24} color="#757575" />
-               </button>
-            </div>
-
-            {submitSuccess ? (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <div style={{ 
-                  width: '64px', height: '64px', borderRadius: '50%', 
-                  background: '#f6ffed', color: '#52c41a', 
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 16px', border: '1px solid #b7eb8f'
-                }}>
-                  <CheckCircle size={32} />
+      {/* Negotiation Form Overlay */}
+      {showForm && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-5">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => !isSubmitting && setShowForm(false)}></div>
+          
+          <div className="relative w-full max-w-md bg-white rounded-t-[40px] sm:rounded-[40px] shadow-2xl overflow-hidden p-8 animate-in slide-in-from-bottom duration-300">
+            {success ? (
+              <div className="py-12 text-center">
+                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 scale-in">
+                  <CheckCircle size={40} className="text-green-600" />
                 </div>
-                <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#212121' }}>Penawaran Berhasil Dikirim</h3>
-                <p style={{ color: '#757575', fontSize: '13px', marginTop: '8px' }}>Sales kami akan menghubungi Anda segera.</p>
+                <h3 className="text-2xl font-black text-slate-900 mb-2">Penawaran Dikirim!</h3>
+                <p className="text-slate-500 font-medium px-10">Admin atau Sales kami akan segera menghubungi Anda melalui WhatsApp.</p>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                
-                {/* Quantity Selector */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ fontSize: '14px', color: '#212121' }}>Jumlah</div>
-                  <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #e8e8e8', borderRadius: '2px' }}>
-                    <button 
-                      onClick={() => setNegoQty(Math.max(1, negoQty - 1))}
-                      style={{ padding: '8px 12px', border: 'none', background: '#fff', fontSize: '18px' }}
-                    >-</button>
-                    <input 
-                      type="number"
-                      value={negoQty}
-                      onChange={(e) => {
-                        const val = parseInt(e.target.value);
-                        setNegoQty(isNaN(val) ? 0 : val);
-                      }}
-                      onBlur={() => {
-                        if (negoQty < 1) setNegoQty(1);
-                      }}
-                      style={{ 
-                        width: '50px', 
-                        textAlign: 'center', 
-                        fontSize: '14px', 
-                        borderLeft: '1px solid #e8e8e8', 
-                        borderRight: '1px solid #e8e8e8', 
-                        borderTop: 'none', 
-                        borderBottom: 'none', 
-                        outline: 'none',
-                        background: '#fff',
-                        fontWeight: 700,
-                        WebkitAppearance: 'none',
-                        margin: 0
-                      }}
-                    />
-                    <button 
-                      onClick={() => setNegoQty(negoQty + 1)}
-                      style={{ padding: '8px 12px', border: 'none', background: '#fff', fontSize: '18px' }}
-                    >+</button>
+              <>
+                <div className="flex justify-between items-center mb-8">
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => setShowForm(false)} className="p-2 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors">
+                      <ChevronLeft size={20} className="text-slate-900" />
+                    </button>
+                    <h3 className="text-xl font-black text-slate-900">Form Pesanan</h3>
                   </div>
                 </div>
 
-                {selectedProduct.min_bulk_qty > 0 && negoQty < selectedProduct.min_bulk_qty && (
-                  <div style={{ background: '#fffbe6', padding: '8px 12px', borderRadius: '4px', border: '1px solid #ffe58f', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <Info size={14} color="#faad14" />
-                    <span style={{ fontSize: '11px', color: '#856404' }}>Min. {selectedProduct.min_bulk_qty} unit untuk fitur Nego Harga</span>
+                <div className="bg-slate-50 rounded-3xl p-5 mb-8 flex items-center gap-4 border border-slate-100">
+                  <img src={selectedProduct?.image_url} alt="" className="w-16 h-16 rounded-2xl object-cover shadow-md" />
+                  <div>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{selectedProduct?.category}</p>
+                    <p className="font-black text-slate-900">{selectedProduct?.name}</p>
+                    <p className="text-sm font-black text-brand-yellow">Rp {selectedProduct?.base_price.toLocaleString('id-ID')}/kg</p>
+                  </div>
+                </div>
+
+                {errorMsg && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600">
+                    <AlertCircle size={20} />
+                    <p className="text-xs font-bold">{errorMsg}</p>
                   </div>
                 )}
 
-                {/* Nego Form (Only if above min_bulk_qty or for all?) */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <input 
-                    type="text" 
-                    placeholder="Nama Anda / Toko"
-                    value={negoForm.customer_name}
-                    onChange={e => setNegoForm({...negoForm, customer_name: e.target.value})}
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #e8e8e8', fontSize: '14px' }}
-                  />
-                  <input 
-                    type="tel" 
-                    placeholder="Nomor WhatsApp (0812...)"
-                    value={negoForm.customer_wa}
-                    onChange={e => setNegoForm({...negoForm, customer_wa: e.target.value})}
-                    style={{ width: '100%', padding: '12px', borderRadius: '4px', border: '1px solid #e8e8e8', fontSize: '14px' }}
-                  />
-                  
-                  {negoQty >= (selectedProduct.min_bulk_qty || 1) && (
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px', fontWeight: 700, color: '#212121' }}>Rp</div>
+                <form onSubmit={handleSubmitNegotiation} className="space-y-5">
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Nama Lengkap</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="Masukkan nama Anda"
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-brand-yellow focus:ring-0 transition-all"
+                      value={formData.name}
+                      onChange={e => setFormData({...formData, name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">No. WhatsApp</label>
+                    <input 
+                      type="tel" 
+                      required
+                      placeholder="Contoh: 08123456789"
+                      className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-brand-yellow focus:ring-0 transition-all"
+                      value={formData.whatsapp}
+                      onChange={e => setFormData({...formData, whatsapp: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Jumlah (Kg)</label>
                       <input 
                         type="number" 
-                        placeholder="Harga yang Anda tawarkan"
-                        style={{ width: '100%', padding: '14px 16px 14px 40px', borderRadius: '4px', border: '1px solid #ee4d2d', fontSize: '14px', fontWeight: 700, outline: 'none' }}
-                        value={negoForm.offered_price || ''}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value.replace(/^0+/, ''));
-                          setNegoForm({...negoForm, offered_price: isNaN(val) ? 0 : val});
-                        }}
+                        required
+                        placeholder="Qty"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-brand-yellow focus:ring-0 transition-all"
+                        value={formData.quantity}
+                        onChange={e => setFormData({...formData, quantity: e.target.value})}
                       />
                     </div>
-                  )}
-                </div>
+                    <div>
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block ml-1">Harga Ajuan</label>
+                      <input 
+                        type="number" 
+                        required
+                        placeholder="Rp"
+                        className="w-full px-5 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-brand-yellow focus:ring-0 transition-all"
+                        value={formData.price}
+                        onChange={e => setFormData({...formData, price: e.target.value})}
+                      />
+                    </div>
+                  </div>
 
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button 
-                    onClick={() => addToCart(false)}
-                    style={{ 
-                      flex: 1, padding: '14px', borderRadius: '4px', 
-                      background: '#fff', color: '#ee4d2d', 
-                      border: '1px solid #ee4d2d', fontWeight: 600, fontSize: '13px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
-                    }}
-                  >
-                    <ShoppingCart size={16} /> +Keranjang
-                  </button>
-                  <button 
-                    onClick={() => addToCart(true)}
-                    style={{ 
-                      flex: 1.5, padding: '14px', borderRadius: '4px', 
-                      background: '#ee4d2d', color: '#fff', 
-                      border: 'none', fontWeight: 700, fontSize: '14px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                    }}
-                  >
-                    Beli & Pesan
-                  </button>
-                </div>
-              </div>
+                  <div className="pt-4">
+                    <button 
+                      type="submit" 
+                      disabled={isSubmitting}
+                      className="w-full py-5 bg-brand-yellow text-black rounded-2xl text-sm font-black tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-yellow-200/50 hover:bg-yellow-400 transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <><MessageCircle size={20} /> KIRIM PENAWARAN</>}
+                    </button>
+                    <p className="text-[10px] text-center text-slate-400 font-bold mt-4 uppercase tracking-widest flex items-center justify-center gap-1">
+                      <Info size={10} /> Data aman & terenkripsi oleh sistem IKT
+                    </p>
+                  </div>
+                </form>
+              </>
             )}
-          </div>
-        </div>
-      )}
-
-      {/* Floating Cart Button */}
-      {cart.length > 0 && !cartModalOpen && (
-        <button 
-          onClick={() => setCartModalOpen(true)}
-          style={{ 
-            position: 'fixed', bottom: '24px', left: '16px', right: '16px', 
-            background: '#ee4d2d', color: '#fff', border: 'none', borderRadius: '8px',
-            padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            boxShadow: '0 4px 20px rgba(238, 77, 45, 0.4)', zIndex: 900
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{ position: 'relative' }}>
-              <ShoppingCart size={24} />
-              <div style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#fff', color: '#ee4d2d', width: '18px', height: '18px', borderRadius: '50%', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ee4d2d' }}>{cart.length}</div>
-            </div>
-            <span style={{ fontWeight: 700 }}>Lihat Keranjang</span>
-          </div>
-          <span style={{ fontWeight: 900 }}>Rp{cart.reduce((acc, item) => acc + (item.offered_price * item.qty), 0).toLocaleString('id-ID')}</span>
-        </button>
-      )}
-
-      {/* Cart & Checkout Modal */}
-      {cartModalOpen && (
-        <div style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'flex-end', zIndex: 1001
-        }} onClick={() => !isSubmitting && setCartModalOpen(false)}>
-          <div 
-            style={{ 
-              width: '100%', background: '#fff', 
-              borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
-              padding: '24px 20px calc(30px + env(safe-area-inset-bottom))',
-              maxHeight: '90vh', overflowY: 'auto'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}>Keranjang Saya</h3>
-                <button onClick={() => setCartModalOpen(false)} style={{ background: '#f5f5f5', border: 'none', borderRadius: '50%', padding: '4px' }}><X size={24} /></button>
-             </div>
-
-             {submitSuccess ? (
-                <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                   <CheckCircle size={64} color="#52c41a" style={{ marginBottom: '16px' }} />
-                   <h3 style={{ fontSize: '18px', fontWeight: 800 }}>Pesanan Berhasil!</h3>
-                   <p style={{ color: '#757575', marginTop: '8px' }}>Sales kami akan segera menghubungi Anda.</p>
-                </div>
-             ) : (
-               <>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '32px' }}>
-                   {cart.map(item => (
-                     <div key={item.product.id} style={{ display: 'flex', gap: '12px', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f1f1f1' }}>
-                        <img src={item.product.image_url} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
-                        <div style={{ flex: 1 }}>
-                           <div style={{ fontSize: '14px', fontWeight: 700 }}>{item.product.name}</div>
-                           <div style={{ fontSize: '14px', color: '#ee4d2d', fontWeight: 800, marginTop: '2px' }}>Rp{item.offered_price.toLocaleString('id-ID')}</div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           <button onClick={() => updateCartQty(item.product.id, -1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #ddd', background: '#fff' }}>-</button>
-                           <span style={{ fontWeight: 700, minWidth: '20px', textAlign: 'center' }}>{item.qty}</span>
-                           <button onClick={() => updateCartQty(item.product.id, 1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #ddd', background: '#fff' }}>+</button>
-                        </div>
-                        <button onClick={() => removeFromCart(item.product.id)} style={{ color: '#ff4d4f', padding: '4px' }}><X size={18} /></button>
-                     </div>
-                   ))}
-                 </div>
-
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-                    <div style={{ fontSize: '14px', fontWeight: 700 }}>Data Pemesan</div>
-                    <input 
-                      type="text" placeholder="Nama Anda / Toko" 
-                      value={negoForm.customer_name}
-                      onChange={e => setNegoForm({...negoForm, customer_name: e.target.value})}
-                      style={{ padding: '16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '14px' }} 
-                    />
-                    <input 
-                      type="tel" placeholder="No. WhatsApp (0812...)" 
-                      value={negoForm.customer_wa}
-                      onChange={e => setNegoForm({...negoForm, customer_wa: e.target.value})}
-                      style={{ padding: '16px', borderRadius: '12px', border: '1px solid #ddd', fontSize: '14px' }} 
-                    />
-                 </div>
-
-                 <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontWeight: 700, color: '#64748b' }}>Total Pesanan</span>
-                    <span style={{ fontSize: '18px', fontWeight: 900, color: '#ee4d2d' }}>Rp{cart.reduce((acc, item) => acc + (item.offered_price * item.qty), 0).toLocaleString('id-ID')}</span>
-                 </div>
-
-                 <button 
-                   onClick={handleSubmitNego}
-                   disabled={isSubmitting || !negoForm.customer_name || !negoForm.customer_wa}
-                   style={{ 
-                     width: '100%', padding: '18px', borderRadius: '12px', 
-                     background: isSubmitting ? '#ccc' : '#ee4d2d', color: '#fff', 
-                     border: 'none', fontWeight: 800, fontSize: '16px' 
-                   }}
-                 >
-                   {isSubmitting ? <Loader2 className="animate-spin" size={24} style={{ margin: '0 auto' }} /> : 'Pesan & Ajukan Nego Sekarang'}
-                 </button>
-               </>
-             )}
           </div>
         </div>
       )}

@@ -22,6 +22,7 @@ export default function Homepage({ salesId }: Props) {
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
   const [incomingOrdersModalOpen, setIncomingOrdersModalOpen] = useState(false);
   const [myNegotiations, setMyNegotiations] = useState<any[]>([]);
+  const [allNegoCount, setAllNegoCount] = useState(0); // DEBUG TOTAL
   const [loadingNego, setLoadingNego] = useState(false);
   const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
@@ -56,6 +57,8 @@ export default function Homepage({ salesId }: Props) {
       console.error('Fetch Nego Error:', error);
     }
     const allNego = data || [];
+    setAllNegoCount(allNego.length); // SIMPAN TOTAL UNTUK DEBUG
+    
     const filtered = allNego.filter(n => String(n.sales_id) === String(user.id));
     
     // Debug Log
@@ -713,7 +716,7 @@ export default function Homepage({ salesId }: Props) {
                  <div style={{ flex: 1 }}>
                    <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
-                   <div style={{ fontSize: '10px', color: '#cbd5e1' }}>Debug: ID {user?.id} | MyNego: {myNegotiations.length}</div>
+                   <div style={{ fontSize: '10px', color: '#cbd5e1' }}>Debug: ID {user?.id} | My: {myNegotiations.length} | TotalDB: {allNegoCount}</div>
                  </div>
                  {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
                    <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
