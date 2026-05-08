@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow, format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, ShoppingBag, Share } from 'lucide-react';
+import { Bell, ChevronRight, Clock, Target, MessageSquare, ShoppingCart, BarChart3, Users, MapPin, Trophy, X, AlertTriangle, Search, Loader2, CheckCircle, Star, ShoppingBag, Share, List } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { calculateSalesPoints } from '../../utils/points';
@@ -16,16 +16,40 @@ export default function Homepage({ salesId }: Props) {
   const { user } = useAuth();
   const { activities = [], prospek = [], customers = [], sales = [], systemTargets = null } = useSalesData() || {};
   const currentSales = sales.find(s => s.id === salesId) || (user as any);
-  const salesName = user?.nama || currentSales?.nama;
-  const salesDisplayName = salesName?.split(' ')[0] || 'Sales';
   const navigate = useNavigate();
   const [notificationsModalOpen, setNotificationsModalOpen] = useState(false);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
+  const [incomingOrdersModalOpen, setIncomingOrdersModalOpen] = useState(false);
+  const [myNegotiations, setMyNegotiations] = useState<any[]>([]);
+  const [loadingNego, setLoadingNego] = useState(false);
   const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
+
+  useEffect(() => {
+    if (marketplaceModalOpen || incomingOrdersModalOpen) {
+      loadMyNegotiations();
+    }
+  }, [marketplaceModalOpen, incomingOrdersModalOpen]);
+
+  const loadMyNegotiations = async () => {
+    if (!user?.id) return;
+    setLoadingNego(true);
+    const { data } = await store.fetchNegotiations();
+    const filtered = (data || []).filter(n => n.sales_id === user.id);
+    setMyNegotiations(filtered);
+    setLoadingNego(false);
+  };
+
+  const handleProcessNego = (nego: any) => {
+    const message = encodeURIComponent(`Halo ${nego.customer_name}, saya dari PT. IKT—mengenai pesanan Anda untuk produk ${nego.products?.name}. Ada yang bisa kami bantu untuk proses selanjutnya?`);
+    window.open(`https://wa.me/${nego.customer_wa}?text=${message}`, '_blank');
+  };
+
+  const salesName = user?.nama || currentSales?.nama;
+  const salesDisplayName = salesName?.split(' ')[0] || 'Sales';
 
   
 
@@ -648,9 +672,103 @@ export default function Homepage({ salesId }: Props) {
                  </div>
                  <ChevronRight size={18} color="#cbd5e1" />
                </button>
+
+               <button 
+                 className="tap-active"
+                 onClick={() => { setMarketplaceModalOpen(false); setIncomingOrdersModalOpen(true); }}
+                 style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
+               >
+                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><List size={24} /></div>
+                 <div style={{ flex: 1 }}>
+                   <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
+                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
+                 </div>
+                 {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
+                   <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
+                     {myNegotiations.filter(n => n.status === 'pending').length}
+                   </div>
+                 )}
+                 <ChevronRight size={18} color="#cbd5e1" />
+               </button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Incoming Orders Drawer */}
+      {incomingOrdersModalOpen && (
+        <div className="modal-overlay" onClick={() => setIncomingOrdersModalOpen(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
+          <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
+            maxHeight: '92vh', overflowY: 'auto', borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
+            padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none' 
+          }}>
+            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ background: '#FFFBEB', color: '#f59e0b', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <List size={20} strokeWidth={3} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px' }}>Pesanan Marketplace</h3>
+              </div>
+              <button className="tap-active" onClick={() => setIncomingOrdersModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {loadingNego ? (
+                <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
+              ) : myNegotiations.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
+                  <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
+                  <div style={{ fontSize: '14px', fontWeight: 800 }}>Belum ada pesanan masuk</div>
+                  <div style={{ fontSize: '12px', fontWeight: 600 }}>Bagikan link sales Anda untuk mulai berjualan.</div>
+                </div>
+              ) : (
+                myNegotiations.map(nego => (
+                  <div key={nego.id} style={{ background: '#F8FAFC', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8' }}>{new Date(nego.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span style={{ 
+                        fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px',
+                        background: nego.status === 'pending' ? '#FFFBEB' : '#F0FDF4',
+                        color: nego.status === 'pending' ? '#F59E0B' : '#10B981'
+                      }}>{nego.status.toUpperCase()}</span>
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fff', overflow: 'hidden', border: '1px solid #eee' }}>
+                        <img src={nego.products?.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '14px', fontWeight: 900, color: '#111827' }}>{nego.products?.name}</div>
+                        <div style={{ fontSize: '12px', fontWeight: 700, color: '#64748b' }}>Rp{nego.offered_price.toLocaleString('id-ID')} • {nego.requested_qty} Unit</div>
+                      </div>
+                    </div>
+
+                    <div style={{ borderTop: '1px dashed #e2e8f0', paddingTop: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div>
+                        <div style={{ fontSize: '13px', fontWeight: 900, color: '#111827' }}>{nego.customer_name}</div>
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>{nego.customer_wa}</div>
+                      </div>
+                      <button 
+                        className="tap-active"
+                        onClick={() => handleProcessNego(nego)}
+                        style={{ 
+                          background: '#111827', color: '#FFCC00', border: 'none', 
+                          borderRadius: '12px', padding: '10px 20px', fontSize: '12px', 
+                          fontWeight: 900, display: 'flex', alignItems: 'center', gap: '8px' 
+                        }}
+                      >
+                        PROSES <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      
       )}
       <div style={{ 
         padding: '24px 20px 48px', 
