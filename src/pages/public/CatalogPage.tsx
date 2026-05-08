@@ -189,8 +189,9 @@ export default function CatalogPage() {
       const errors = results.filter(r => r.error);
       
       if (errors.length > 0) {
+        const errorMsg = errors[0].error?.message || 'Unknown Error';
         console.error('Submission Errors:', errors);
-        alert('Gagal menyimpan pesanan. Pastikan tabel database sudah siap.');
+        alert(`Gagal menyimpan pesanan: ${errorMsg}`);
         setIsSubmitting(false);
         return;
       }
