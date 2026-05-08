@@ -22,12 +22,10 @@ export default function ManagerShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [shellTitle, setShellTitle] = useState('');
-  const [shellSub, setShellSub] = useState('');
 
   useEffect(() => {
     const handleSetTitle = (e: any) => {
       setShellTitle(e.detail.title);
-      setShellSub(e.detail.sub);
     };
     window.addEventListener('setMgrTitle', handleSetTitle);
     return () => window.removeEventListener('setMgrTitle', handleSetTitle);
