@@ -20,6 +20,7 @@ interface SalesDataContextType {
   masterChannels: {id: string, name: string}[];
   masterStatuses: {id: string, name: string}[];
   masterActions: {id: string, name: string}[];
+  masterUnits: {id: string, name: string}[];
   loading: boolean;
   refresh: () => Promise<void>;
 }
@@ -41,13 +42,14 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const [masterChannels, setMasterChannels] = useState<{id: string, name: string}[]>([]);
   const [masterStatuses, setMasterStatuses] = useState<{id: string, name: string}[]>([]);
   const [masterActions, setMasterActions] = useState<{id: string, name: string}[]>([]);
+  const [masterUnits, setMasterUnits] = useState<{id: string, name: string}[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchTimeoutRef = React.useRef<any>(null);
 
   const fetchData = useCallback(async () => {
     try {
       // Parallel fetch but individual handling to prevent one failure from blocking others
-      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC] = await Promise.all([
+      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC, resMU] = await Promise.all([
         supabase.from('sales').select('*').order('id'),
         supabase.from('prospek').select('*').order('created_at', { ascending: false }),
         supabase.from('customer').select('*').order('tanggal_join', { ascending: false }),
@@ -59,7 +61,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         supabase.from('master_prospect_status').select('*').order('name'),
         supabase.from('master_actions').select('*').order('name'),
         supabase.from('orders').select('*').order('created_at', { ascending: false }),
-        supabase.from('master_product_categories').select('*').order('name')
+        supabase.from('master_product_categories').select('*').order('name'),
+        supabase.from('master_units').select('*').order('name')
       ]);
 
       // Logging for diagnostics (useful during deployment validation)
@@ -110,6 +113,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setMasterActions(resMAC.data || []);
       setOrders(resOrders.data || []);
       setMasterProductCategories(resMPC.data || []);
+      setMasterUnits(resMU.data || []);
       // resMA, resMC, resMCH, resMS, resMAC, resOrders are already handled
       // But I added a new fetch at the end of Promise.all, so I need to access it.
       // Promise.all order: resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC
@@ -150,6 +154,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_channels' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_prospect_status' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'master_actions' }, () => debouncedFetch())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_units' }, () => debouncedFetch())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => debouncedFetch())
       .subscribe();
 
@@ -173,6 +178,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
     masterChannels,
     masterStatuses,
     masterActions,
+    masterUnits,
     loading,
     refresh: fetchData
   };

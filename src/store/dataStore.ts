@@ -511,6 +511,27 @@ export const store = {
     return { error };
   },
 
+  async fetchMasterUnits() {
+    const { data, error } = await supabase.from('master_units').select('*').order('name');
+    if (error) console.error('fetchMasterUnits error:', error);
+    return data || [];
+  },
+  async addMasterUnit(name: string) {
+    const { data, error } = await supabase.from('master_units').insert([{ name }]).select();
+    if (error) console.error('addMasterUnit error:', error);
+    return { data, error };
+  },
+  async updateMasterUnit(id: string, updates: { name?: string }) {
+    const { data, error } = await supabase.from('master_units').update(updates).eq('id', id).select();
+    if (error) console.error('updateMasterUnit error:', error);
+    return { data, error };
+  },
+  async deleteMasterUnit(id: string) {
+    const { error } = await supabase.from('master_units').delete().eq('id', id);
+    if (error) console.error('deleteMasterUnit error:', error);
+    return { error };
+  },
+
 
 
   // ─── PUBLIC CATALOG ────────────────────────────────────

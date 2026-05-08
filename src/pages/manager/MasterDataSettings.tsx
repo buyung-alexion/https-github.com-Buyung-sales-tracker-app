@@ -4,11 +4,11 @@ import { store } from '../../store/dataStore';
 import { useSalesData } from '../../hooks/useSalesData';
 
 export default function MasterDataSettings() {
-  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action'>('role');
+  const [activeTab, setActiveTab] = useState<'role' | 'team' | 'target' | 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action' | 'unit'>('role');
   const [data, setData] = useState({ roles: [] as any[], teams: [] as any[], targets: {} as any });
   const [isLoading, setIsLoading] = useState(true);
 
-  const { allSales, masterAreas, masterCategories, masterProductCategories, masterChannels, masterStatuses, masterActions, refresh: refreshGlobal } = useSalesData();
+  const { allSales, masterAreas, masterCategories, masterProductCategories, masterChannels, masterStatuses, masterActions, masterUnits, refresh: refreshGlobal } = useSalesData();
 
   useEffect(() => {
     const loadData = async () => {
@@ -76,6 +76,7 @@ export default function MasterDataSettings() {
     { id: 'channel', label: 'Sumber / Channel', icon: <TrendingUp size={16} /> },
     { id: 'status', label: 'Status Prospek', icon: <Target size={16} /> },
     { id: 'action', label: 'Tipe Aktivitas', icon: <Users size={16} /> },
+    { id: 'unit', label: 'Satuan Produk', icon: <ShoppingCart size={16} /> },
   ];
 
   // --- MODAL STATES ---
@@ -85,7 +86,7 @@ export default function MasterDataSettings() {
   const [teamModal, setTeamModal] = useState<{isOpen: boolean; data: any}>({isOpen: false, data: null});
   const [teamForm, setTeamForm] = useState({ id: '', nama: '', role: '', username: '', pass: '', foto_profil: '', no_wa: '' });
 
-  const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action' | null; data: any}>({isOpen: false, type: null, data: null});
+  const [masterModal, setMasterModal] = useState<{isOpen: boolean; type: 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action' | 'unit' | null; data: any}>({isOpen: false, type: null, data: null});
   const [masterForm, setMasterForm] = useState({ id: '', name: '' });
   
 
@@ -216,7 +217,7 @@ export default function MasterDataSettings() {
     finally { setIsSubmitting(false); }
   };
 
-  const openMasterModal = (type: 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action', existingData?: any) => {
+  const openMasterModal = (type: 'area' | 'category' | 'product_category' | 'channel' | 'status' | 'action' | 'unit', existingData?: any) => {
     setMasterForm({ id: existingData ? existingData.id : '', name: existingData ? existingData.name : '' });
     setMasterModal({ isOpen: true, type, data: existingData });
   };
@@ -238,6 +239,7 @@ export default function MasterDataSettings() {
           case 'channel': await store.updateMasterChannel(currentId, updates); break;
           case 'status': await store.updateMasterProspectStatus(currentId, updates); break;
           case 'action': await store.updateMasterAction(currentId, updates); break;
+          case 'unit': await store.updateMasterUnit(currentId, updates); break;
         }
       } else {
         switch (masterModal.type) {
@@ -247,6 +249,7 @@ export default function MasterDataSettings() {
           case 'channel': await store.addMasterChannel(name, customId); break;
           case 'status': await store.addMasterProspectStatus(name, customId); break;
           case 'action': await store.addMasterAction(name, customId); break;
+          case 'unit': await store.addMasterUnit(name); break;
         }
       }
       setMasterModal({ isOpen: false, type: null, data: null });
@@ -264,6 +267,7 @@ export default function MasterDataSettings() {
       else if (type === 'channel') await store.deleteMasterChannel(id);
       else if (type === 'status') await store.deleteMasterProspectStatus(id);
       else if (type === 'action') await store.deleteMasterAction(id);
+      else if (type === 'unit') await store.deleteMasterUnit(id);
       await refreshGlobal();
     } catch (err: any) { alert(err.message); }
   };
@@ -381,16 +385,16 @@ export default function MasterDataSettings() {
               </div>
             )}
 
-            {(activeTab === 'area' || activeTab === 'category' || activeTab === 'product_category' || activeTab === 'channel' || activeTab === 'status' || activeTab === 'action') && (
+            {(activeTab === 'area' || activeTab === 'category' || activeTab === 'product_category' || activeTab === 'channel' || activeTab === 'status' || activeTab === 'action' || activeTab === 'unit') && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Manajemen {activeTab === 'category' ? 'Kategori Customer' : activeTab === 'product_category' ? 'Kategori Produk' : activeTab.toUpperCase()}</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>DATA MASTER SISTEM</p></div>
+                  <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Manajemen {activeTab === 'category' ? 'Kategori Customer' : activeTab === 'product_category' ? 'Kategori Produk' : activeTab === 'unit' ? 'Satuan Produk' : activeTab.toUpperCase()}</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>DATA MASTER SISTEM</p></div>
                   <button onClick={() => openMasterModal(activeTab as any)} className="btn-primary" style={{ padding: '14px 28px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 900, border: 'none' }}>
-                    <Plus size={18} /> TAMBAH {activeTab === 'product_category' ? 'KATEGORI PRODUK' : activeTab === 'category' ? 'KATEGORI CUSTOMER' : activeTab.toUpperCase()}
+                    <Plus size={18} /> TAMBAH {activeTab === 'product_category' ? 'KATEGORI PRODUK' : activeTab === 'category' ? 'KATEGORI CUSTOMER' : activeTab === 'unit' ? 'SATUAN' : activeTab.toUpperCase()}
                   </button>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-                  {(activeTab === 'area' ? masterAreas : activeTab === 'category' ? masterCategories : activeTab === 'product_category' ? masterProductCategories : activeTab === 'channel' ? masterChannels : activeTab === 'status' ? masterStatuses : masterActions).map((m: any) => (
+                  {(activeTab === 'area' ? masterAreas : activeTab === 'category' ? masterCategories : activeTab === 'product_category' ? masterProductCategories : activeTab === 'channel' ? masterChannels : activeTab === 'status' ? masterStatuses : activeTab === 'unit' ? masterUnits : masterActions).map((m: any) => (
                     <div key={m.id} style={{ background: '#fff', borderRadius: '24px', padding: '20px 24px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -418,13 +422,13 @@ export default function MasterDataSettings() {
         <div style={overlayStyle}>
           <div style={modalStyle}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ margin: 0, fontWeight: 900 }}>{masterModal.data ? 'Edit' : 'Tambah'} {masterModal.type === 'product_category' ? 'Kategori Produk' : masterModal.type === 'category' ? 'Kategori Customer' : masterModal.type?.toUpperCase()}</h3>
+              <h3 style={{ margin: 0, fontWeight: 900 }}>{masterModal.data ? 'Edit' : 'Tambah'} {masterModal.type === 'product_category' ? 'Kategori Produk' : masterModal.type === 'category' ? 'Kategori Customer' : masterModal.type === 'unit' ? 'Satuan' : masterModal.type?.toUpperCase()}</h3>
               <button onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X /></button>
             </div>
             <form onSubmit={handleSaveMaster}>
               <label style={labelStyle}>ID (Optional)</label>
               <input style={inputStyle} value={masterForm.id} onChange={e => setMasterForm({ ...masterForm, id: e.target.value.toUpperCase() })} placeholder="Auto-generate jika kosong" />
-              <label style={labelStyle}>Nama {masterModal.type === 'product_category' ? 'Kategori Produk' : masterModal.type === 'category' ? 'Kategori Customer' : masterModal.type}</label>
+              <label style={labelStyle}>Nama {masterModal.type === 'product_category' ? 'Kategori Produk' : masterModal.type === 'category' ? 'Kategori Customer' : masterModal.type === 'unit' ? 'Satuan' : masterModal.type}</label>
               <input required style={inputStyle} value={masterForm.name} onChange={e => setMasterForm({ ...masterForm, name: e.target.value })} />
               <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
                 <button type="button" onClick={() => setMasterModal({isOpen: false, type: null, data: null})} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #cbd5e1', background: '#fff', fontWeight: 700 }}>Batal</button>
