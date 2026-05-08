@@ -30,6 +30,10 @@ export default function Homepage({ salesId }: Props) {
   const [negoTab, setNegoTab] = useState<'pending' | 'processed'>('pending');
 
   useEffect(() => {
+    loadMyNegotiations();
+  }, []);
+
+  useEffect(() => {
     if (marketplaceModalOpen || incomingOrdersModalOpen) {
       loadMyNegotiations();
     }
@@ -321,7 +325,7 @@ export default function Homepage({ salesId }: Props) {
               { label: 'Chat', icon: MessageSquare, color: '#10b981', bg: '#ECFDF5', path: '/mobile/chat', badge: 0 },
               { label: 'Ranking', icon: Trophy, color: '#f59e0b', bg: '#FFFBEB', path: '/mobile/rank' },
               { label: 'Order', icon: ShoppingCart, color: '#ef4444', bg: '#FEF2F2', path: '/mobile/customer' },
-              { label: 'Marketplace', icon: ShoppingBag, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true },
+              { label: 'Marketplace', icon: ShoppingBag, color: '#0ea5e9', bg: '#f0f9ff', path: '/catalog', external: true, badge: myNegotiations.filter(n => n.status === 'pending').length },
             ].map((item) => (
               <div key={item.label} 
                 className="tap-active" 
