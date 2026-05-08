@@ -25,7 +25,7 @@ const ACT_COLOR: Record<string, string> = { WA: 'act-followup', Visit: 'act-visi
 export default function LiveActivityFeed() {
   const { activities, sales, allSales, prospek: allProspek } = useSalesData();
   const [filterSales, setFilterSales] = useState<string>('all');
-  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
+  const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('all');
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [search, setSearch] = useState('');
