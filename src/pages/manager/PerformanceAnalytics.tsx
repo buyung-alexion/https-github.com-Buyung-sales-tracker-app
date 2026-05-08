@@ -222,7 +222,7 @@ export default function PerformanceAnalytics() {
 
   const statusDistData = useMemo(() => [
     { name: 'Closing', value: fClosedNum, color: '#10b981' },
-    { name: 'Hot', value: fStatusHotNum, color: '#f59e0b' },
+    { name: 'Hot', value: fStatusHotNum, color: '#EE4D2D' },
     { name: 'Cold', value: fStatusColdNum, color: '#3b82f6' },
     { name: 'Empty', value: Math.max(0, fTotal - (fClosedNum + fStatusHotNum + fStatusColdNum)), color: '#f1f5f9' }
   ], [fClosedNum, fStatusHotNum, fStatusColdNum, fTotal]);
@@ -380,7 +380,7 @@ export default function PerformanceAnalytics() {
     });
     
     const total = prospek.length || 1;
-    const colors = ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1'];
+    const colors = ['#EE4D2D', '#3b82f6', '#10b981', '#f97316', '#ef4444', '#6366f1'];
     
     return Object.entries(counts)
       .map(([name, value], i) => {
@@ -403,7 +403,7 @@ export default function PerformanceAnalytics() {
       counts[a] = (counts[a] || 0) + 1;
     });
     const total = prospek.length || 1;
-    const colors = ['#10b981', '#6366f1', '#f59e0b', '#3b82f6', '#ef4444'];
+    const colors = ['#10b981', '#6366f1', '#EE4D2D', '#3b82f6', '#ef4444'];
     return Object.entries(counts)
       .map(([name, value], i) => {
         const areaObj = masterAreas.find(ma => ma.id === name);
@@ -776,18 +776,17 @@ export default function PerformanceAnalytics() {
               })}
             </div>
 
-            {/* Month Footer with Yellow Background & Line */}
             <div style={{ borderTop: '2px solid #f1f5f9', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', gap: '12px', paddingLeft: '10px', paddingRight: '10px' }}>
               {monthsData.map((d, i) => (
                 <div key={i} style={{ 
                   flex: 1, 
                   textAlign: 'center',
-                  background: '#facc15',
+                  background: '#EE4D2D',
                   padding: '4px 0',
                   borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(250, 204, 21, 0.2)',
+                  boxShadow: '0 2px 4px rgba(238, 77, 45, 0.2)',
                 }}>
-                  <div style={{ fontSize: '10px', color: '#854d0e', fontWeight: 950, textTransform: 'uppercase' }}>{d.label}</div>
+                  <div style={{ fontSize: '10px', color: '#fff', fontWeight: 950, textTransform: 'uppercase' }}>{d.label}</div>
                 </div>
               ))}
             </div>
@@ -854,7 +853,7 @@ export default function PerformanceAnalytics() {
                           alignItems: 'center',
                           justifyContent: 'center',
                           boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                          border: `1.5px solid ${['#f59e0b','#94a3b8','#d97706'][idx] || '#f1f5f9'}`,
+                          border: `1.5px solid ${['#EE4D2D','#94a3b8','#9a3412'][idx] || '#f1f5f9'}`,
                           zIndex: 2
                         }}>
                           {idx + 1}
@@ -862,7 +861,7 @@ export default function PerformanceAnalytics() {
                         <img
                            src={s.foto_profil || `https://api.dicebear.com/7.x/notionists/svg?seed=${s.nama}`}
                           alt={s.nama}
-                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: idx < 3 ? `2px solid ${['#f59e0b','#94a3b8','#d97706'][idx]}` : '2px solid #f1f5f9' }}
+                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: idx < 3 ? `2px solid ${['#EE4D2D','#94a3b8','#9a3412'][idx]}` : '2px solid #f1f5f9' }}
                         />
                       </div>
                       {/* Name */}
@@ -895,11 +894,11 @@ export default function PerformanceAnalytics() {
                     <div style={{ textAlign: 'center' }}>
                       <div style={{
                         display: 'inline-flex', alignItems: 'center', gap: '2px',
-                        background: idx === 0 ? 'linear-gradient(135deg,#f59e0b,#fbbf24)' : '#f8fafc',
-                        color: idx === 0 ? '#1e293b' : '#334155',
+                        background: idx === 0 ? 'linear-gradient(135deg,#EE4D2D,#f97316)' : '#f8fafc',
+                        color: idx === 0 ? '#fff' : '#334155',
                         padding: '4px 10px', borderRadius: '20px',
                         fontSize: '13px', fontWeight: 950,
-                        boxShadow: idx === 0 ? '0 4px 12px rgba(245, 158, 11, 0.2)' : 'none'
+                        boxShadow: idx === 0 ? '0 4px 12px rgba(238, 77, 45, 0.2)' : 'none'
                       }}>
                         {s.points}
                       </div>

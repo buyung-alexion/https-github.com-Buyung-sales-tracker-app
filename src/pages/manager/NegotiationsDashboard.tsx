@@ -120,14 +120,14 @@ export default function NegotiationsDashboard() {
 
 
       {/* BRAND MAIN HEADER */}
-      <div style={{ background: '#111827', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-start', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+      <div style={{ background: '#EE4D2D', padding: '24px 24px 20px', display: 'flex', alignItems: 'flex-start', gap: '48px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px', color: '#fff', cursor: 'pointer' }} onClick={() => window.location.reload()}>
           <div style={{ width: '52px', height: '52px', borderRadius: '14px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)', background: '#fff' }}>
             <img src="/assets/image/logo_ikt.png" alt="IKT Logo" style={{ width: '85%', height: '85%', objectFit: 'contain' }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-            <span style={{ fontSize: '24px', fontWeight: 900, color: '#FFCC00', letterSpacing: '0.5px' }}>PT. INDUSTRI</span>
-            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff', opacity: 0.8 }}>Keluarga Timur</span>
+            <span style={{ fontSize: '24px', fontWeight: 900, color: '#fff', letterSpacing: '0.5px' }}>PT. INDUSTRI</span>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: '#fff', opacity: 0.9 }}>Keluarga Timur</span>
           </div>
         </div>
         
@@ -136,16 +136,16 @@ export default function NegotiationsDashboard() {
             <input 
               type="text" 
               placeholder="Cari produk berkualitas di IKT Marketplace..." 
-              style={{ width: '100%', padding: '14px 20px', borderRadius: '8px', border: 'none', fontSize: '15px', fontWeight: 600, background: '#fff', color: '#111827', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
+              style={{ width: '100%', padding: '14px 20px', borderRadius: '4px', border: 'none', fontSize: '15px', fontWeight: 600, background: '#fff', color: '#111827', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button style={{ position: 'absolute', right: '6px', top: '6px', bottom: '6px', background: '#111827', border: 'none', borderRadius: '6px', padding: '0 24px', color: '#FFCC00', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button style={{ position: 'absolute', right: '6px', top: '6px', bottom: '6px', background: '#EE4D2D', border: 'none', borderRadius: '4px', padding: '0 24px', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Search size={22} strokeWidth={3} />
             </button>
           </div>
-          <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.6)', fontSize: '12px', fontWeight: 500 }}>
-            <span style={{ color: '#FFCC00' }}>Produk Terlaris</span>
+          <div style={{ display: 'flex', gap: '16px', color: 'rgba(255,255,255,0.8)', fontSize: '12px', fontWeight: 500 }}>
+            <span style={{ color: '#fff', fontWeight: 800 }}>Produk Terlaris</span>
             <span>Beras Premium</span>
             <span>Minyak Goreng</span>
             <span>Gula Pasir</span>
@@ -156,15 +156,15 @@ export default function NegotiationsDashboard() {
         <div style={{ display: 'flex', gap: '32px', alignItems: 'center', marginTop: '6px' }}>
           <div 
             onClick={() => setActiveView('penawaran')}
-            style={{ color: activeView === 'penawaran' ? '#FFCC00' : '#fff', position: 'relative', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px' }}
+            style={{ color: '#fff', position: 'relative', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '8px', opacity: activeView === 'penawaran' ? 1 : 0.8 }}
           >
             <MessageSquare size={28} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.7 }}>INCOMING</span>
+              <span style={{ fontSize: '10px', fontWeight: 900, opacity: 0.9 }}>INCOMING</span>
               <span style={{ fontSize: '14px', fontWeight: 900 }}>PENAWARAN</span>
             </div>
             {negotiations.filter(n => n.status === 'pending').length > 0 && (
-              <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid #111827' }}>
+              <span style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#fff', color: '#EE4D2D', fontSize: '10px', fontWeight: 900, padding: '2px 6px', borderRadius: '10px', border: '2px solid #EE4D2D' }}>
                 {negotiations.filter(n => n.status === 'pending').length}
               </span>
             )}
@@ -174,7 +174,7 @@ export default function NegotiationsDashboard() {
               setActiveView('katalog');
               openProductModal();
             }} 
-            style={{ background: '#FFCC00', color: '#111827', border: 'none', borderRadius: '10px', padding: '12px 28px', fontSize: '14px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 8px 20px rgba(255, 204, 0, 0.3)' }}
+            style={{ background: '#fff', color: '#EE4D2D', border: 'none', borderRadius: '4px', padding: '12px 28px', fontSize: '14px', fontWeight: 900, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)' }}
           >
             <Plus size={20} strokeWidth={3} /> TAMBAH PRODUK
           </button>
@@ -191,7 +191,7 @@ export default function NegotiationsDashboard() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             <div 
               onClick={() => setSelectedCategory('Semua')}
-              style={{ padding: '10px 12px', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', background: selectedCategory === 'Semua' ? '#111827' : 'transparent', color: selectedCategory === 'Semua' ? '#FFCC00' : '#475569', fontWeight: 700, transition: 'all 0.2s' }}
+              style={{ padding: '10px 12px', borderRadius: '4px', fontSize: '14px', cursor: 'pointer', background: selectedCategory === 'Semua' ? '#EE4D2D' : 'transparent', color: selectedCategory === 'Semua' ? '#fff' : '#475569', fontWeight: 700, transition: 'all 0.2s' }}
             >
               Semua Produk
             </div>
@@ -199,7 +199,7 @@ export default function NegotiationsDashboard() {
               <div 
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.name)}
-                style={{ padding: '10px 12px', borderRadius: '8px', fontSize: '14px', cursor: 'pointer', background: selectedCategory === cat.name ? '#111827' : 'transparent', color: selectedCategory === cat.name ? '#FFCC00' : '#475569', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }}
+                style={{ padding: '10px 12px', borderRadius: '4px', fontSize: '14px', cursor: 'pointer', background: selectedCategory === cat.name ? '#EE4D2D' : 'transparent', color: selectedCategory === cat.name ? '#fff' : '#475569', fontWeight: 600, display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s' }}
               >
                 {cat.name}
                 {selectedCategory === cat.name && <ChevronRight size={16} />}
@@ -230,8 +230,8 @@ export default function NegotiationsDashboard() {
               <div style={{ background: '#fff', borderRadius: '16px', padding: '24px', marginBottom: '24px', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ color: '#111827', fontWeight: 900, fontSize: '18px', letterSpacing: '0.5px' }}>IKT EXCLUSIVE</span>
-                    <span style={{ background: '#FFCC00', color: '#111827', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '4px' }}>OFFICIAL</span>
+                    <span style={{ color: '#EE4D2D', fontWeight: 900, fontSize: '18px', letterSpacing: '0.5px' }}>IKT EXCLUSIVE</span>
+                    <span style={{ background: '#EE4D2D', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '4px' }}>OFFICIAL</span>
                   </div>
                   <span style={{ color: '#111827', fontSize: '13px', fontWeight: 700, cursor: 'pointer', opacity: 0.7 }}>Lihat Semua &gt;</span>
                 </div>
@@ -247,9 +247,9 @@ export default function NegotiationsDashboard() {
               {/* SORT BAR */}
               <div style={{ background: '#fff', borderRadius: '12px', padding: '12px 20px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1.5px solid #e2e8f0' }}>
                 <span style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>Urutkan</span>
-                <button style={{ background: '#111827', color: '#FFCC00', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 800 }}>Populer</button>
-                <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terbaru</button>
-                <button style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terlaris</button>
+                <button style={{ background: '#EE4D2D', color: '#fff', border: 'none', borderRadius: '4px', padding: '10px 20px', fontSize: '14px', fontWeight: 800 }}>Populer</button>
+                <button style={{ background: '#fff', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terbaru</button>
+                <button style={{ background: '#fff', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '4px', padding: '10px 20px', fontSize: '14px', fontWeight: 700 }}>Terlaris</button>
                 <select style={{ background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '8px', padding: '10px 20px', fontSize: '14px', flex: 1, maxWidth: '200px', fontWeight: 700 }}>
                   <option>Harga</option>
                   <option>Harga: Rendah ke Tinggi</option>
@@ -277,8 +277,8 @@ export default function NegotiationsDashboard() {
                         {p.name}
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                        <div style={{ color: '#111827', fontSize: '20px', fontWeight: 900 }}>
-                          <span style={{ fontSize: '13px', color: '#64748b', marginRight: '2px' }}>Rp</span>{p.price.toLocaleString('id-ID')}
+                        <div style={{ color: '#EE4D2D', fontSize: '20px', fontWeight: 900 }}>
+                          <span style={{ fontSize: '13px', marginRight: '2px' }}>Rp</span>{p.price.toLocaleString('id-ID')}
                         </div>
                       </div>
                     </div>
@@ -367,12 +367,12 @@ export default function NegotiationsDashboard() {
       {productModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ background: '#fff', width: '100%', maxWidth: '800px', borderRadius: '24px', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: '95vh', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-            <div style={{ padding: '24px 32px', background: '#111827', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '24px 32px', background: '#EE4D2D', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#FFCC00', textTransform: 'uppercase' }}>
+                <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#fff', textTransform: 'uppercase' }}>
                   {editingProduct ? 'EDIT DATA PRODUK' : 'TAMBAH PRODUK BARU'}
                 </h3>
-                <p style={{ fontSize: '12px', opacity: 0.7, fontWeight: 600 }}>PT. Industri Keluarga Timur Marketplace</p>
+                <p style={{ fontSize: '12px', opacity: 0.9, fontWeight: 600 }}>PT. Industri Keluarga Timur Marketplace</p>
               </div>
               <button onClick={() => setProductModalOpen(false)} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', color: '#fff', padding: '10px', borderRadius: '50%', cursor: 'pointer', display: 'flex' }}>
                 <X size={24} />
@@ -384,8 +384,8 @@ export default function NegotiationsDashboard() {
                 
                 {/* LEFT COL: INFO */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ borderLeft: '4px solid #FFCC00', paddingLeft: '16px', marginBottom: '8px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', marginBottom: '2px' }}>INFORMASI PRODUK</h4>
+                  <div style={{ borderLeft: '4px solid #EE4D2D', paddingLeft: '16px', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#EE4D2D', marginBottom: '2px' }}>INFORMASI PRODUK</h4>
                     <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Detail dasar untuk katalog produk</p>
                   </div>
 
@@ -432,8 +432,8 @@ export default function NegotiationsDashboard() {
 
                 {/* RIGHT COL: SALES & MEDIA */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-                  <div style={{ borderLeft: '4px solid #111827', paddingLeft: '16px', marginBottom: '8px' }}>
-                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#111827', marginBottom: '2px' }}>HARGA, STOK & MEDIA</h4>
+                  <div style={{ borderLeft: '4px solid #EE4D2D', paddingLeft: '16px', marginBottom: '8px' }}>
+                    <h4 style={{ fontSize: '14px', fontWeight: 900, color: '#EE4D2D', marginBottom: '2px' }}>HARGA, STOK & MEDIA</h4>
                     <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Pengaturan penjualan dan foto</p>
                   </div>
 
@@ -551,7 +551,7 @@ export default function NegotiationsDashboard() {
                   <button 
                     type="submit" 
                     disabled={isSubmitting}
-                    style={{ padding: '12px 48px', borderRadius: '12px', fontSize: '14px', fontWeight: 900, color: '#111827', background: '#FFCC00', border: 'none', cursor: 'pointer', boxShadow: '0 10px 25px rgba(255, 204, 0, 0.4)', opacity: isSubmitting ? 0.7 : 1 }}
+                    style={{ padding: '12px 48px', borderRadius: '4px', fontSize: '14px', fontWeight: 900, color: '#fff', background: '#EE4D2D', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(238, 77, 45, 0.3)', opacity: isSubmitting ? 0.7 : 1 }}
                   >
                     {isSubmitting ? 'MENYIMPAN...' : 'SIMPAN PRODUK'}
                   </button>

@@ -95,7 +95,7 @@ const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }:
               'linear-gradient(180deg, #6366f1 0%, #444ce7 100%)',
               'linear-gradient(180deg, #a855f7 0%, #9333ea 100%)',
               'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)',
-              'linear-gradient(180deg, #f59e0b 0%, #d97706 100%)',
+              'linear-gradient(180deg, #EE4D2D 0%, #ea580c 100%)',
               'linear-gradient(180deg, #10b981 0%, #059669 100%)'
             ];
             
@@ -214,7 +214,7 @@ const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }:
         onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
       >
         <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(245, 158, 11, 0.2)' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#EE4D2D', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(238, 77, 45, 0.2)' }}>
             <Layers size={20} color="#fff" />
           </div>
           <div>
@@ -226,7 +226,7 @@ const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }:
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
           {areaStats.map((a, idx) => {
              const widthPercent = (a.count / maxArea) * 100;
-             const colors = ['#6366f1', '#a855f7', '#f59e0b', '#3b82f6', '#10b981'];
+             const colors = ['#6366f1', '#a855f7', '#EE4D2D', '#3b82f6', '#10b981'];
              return (
                 <div key={idx}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -266,7 +266,7 @@ const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }:
 
         <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
           {catStats.map((c, idx) => {
-            const colors = ['#f59e0b', '#a855f7', '#ec4899', '#6366f1'];
+            const colors = ['#EE4D2D', '#a855f7', '#ec4899', '#6366f1'];
             return (
               <div key={idx} style={{ 
                 background: '#f8fafc', 
@@ -575,8 +575,8 @@ export default function ManagerCustomer() {
 
         {/* Filter by Sales */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Briefcase size={18} color="#f59e0b" />
+          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(238, 77, 45, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Briefcase size={18} color="#EE4D2D" />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Filter Sales</span>
@@ -625,7 +625,7 @@ export default function ManagerCustomer() {
           onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(30, 41, 59, 0.2)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(30, 41, 59, 0.15)'; }}
         >
-          <UserCheck size={18} color="#facc15" /> 
+          <UserCheck size={18} color="#fff" /> 
           TAMBAH CUSTOMER
         </button>
       </div>
@@ -655,43 +655,43 @@ export default function ManagerCustomer() {
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'All' ? '#facc15' : '#f1f5f9', 
-                 color: filterRetention === 'All' ? '#000' : '#64748b',
+                 background: filterRetention === 'All' ? '#EE4D2D' : '#f1f5f9', 
+                 color: filterRetention === 'All' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                  transition: 'all 0.2s'
                }}
                onClick={() => {setFilterRetention('All'); setViewAll(false);}}
             >
-              SEMUA <span style={{ background: filterRetention === 'All' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'All' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.all}</span>
+              SEMUA <span style={{ background: filterRetention === 'All' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterRetention === 'All' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.all}</span>
             </button>
             
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'Non-Aktif' ? '#facc15' : '#f1f5f9', 
-                 color: filterRetention === 'Non-Aktif' ? '#000' : '#64748b',
+                 background: filterRetention === 'Non-Aktif' ? '#EE4D2D' : '#f1f5f9', 
+                 color: filterRetention === 'Non-Aktif' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                  transition: 'all 0.2s'
                }}
                onClick={() => {setFilterRetention('Non-Aktif'); setViewAll(false);}}
             >
-              NON-AKTIF <span style={{ background: filterRetention === 'Non-Aktif' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Non-Aktif' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.nonActive}</span>
+              NON-AKTIF <span style={{ background: filterRetention === 'Non-Aktif' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Non-Aktif' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.nonActive}</span>
             </button>
 
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'Aktif' ? '#facc15' : '#f1f5f9', 
-                 color: filterRetention === 'Aktif' ? '#000' : '#64748b',
+                 background: filterRetention === 'Aktif' ? '#EE4D2D' : '#f1f5f9', 
+                 color: filterRetention === 'Aktif' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                  transition: 'all 0.2s'
                }}
                onClick={() => {setFilterRetention('Aktif'); setViewAll(false);}}
             >
-              AKTIF <span style={{ background: filterRetention === 'Aktif' ? '#000' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Aktif' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.active}</span>
+              AKTIF <span style={{ background: filterRetention === 'Aktif' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterRetention === 'Aktif' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{tabCounts.active}</span>
             </button>
           </div>
         </div>
@@ -791,7 +791,7 @@ export default function ManagerCustomer() {
                           <span style={{ 
                             fontSize: '11px', 
                             fontWeight: 950, 
-                            color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#059669' : '#d97706'
+                            color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#059669' : '#EE4D2D'
                           }}>
                             {Math.round((((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%
                           </span>

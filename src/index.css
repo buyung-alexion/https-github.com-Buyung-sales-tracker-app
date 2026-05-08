@@ -8,11 +8,11 @@
   --bg-glass:   #FFFFFF;
   --bg-glass-hover: #F8FAFC;
   --border:     #E2E8F0;
-  --border-hl:  #FFCC00;
+  --border-hl:  #EE4D2D;
   --text:       #111827;
   --text-sub:   #6B7280;
-  --indigo:     #FFCC00;
-  --brand-yellow: #FFC107;
+  --indigo:     #EE4D2D;
+  --brand-yellow: #EE4D2D;
   --emerald:    #10B981;
   --amber:      #F59E0B;
   --rose:       #EF4444;
@@ -458,8 +458,8 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .form-row { display: flex; gap: 12px; }
 .form-row .form-group { flex: 1; margin-bottom: 0; }
 
-.btn-primary { padding: 11px 20px; border-radius: 30px; font-size: 14px; font-weight: 700; background: var(--brand-yellow); color: #111827; border: none; transition: all 0.2s; }
-.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(255, 204, 0, 0.4); }
+.btn-primary { padding: 11px 20px; border-radius: 4px; font-size: 14px; font-weight: 700; background: #EE4D2D; color: #fff; border: none; transition: all 0.2s; }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(238, 77, 45, 0.3); }
 .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn-secondary { flex: 1; padding: 11px 20px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; background: var(--bg-glass); border: 1px solid var(--border); color: var(--text); transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
 .btn-secondary:hover { border-color: var(--indigo); background: var(--bg-glass-hover); }
@@ -489,7 +489,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 /* ─── MANAGER SHELL ──────────────────────────────────────── */
 .manager-shell { display: flex; height: 100vh; overflow: hidden; background: #f4f7fa; }
 .manager-sidebar {
-  width: 260px; flex-shrink: 0; background: var(--brand-yellow); border-right: 1px solid rgba(0,0,0,0.05);
+  width: 260px; flex-shrink: 0; background: #fff; border-right: 1px solid #e2e8f0;
   display: flex; flex-direction: column; padding: 32px 20px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 50;
   border-top-right-radius: 32px; border-bottom-right-radius: 32px;
@@ -520,7 +520,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .sidebar-link { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 20px; color: rgba(17,24,39,0.7); text-decoration: none; font-size: 14px; font-weight: 600; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); }
 .sidebar-link:hover { background: rgba(0,0,0,0.05); color: #111827; transform: translateX(4px); }
-.sidebar-link.active { background: #111827; color: #ffffff; font-weight: 800; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.06); transform: translateX(6px); }
+.sidebar-link.active { background: rgba(238, 77, 45, 0.1); color: #EE4D2D; font-weight: 800; border: none; transform: translateX(6px); }
 .sidebar-actions { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; }
 .sidebar-divider { height: 1px; background: rgba(17,24,39,0.1); margin-bottom: 12px; }
 .sidebar-action-btn { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; color: rgba(17,24,39,0.7); font-size: 13px; font-weight: 600; transition: all 0.2s; cursor: pointer; border: none; background: none; width: 100%; justify-content: flex-start; }

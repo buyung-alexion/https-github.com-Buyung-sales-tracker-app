@@ -264,14 +264,14 @@ export default function Leaderboard() {
               const rankBg = idx < 3 ? rankColors[idx] : '#e2e8f0';
               const rankTextColor = idx < 3 ? '#fff' : '#64748b';
               const isTop = idx === 0;
-              const progressColor = s.percent >= 100 ? '#10b981' : s.percent >= 70 ? '#3b82f6' : '#f59e0b';
+              const progressColor = s.percent >= 100 ? '#10b981' : s.percent >= 70 ? '#EE4D2D' : '#f59e0b';
 
               return (
                 <tr
                   key={s.id}
-                  style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s', cursor: 'pointer', background: isTop ? '#fffdf5' : 'transparent' }}
+                  style={{ borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s', cursor: 'pointer', background: isTop ? 'rgba(238, 77, 45, 0.03)' : 'transparent' }}
                   onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
-                  onMouseLeave={e => e.currentTarget.style.background = isTop ? '#fffdf5' : 'transparent'}
+                  onMouseLeave={e => e.currentTarget.style.background = isTop ? 'rgba(238, 77, 45, 0.03)' : 'transparent'}
                 >
                   {/* Rank */}
                   <td style={{ padding: '16px 24px' }}>

@@ -403,7 +403,7 @@ export default function ManagerProspek() {
           onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 12px 25px rgba(30, 41, 59, 0.2)'; }}
           onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(30, 41, 59, 0.15)'; }}
         >
-          <Plus size={18} color="#facc15" /> 
+          <Plus size={18} color="#fff" /> 
           TAMBAH PROSPEK
         </button>
       </div>
@@ -430,7 +430,7 @@ export default function ManagerProspek() {
         <StatCard
           label="Belum Closing"
           value={syncActiveCount}
-          gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+          gradient="linear-gradient(135deg, #EE4D2D 0%, #ea580c 100%)"
           icon={<User size={26} color="white" />}
         />
         <StatCard
@@ -460,43 +460,43 @@ export default function ManagerProspek() {
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'all' ? '#facc15' : '#f1f5f9',
-                color: filterType === 'all' ? '#000' : '#64748b',
+                background: filterType === 'all' ? '#EE4D2D' : '#f1f5f9',
+                color: filterType === 'all' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                 transition: 'all 0.2s'
               }}
               onClick={() => { setFilterType('all'); }}
             >
-              SEMUA <span style={{ background: filterType === 'all' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'all' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{syncTotalCount}</span>
+              SEMUA <span style={{ background: filterType === 'all' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterType === 'all' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{syncTotalCount}</span>
             </button>
 
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'nocontact' ? '#facc15' : '#f1f5f9',
-                color: filterType === 'nocontact' ? '#000' : '#64748b',
+                background: filterType === 'nocontact' ? '#EE4D2D' : '#f1f5f9',
+                color: filterType === 'nocontact' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                 transition: 'all 0.2s'
               }}
               onClick={() => { setFilterType('nocontact'); }}
             >
-              BELUM DIKONTAK <span style={{ background: filterType === 'nocontact' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'nocontact' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{nocontactCount}</span>
+              BELUM DIKONTAK <span style={{ background: filterType === 'nocontact' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterType === 'nocontact' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{nocontactCount}</span>
             </button>
 
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'old30' ? '#facc15' : '#f1f5f9',
-                color: filterType === 'old30' ? '#000' : '#64748b',
+                background: filterType === 'old30' ? '#EE4D2D' : '#f1f5f9',
+                color: filterType === 'old30' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
                 transition: 'all 0.2s'
               }}
               onClick={() => { setFilterType('old30'); }}
             >
-              LEWAT 30 HARI <span style={{ background: filterType === 'old30' ? '#000' : 'rgba(0,0,0,0.05)', color: filterType === 'old30' ? '#facc15' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{old30Count}</span>
+              LEWAT 30 HARI <span style={{ background: filterType === 'old30' ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.05)', color: filterType === 'old30' ? '#fff' : '#475569', padding: '2px 6px', borderRadius: '8px', fontSize: '10px' }}>{old30Count}</span>
             </button>
           </div>
         </div>
@@ -608,9 +608,9 @@ export default function ManagerProspek() {
                         borderRadius: '10px',
                         fontSize: '11px',
                         fontWeight: 900,
-                        background: getStatusName(p.status) === 'Hot' ? '#fef2f2' : getStatusName(p.status) === 'Warm' ? '#fffbeb' : '#f0f9ff',
-                        color: getStatusName(p.status) === 'Hot' ? '#ef4444' : getStatusName(p.status) === 'Warm' ? '#f59e0b' : '#0ea5e9',
-                        border: `1px solid ${getStatusName(p.status) === 'Hot' ? '#fee2e2' : getStatusName(p.status) === 'Warm' ? '#fef3c7' : '#e0f2fe'}`
+                        background: getStatusName(p.status) === 'Hot' ? '#fef2f2' : getStatusName(p.status) === 'Warm' ? 'rgba(238, 77, 45, 0.05)' : '#f0f9ff',
+                        color: getStatusName(p.status) === 'Hot' ? '#ef4444' : getStatusName(p.status) === 'Warm' ? '#EE4D2D' : '#0ea5e9',
+                        border: `1px solid ${getStatusName(p.status) === 'Hot' ? '#fee2e2' : getStatusName(p.status) === 'Warm' ? 'rgba(238, 77, 45, 0.1)' : '#e0f2fe'}`
                       }}>
                         {getStatusName(p.status).toUpperCase()}
                       </div>
@@ -748,7 +748,7 @@ export default function ManagerProspek() {
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Log Aktivitas Prospek</div>
                   <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#facc15', color: '#1e293b', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#EE4D2D', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <User size={16} />
                     </div>
                     <div>

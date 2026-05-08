@@ -221,7 +221,7 @@ export default function ManagerChat() {
               }}
             >
               <div style={{ position: 'relative', marginRight: '16px' }}>
-                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: contact.type === 'group' ? '#e0e7ff' : '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: contact.type === 'group' ? '#6366f1' : '#0ea5e9', fontSize: '20px', fontWeight: 600 }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: contact.type === 'group' ? 'rgba(238, 77, 45, 0.1)' : 'rgba(238, 77, 45, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EE4D2D', fontSize: '20px', fontWeight: 600 }}>
                   {contact.type === 'group' ? <Users size={24}/> : (contact.avatar ? <img src={contact.avatar} style={{width:'100%', borderRadius:'50%'}}/> : contact.name.charAt(0))}
                 </div>
                 {contact.online && <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', background: '#22c55e', borderRadius: '50%', border: '2px solid #ffffff' }} />}
@@ -229,12 +229,12 @@ export default function ManagerChat() {
               <div style={{ flex: 1, overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                   <span style={{ fontWeight: 600, color: '#0f172a', fontSize: '15px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{contact.name}</span>
-                  <span style={{ fontSize: '12px', color: activeChatId === contact.id ? '#0ea5e9' : '#94a3b8', fontWeight: activeChatId === contact.id || contact.unreadCount > 0 ? 600 : 400 }}>{contact.lastMessageTime}</span>
+                  <span style={{ fontSize: '12px', color: activeChatId === contact.id ? '#EE4D2D' : '#94a3b8', fontWeight: activeChatId === contact.id || contact.unreadCount > 0 ? 600 : 400 }}>{contact.lastMessageTime}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', color: contact.unreadCount > 0 ? '#334155' : '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: contact.unreadCount > 0 ? 500 : 400 }}>{contact.lastMessage}</span>
                   {contact.unreadCount > 0 && (
-                    <span style={{ background: '#0ea5e9', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, marginLeft: '8px' }}>
+                    <span style={{ background: '#EE4D2D', color: 'white', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700, marginLeft: '8px' }}>
                       {contact.unreadCount}
                     </span>
                   )}
@@ -254,7 +254,7 @@ export default function ManagerChat() {
             {document.getElementById('mgr-topbar-center') && createPortal(
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingLeft: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: activeContact.type === 'group' ? '#e0e7ff' : '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeContact.type === 'group' ? '#6366f1' : '#0ea5e9', fontSize: '16px', fontWeight: 600 }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: activeContact.type === 'group' ? 'rgba(238, 77, 45, 0.1)' : 'rgba(238, 77, 45, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EE4D2D', fontSize: '16px', fontWeight: 600 }}>
                     {activeContact.type === 'group' ? <Users size={20}/> : (activeContact.avatar ? <img src={activeContact.avatar} style={{width:'100%', borderRadius:'50%'}}/> : activeContact.name.charAt(0))}
                   </div>
                   <div>
@@ -280,7 +280,7 @@ export default function ManagerChat() {
                   return (
                     <div key={msg.id} style={{ display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start', marginBottom: '8px' }}>
                       <div style={{ 
-                        background: isMe ? '#dcf8c6' : '#ffffff', 
+                        background: isMe ? 'rgba(238, 77, 45, 0.1)' : '#ffffff', 
                         padding: '8px 12px 8px 16px', 
                         borderRadius: isMe ? '12px 0px 12px 12px' : '0px 12px 12px 12px', 
                         maxWidth: '70%', 
@@ -288,7 +288,7 @@ export default function ManagerChat() {
                         position: 'relative'
                       }}>
                         {activeContact.type === 'group' && !isMe && (
-                          <div style={{ fontSize: '12px', fontWeight: 600, color: '#0ea5e9', marginBottom: '2px' }}>{msg.sender_name}</div>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: '#EE4D2D', marginBottom: '2px' }}>{msg.sender_name}</div>
                         )}
                         {msg.attachment && (
                           <div style={{ marginBottom: msg.text ? '8px' : '0' }}>
@@ -299,9 +299,9 @@ export default function ManagerChat() {
                           <span style={{ fontSize: '15px', color: '#0f172a', lineHeight: '1.4', wordBreak: 'break-word' }}>{msg.text}</span>
                         )}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px', marginTop: '4px' }}>
-                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>{formatTime(msg.timestamp)}</span>
+                          <span style={{ fontSize: '11px', color: isMe ? 'rgba(238, 77, 45, 0.6)' : '#94a3b8' }}>{formatTime(msg.timestamp)}</span>
                           {isMe && (
-                            <span style={{ color: msg.status === 'read' ? '#3b82f6' : '#94a3b8' }}>
+                            <span style={{ color: msg.status === 'read' ? '#EE4D2D' : 'rgba(238, 77, 45, 0.4)' }}>
                               <CheckSquare size={14} /> {/* Placeholder for double check mark */}
                             </span>
                           )}
@@ -364,7 +364,7 @@ export default function ManagerChat() {
                     placeholder="Ketik pesan..." 
                     style={{ flex: 1, border: 'none', outline: 'none', fontSize: '15px' }}
                   />
-                  <button type="submit" disabled={!inputText.trim() && !attachmentBase64} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', color: (inputText.trim() || attachmentBase64) ? '#0ea5e9' : '#94a3b8', padding: 0 }}>
+                  <button type="submit" disabled={!inputText.trim() && !attachmentBase64} style={{ background: 'transparent', border: 'none', cursor: 'pointer', display: 'flex', color: (inputText.trim() || attachmentBase64) ? '#EE4D2D' : '#94a3b8', padding: 0 }}>
                     <Send size={20} />
                   </button>
                 </form>

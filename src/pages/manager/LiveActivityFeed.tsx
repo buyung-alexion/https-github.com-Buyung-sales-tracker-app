@@ -111,10 +111,10 @@ export default function LiveActivityFeed() {
 
   // Pie Chart Data for Activity Breakdown
   const pieData = useMemo(() => [
-    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: '#60a5fa' }, // Sky Blue
-    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: '#3b82f6' }, // Blue
-    { name: 'Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: '#2563eb' }, // Royal Blue
-    { name: 'Prospek', value: filteredProspek.length, color: '#1d4ed8' }, // Deep Blue
+    { name: 'Followup', value: filtered.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, color: '#f97316' },
+    { name: 'Visit', value: filtered.filter(a => a.tipe_aksi === 'Visit').length, color: '#EE4D2D' },
+    { name: 'Order', value: filtered.filter(a => a.tipe_aksi === 'Order').length, color: '#ea580c' },
+    { name: 'Prospek', value: filteredProspek.length, color: '#9a3412' },
   ], [filtered, filteredProspek]);
   
   const totalActs = useMemo(() => pieData.reduce((acc, curr) => acc + curr.value, 0), [pieData]);
@@ -183,25 +183,25 @@ export default function LiveActivityFeed() {
           justifyContent: 'flex-end',
           boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
         }}>
-          {/* Prospek (Deep Blue) */}
-          <div style={{ height: `${hProspek}%`, background: '#1d4ed8', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Order (Royal Blue) */}
-          <div style={{ height: `${hOrder}%`, background: '#2563eb', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Visit (Blue) */}
-          <div style={{ height: `${hVisit}%`, background: '#3b82f6', width: '100%', transition: 'height 0.8s ease' }} />
-          {/* Followup (Sky Blue) */}
-          <div style={{ height: `${hFollowup}%`, background: '#60a5fa', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Prospek (Darker Orange) */}
+          <div style={{ height: `${hProspek}%`, background: '#9a3412', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Order (Deep Orange) */}
+          <div style={{ height: `${hOrder}%`, background: '#ea580c', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Visit (Shopee Orange) */}
+          <div style={{ height: `${hVisit}%`, background: '#EE4D2D', width: '100%', transition: 'height 0.8s ease' }} />
+          {/* Followup (Light Orange) */}
+          <div style={{ height: `${hFollowup}%`, background: '#f97316', width: '100%', transition: 'height 0.8s ease' }} />
         </div>
 
         <div style={{ 
-          background: '#fbbf24', 
-          color: '#854d0e', 
+          background: '#EE4D2D', 
+          color: '#fff', 
           padding: '6px 12px', 
           borderRadius: '12px', 
           fontSize: '11px', 
           fontWeight: 900,
           textTransform: 'uppercase',
-          boxShadow: '0 4px 6px rgba(251, 191, 36, 0.2)',
+          boxShadow: '0 4px 6px rgba(238, 77, 45, 0.2)',
           whiteSpace: 'nowrap'
         }}>
           {data.name.split(' ')[0]}
@@ -330,8 +330,8 @@ export default function LiveActivityFeed() {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            {/* Subtle Blue Tint Gradient for matching */}
-            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(59, 130, 246, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            {/* Subtle Orange Tint Gradient for matching */}
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '150px', height: '150px', background: 'radial-gradient(circle, rgba(238, 77, 45, 0.05) 0%, transparent 70%)', pointerEvents: 'none' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
               <div>
                 <h3 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Ringkasan Sales</h3>
@@ -342,10 +342,10 @@ export default function LiveActivityFeed() {
             {/* Legend */}
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '24px' }}>
               {[
-                { label: 'FOLLOWUP', color: '#60a5fa' },
-                { label: 'VISIT', color: '#3b82f6' },
-                { label: 'ORDER', color: '#2563eb' },
-                { label: 'PROSPEK', color: '#1d4ed8' }
+                { label: 'FOLLOWUP', color: '#f97316' },
+                { label: 'VISIT', color: '#EE4D2D' },
+                { label: 'ORDER', color: '#ea580c' },
+                { label: 'PROSPEK', color: '#9a3412' }
               ].map(cat => (
                 <div key={cat.label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '9px', fontWeight: 900, color: '#64748b' }}>
                   <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: cat.color }} /> {cat.label}
@@ -372,10 +372,10 @@ export default function LiveActivityFeed() {
             
             {/* Activity Breakdown (Radial Gauge) - Polished Contrast */}
             <div style={{ 
-              background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)', 
+              background: 'linear-gradient(135deg, #EE4D2D 0%, #ea580c 100%)', 
               borderRadius: '32px', 
               padding: '32px', 
-              boxShadow: '0 20px 50px rgba(37, 99, 235, 0.25)',
+              boxShadow: '0 20px 50px rgba(238, 77, 45, 0.25)',
               border: '1px solid rgba(255,255,255,0.2)',
               display: 'flex',
               flexDirection: 'column',
@@ -530,7 +530,7 @@ export default function LiveActivityFeed() {
                                   boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
                                 }}
                               >
-                                <ImageIcon size={14} color="#facc15" /> FOTO BUKTI
+                                <ImageIcon size={14} color="#EE4D2D" /> FOTO BUKTI
                               </button>
                             ) : (
                               <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto', border: '1px dashed #e2e8f0' }}>
@@ -643,7 +643,7 @@ export default function LiveActivityFeed() {
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>History Live Activity</div>
                   <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#facc15', color: '#1e293b', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#EE4D2D', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {selectedImage.sales.charAt(0)}
                     </div>
                     <div>

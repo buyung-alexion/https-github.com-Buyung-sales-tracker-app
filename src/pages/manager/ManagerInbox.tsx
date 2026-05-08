@@ -194,9 +194,9 @@ export default function ManagerInbox() {
       <div style={{ width: '250px', display: 'flex', flexDirection: 'column', gap: '16px', paddingRight: '16px' }}>
         <button 
           onClick={() => { setActiveView('compose'); setActiveMessageId(null); }}
-          style={{ width: 'fit-content', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', background: '#c2e7ff', color: '#001d35', border: 'none', padding: '16px 24px', borderRadius: '16px', fontWeight: 500, fontSize: '15px', cursor: 'pointer', transition: 'box-shadow 0.2s', boxShadow: '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)' }}
-          onMouseOver={e => e.currentTarget.style.boxShadow = '0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15)'}
-          onMouseOut={e => e.currentTarget.style.boxShadow = '0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15)'}
+          style={{ width: 'fit-content', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', background: '#EE4D2D', color: '#fff', border: 'none', padding: '16px 24px', borderRadius: '16px', fontWeight: 500, fontSize: '15px', cursor: 'pointer', transition: 'box-shadow 0.2s', boxShadow: '0 4px 12px rgba(238, 77, 45, 0.2)' }}
+          onMouseOver={e => e.currentTarget.style.boxShadow = '0 6px 16px rgba(238, 77, 45, 0.3)'}
+          onMouseOut={e => e.currentTarget.style.boxShadow = '0 4px 12px rgba(238, 77, 45, 0.2)'}
         >
           <Edit3 size={20} />
           Tulis Pesan
@@ -205,7 +205,7 @@ export default function ManagerInbox() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '-16px' }}>
           <button 
             onClick={() => { setActiveView('inbox'); setActiveMessageId(null); }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 10px 32px', borderRadius: '0 50px 50px 0', border: 'none', cursor: 'pointer', background: activeView === 'inbox' ? '#d3e3fd' : 'transparent', color: activeView === 'inbox' ? '#041e49' : '#444746', fontWeight: activeView === 'inbox' ? 700 : 500 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 10px 32px', borderRadius: '0 50px 50px 0', border: 'none', cursor: 'pointer', background: activeView === 'inbox' ? 'rgba(238, 77, 45, 0.1)' : 'transparent', color: activeView === 'inbox' ? '#EE4D2D' : '#444746', fontWeight: activeView === 'inbox' ? 700 : 500 }}
             onMouseOver={e => !activeView.includes('inbox') && (e.currentTarget.style.background = '#e2e8f0')}
             onMouseOut={e => !activeView.includes('inbox') && (e.currentTarget.style.background = 'transparent')}
           >
@@ -218,7 +218,7 @@ export default function ManagerInbox() {
           
           <button 
             onClick={() => { setActiveView('sent'); setActiveMessageId(null); }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 10px 32px', borderRadius: '0 50px 50px 0', border: 'none', cursor: 'pointer', background: activeView === 'sent' ? '#d3e3fd' : 'transparent', color: activeView === 'sent' ? '#041e49' : '#444746', fontWeight: activeView === 'sent' ? 700 : 500 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px 10px 32px', borderRadius: '0 50px 50px 0', border: 'none', cursor: 'pointer', background: activeView === 'sent' ? 'rgba(238, 77, 45, 0.1)' : 'transparent', color: activeView === 'sent' ? '#EE4D2D' : '#444746', fontWeight: activeView === 'sent' ? 700 : 500 }}
             onMouseOver={e => !activeView.includes('sent') && (e.currentTarget.style.background = '#e2e8f0')}
             onMouseOut={e => !activeView.includes('sent') && (e.currentTarget.style.background = 'transparent')}
           >
@@ -236,7 +236,7 @@ export default function ManagerInbox() {
         {activeView === 'compose' ? (
           <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
             <div style={{ padding: '20px 24px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-               <div style={{ background: '#e0f2fe', color: '#0ea5e9', padding: '8px', borderRadius: '8px' }}><Edit3 size={20} /></div>
+               <div style={{ background: 'rgba(238, 77, 45, 0.1)', color: '#EE4D2D', padding: '8px', borderRadius: '8px' }}><Edit3 size={20} /></div>
                <div>
                   <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>Pesan Baru</h2>
                   <div style={{ fontSize: '13px', color: '#64748b' }}>Kirim pesan atau broadcast instruksi per area</div>
@@ -275,7 +275,7 @@ export default function ManagerInbox() {
                   style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', fontSize: '15px', color: '#334155', lineHeight: '1.6' }}
                />
                <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '24px', display: 'flex', justifyContent: 'flex-start' }}>
-                 <button type="submit" style={{ background: '#0ea5e9', color: 'white', padding: '12px 32px', border: 'none', borderRadius: '8px', fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(14, 165, 233, 0.2)' }}><Send size={18} /> Kirim Pesan</button>
+                 <button type="submit" style={{ background: '#EE4D2D', color: 'white', padding: '12px 32px', border: 'none', borderRadius: '8px', fontWeight: 600, display: 'flex', gap: '10px', alignItems: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(238, 77, 45, 0.2)' }}><Send size={18} /> Kirim Pesan</button>
                </div>
             </form>
           </div>
@@ -325,7 +325,7 @@ export default function ManagerInbox() {
                
                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
                  <div style={{ display: 'flex', gap: '12px' }}>
-                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0ea5e9' }}>
+                   <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(238, 77, 45, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EE4D2D' }}>
                      <User size={20} />
                    </div>
                    <div>
@@ -360,7 +360,7 @@ export default function ManagerInbox() {
                          </tr>
                          <tr>
                            <td style={{ padding: '10px 0', fontWeight: 500, color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>No. HP Owner</td>
-                           <td style={{ padding: '10px 0', color: '#334155', borderBottom: '1px solid #e2e8f0' }}>: <a href={`tel:${activeMessage.details.noHp}`} style={{ color: '#0ea5e9', textDecoration: 'none', fontWeight: 500 }}>{activeMessage.details.noHp}</a></td>
+                           <td style={{ padding: '10px 0', color: '#334155', borderBottom: '1px solid #e2e8f0' }}>: <a href={`tel:${activeMessage.details.noHp}`} style={{ color: '#EE4D2D', textDecoration: 'none', fontWeight: 500 }}>{activeMessage.details.noHp}</a></td>
                          </tr>
                          <tr>
                            <td style={{ padding: '10px 0', fontWeight: 500, color: '#64748b', verticalAlign: 'top' }}>Catatan Sales</td>
@@ -369,7 +369,7 @@ export default function ManagerInbox() {
                        </tbody>
                      </table>
                      <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
-                        <button style={{ background: '#0ea5e9', color: 'white', padding: '10px 24px', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Lihat Data Utuh</button>
+                        <button style={{ background: '#EE4D2D', color: 'white', padding: '10px 24px', border: 'none', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Lihat Data Utuh</button>
                         <button style={{ background: '#ffffff', color: '#0f172a', border: '1px solid #cbd5e1', padding: '10px 24px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>Jadwalkan Follow up</button>
                      </div>
                    </div>
@@ -429,7 +429,7 @@ export default function ManagerInbox() {
             
             <button 
               onClick={() => { setViewAll(!viewAll); setPage(1); }}
-              style={{ fontSize: '13px', fontWeight: 600, color: '#0ea5e9', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ fontSize: '13px', fontWeight: 600, color: '#EE4D2D', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {viewAll ? 'Tampilkan Sebagian' : 'View All'}
             </button>
@@ -461,7 +461,7 @@ export default function ManagerInbox() {
               <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>Primary</div>
             </div>
             {unreadPrimary > 0 && (
-              <span style={{ background: '#fee2e2', color: '#ef4444', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>
+              <span style={{ background: 'rgba(238, 77, 45, 0.1)', color: '#EE4D2D', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>
                 {unreadPrimary} baru
               </span>
             )}
@@ -490,7 +490,7 @@ export default function ManagerInbox() {
               <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '2px' }}>Updates</div>
             </div>
             {unreadUpdate > 0 && (
-              <span style={{ background: '#dbeafe', color: '#3b82f6', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>
+              <span style={{ background: 'rgba(238, 77, 45, 0.1)', color: '#EE4D2D', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>
                 {unreadUpdate} baru
               </span>
             )}
@@ -533,7 +533,7 @@ export default function ManagerInbox() {
                     onClick={(e) => { e.stopPropagation(); toggleStar(msg.id); }} 
                     style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}
                   >
-                    <Star size={18} fill={msg.isStarred ? '#facc15' : 'transparent'} color={msg.isStarred ? '#facc15' : '#cbd5e1'} />
+                    <Star size={18} fill={msg.isStarred ? '#EE4D2D' : 'transparent'} color={msg.isStarred ? '#EE4D2D' : '#cbd5e1'} />
                   </button>
                 </div>
 

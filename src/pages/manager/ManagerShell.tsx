@@ -126,8 +126,8 @@ export default function ManagerShell() {
             <div key={idx} style={{ marginBottom: '12px' }}>
               {!sidebarCollapsed && <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(17,24,39,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 6px 16px' }}>{cat.category}</div>}
               {cat.items.map(item => item.action ? (
-                <a key={item.to} href="#" className="sidebar-link" onClick={handleLogout} style={{ color: '#ef4444', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
-                  {item.icon} {!sidebarCollapsed && <span style={{ color: '#ef4444' }}>{item.label}</span>}
+                <a key={item.to} href="#" className="sidebar-link" onClick={handleLogout} style={{ color: '#EE4D2D', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
+                  {item.icon} {!sidebarCollapsed && <span style={{ color: '#EE4D2D' }}>{item.label}</span>}
                 </a>
               ) : (
                 <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
@@ -137,7 +137,7 @@ export default function ManagerShell() {
                       position: 'absolute', 
                       top: sidebarCollapsed ? '8px' : '12px', 
                       right: sidebarCollapsed ? '12px' : '16px', 
-                      background: '#ef4444', color: '#fff', fontSize: '10px', 
+                      background: '#EE4D2D', color: '#fff', fontSize: '10px', 
                       fontWeight: 900, minWidth: '18px', height: '18px', 
                       borderRadius: '50%', display: 'flex', alignItems: 'center', 
                       justifyContent: 'center', border: '2px solid #fff' 
@@ -210,7 +210,7 @@ export default function ManagerShell() {
                 {item.label === 'Live Chat' && chatUnread > 0 && (
                   <span style={{ 
                     position: 'absolute', top: '-4px', right: '-4px', 
-                    background: '#ef4444', color: '#fff', fontSize: '10px', 
+                    background: '#EE4D2D', color: '#fff', fontSize: '10px', 
                     fontWeight: 900, minWidth: '18px', height: '18px', 
                     borderRadius: '50%', display: 'flex', alignItems: 'center', 
                     justifyContent: 'center', border: '2px solid #fff' 
@@ -238,12 +238,12 @@ export default function ManagerShell() {
               cursor: 'pointer', width: '380px'
             }}
           >
-            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EE4D2D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <MessageSquare size={24} color="#fff" />
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 900, color: '#3b82f6', letterSpacing: '0.1em' }}>PESAN BARU</div>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#EE4D2D', letterSpacing: '0.1em' }}>PESAN BARU</div>
                 <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 700 }}>BARU SAJA</div>
               </div>
               <div style={{ fontSize: '15px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{newMsg.sender_name || 'Tim'}: {newMsg.text}</div>
