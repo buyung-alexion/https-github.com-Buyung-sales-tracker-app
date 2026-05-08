@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ShoppingBag, Star, ChevronLeft, Send, Search, Loader2, CheckCircle, Info, MessageCircle, AlertCircle } from 'lucide-react';
 import { store } from '../../store/dataStore';
-import { useNavigate } from 'react-router-dom';
 
 export default function CatalogPage() {
-  const navigate = useNavigate();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -62,16 +60,16 @@ export default function CatalogPage() {
     
     const payload = {
       product_id: selectedProduct.id,
-      sales_id: referrerSales?.id ? String(referrerSales.id) : null,
+      sales_id: referrerSales?.id ? String(referrerSales.id) : undefined,
       customer_name: formData.name,
       customer_wa: formData.whatsapp,
       requested_qty: parseFloat(formData.quantity),
       offered_price: parseFloat(formData.price),
-      status: 'pending'
+      status: 'pending' as any
     };
 
     try {
-      const { error } = await store.submitNegotiation(payload);
+      const { error } = await store.submitNegotiation(payload as any);
       if (error) {
         console.error('DEBUG: Submit Error Details:', error);
         throw error;
