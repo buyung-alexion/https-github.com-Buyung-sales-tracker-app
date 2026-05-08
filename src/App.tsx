@@ -1,3 +1,4 @@
+// Deployment Heartbeat: 2026-05-08 22:26
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import MobileShell from './pages/mobile/MobileShell';
