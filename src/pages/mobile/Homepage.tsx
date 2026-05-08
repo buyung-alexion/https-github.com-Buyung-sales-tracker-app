@@ -50,7 +50,7 @@ export default function Homepage({ salesId }: Props) {
   }, [marketplaceModalOpen, incomingOrdersModalOpen]);
 
   const loadMyNegotiations = async () => {
-    if (!user?.id) return;
+    if (!salesId) return;
     setLoadingNego(true);
     const { data, error } = await store.fetchNegotiations();
     if (error) {
@@ -59,10 +59,11 @@ export default function Homepage({ salesId }: Props) {
     const allNego = data || [];
     setAllNegoCount(allNego.length); // SIMPAN TOTAL UNTUK DEBUG
     
-    const filtered = allNego.filter(n => String(n.sales_id) === String(user.id));
+    // Gunakan salesId (prop) yang berisi S007, bukan user.id
+    const filtered = allNego.filter(n => String(n.sales_id) === String(salesId));
     
     // Debug Log
-    console.log('DEBUG: User ID:', user.id);
+    console.log('DEBUG: Sales ID:', salesId);
     console.log('DEBUG: Total Nego in DB:', allNego.length);
     console.log('DEBUG: Filtered Nego:', filtered.length);
 
