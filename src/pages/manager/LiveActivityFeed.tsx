@@ -577,34 +577,55 @@ export default function LiveActivityFeed() {
                         <table className="activity-table">
                           <thead>
                             <tr>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px', borderRadius: '10px 0 0 10px' }}>Waktu</th>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Sales</th>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Tipe</th>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Target</th>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Note</th>
-                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px', borderRadius: '0 10px 10px 0', textAlign: 'center' }}>Bukti</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', borderRadius: '14px 0 0 14px', letterSpacing: '0.05em' }}>Waktu</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', letterSpacing: '0.05em' }}>Sales</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', letterSpacing: '0.05em' }}>Tipe</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', letterSpacing: '0.05em' }}>Target</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', letterSpacing: '0.05em' }}>Catatan</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '16px 20px', borderRadius: '0 14px 14px 0', textAlign: 'center', letterSpacing: '0.05em' }}>Bukti</th>
                             </tr>
                           </thead>
-                          <tbody>
+                          <tbody className="premium-tbody">
                             {actsInGroup.map((a) => {
                               const dateObj = new Date(a.timestamp);
                               return (
-                                <tr key={a.id} className="act-row">
-                                  <td style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px' }}>
-                                    {dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                <tr key={a.id} className="premium-row" style={{ transition: 'all 0.2s' }}>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                                    <div style={{ fontWeight: 950, color: '#1e293b', fontSize: '14px' }}>
+                                      {dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                    </div>
+                                    <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>WIB</div>
                                   </td>
-                                  <td><span className="sales-pill" style={{ fontSize: '11px', fontWeight: 900 }}>{getSalesName(a.id_sales)}</span></td>
-                                  <td>
-                                    <span className={`act-type-badge ${ACT_COLOR[a.tipe_aksi] || 'act-visit'}`} style={{ fontWeight: 900, fontSize: '11px' }}>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                                    <span className="sales-pill" style={{ 
+                                      background: 'rgba(238, 77, 45, 0.05)', 
+                                      color: '#EE4D2D', 
+                                      fontSize: '11px', 
+                                      fontWeight: 900,
+                                      padding: '6px 12px',
+                                      borderRadius: '8px',
+                                      border: '1px solid rgba(238, 77, 45, 0.1)'
+                                    }}>
+                                      {getSalesName(a.id_sales)}
+                                    </span>
+                                  </td>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                                    <span className={`act-type-badge ${ACT_COLOR[a.tipe_aksi] || 'act-visit'}`} style={{ 
+                                      fontWeight: 900, fontSize: '11px', padding: '6px 12px', borderRadius: '8px' 
+                                    }}>
                                       {ACT_ICON[a.tipe_aksi]} {getActLabel(a.tipe_aksi)}
                                     </span>
                                   </td>
-                                  <td>
-                                    <span className="target-name" style={{ fontWeight: 900, color: '#1e293b' }}>{a.target_nama}</span>
-                                    <span className="target-type" style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>{a.target_type}</span>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                                    <div style={{ fontWeight: 950, color: '#1e293b', fontSize: '14px' }}>{a.target_nama}</div>
+                                    <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.02em' }}>{a.target_type}</div>
                                   </td>
-                                  <td style={{ color: '#475569', fontWeight: 600, fontSize: '13px' }}>{a.catatan_hasil}</td>
-                                  <td style={{ textAlign: 'center' }}>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9' }}>
+                                    <div style={{ color: '#475569', fontWeight: 600, fontSize: '13px', lineHeight: '1.5', maxWidth: '300px' }}>
+                                      {a.catatan_hasil || <span style={{ color: '#cbd5e1', fontStyle: 'italic' }}>Tidak ada catatan</span>}
+                                    </div>
+                                  </td>
+                                  <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
                                     {a.geotagging?.photo ? (
                                       <button 
                                         onClick={() => setSelectedImage({
@@ -614,16 +635,21 @@ export default function LiveActivityFeed() {
                                           timestamp: a.timestamp,
                                           note: a.catatan_hasil
                                         })}
+                                        className="view-photo-btn"
                                         style={{
-                                          padding: '8px 12px', borderRadius: '10px', border: '1px solid #f1f5f9',
-                                          background: '#fff', fontSize: '10px', fontWeight: 900, color: '#EE4D2D',
-                                          cursor: 'pointer', boxShadow: '0 4px 8px rgba(0,0,0,0.03)'
+                                          padding: '10px 16px', borderRadius: '12px', border: '1px solid #e2e8f0',
+                                          background: '#fff', fontSize: '11px', fontWeight: 900, color: '#1e293b',
+                                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                                          margin: '0 auto', transition: 'all 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
                                         }}
                                       >
-                                        LIHAT FOTO
+                                        <ImageIcon size={14} color="#EE4D2D" />
+                                        BUKTI FOTO
                                       </button>
                                     ) : (
-                                      <div style={{ color: '#cbd5e1' }}><ImageIcon size={16} /></div>
+                                      <div style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: 800 }}>
+                                        <X size={14} style={{ marginBottom: '2px' }} /> <br/> NO PHOTO
+                                      </div>
                                     )}
                                   </td>
                                 </tr>
