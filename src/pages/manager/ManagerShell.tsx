@@ -175,33 +175,7 @@ export default function ManagerShell() {
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
           
-          {shellTitle ? (
-            <div style={{ display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto', gap: '14px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {shellTitle === 'Activity Stream' && (
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '5px', 
-                      background: 'rgba(16, 185, 129, 0.08)', 
-                      padding: '2px 10px', 
-                      borderRadius: '100px',
-                      border: '1px solid rgba(16, 185, 129, 0.15)',
-                      height: '24px'
-                    }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} className="pulse" />
-                      <span style={{ fontSize: '9px', fontWeight: 900, color: '#10b981', letterSpacing: '0.5px' }}>LIVE</span>
-                    </div>
-                  )}
-                  <h1 className="mgr-title" style={{ fontSize: '22px', fontWeight: 950, margin: 0, padding: 0, lineHeight: 1, letterSpacing: '-0.5px', color: '#1e293b' }}>{shellTitle}</h1>
-                </div>
-                {shellSub && <p className="mgr-sub" style={{ margin: 0, fontSize: '11px', marginTop: '2px', opacity: 0.7, fontWeight: 600 }}>{shellSub}</p>}
-              </div>
-            </div>
-          ) : (
-            <div id="mgr-topbar-center" style={{ flex: 1, display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto' }} />
-          )}
+          <div id="mgr-topbar-center" style={{ flex: 1, display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto' }} />
 
           <nav className="topbar-nav">
             {menuCategories.flatMap(c => c.items).filter(i => !i.action).map(item => (
