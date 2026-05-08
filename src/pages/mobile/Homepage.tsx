@@ -673,7 +673,7 @@ export default function Homepage({ salesId }: Props) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                <button 
                  className="tap-active"
-                 onClick={() => { setMarketplaceModalOpen(false); navigate('/catalog'); }}
+                 onClick={() => { setMarketplaceModalOpen(false); navigate(`/catalog?ref=${user?.id}`); }}
                  style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
                >
                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><ShoppingBag size={24} /></div>
