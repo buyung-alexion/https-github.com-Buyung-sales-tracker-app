@@ -3,7 +3,7 @@ import { useSalesData } from '../../hooks/useSalesData';
 
 
 import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X, Activity } from 'lucide-react';
-import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 
 
