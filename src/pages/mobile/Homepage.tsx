@@ -31,6 +31,15 @@ export default function Homepage({ salesId }: Props) {
 
   useEffect(() => {
     loadMyNegotiations();
+
+    // Subscribe to real-time changes
+    const channel = store.subscribeToNegotiations(() => {
+      loadMyNegotiations();
+    });
+
+    return () => {
+      store.unsubscribeFromNegotiations(channel);
+    };
   }, []);
 
   useEffect(() => {

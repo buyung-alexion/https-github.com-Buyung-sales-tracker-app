@@ -564,4 +564,20 @@ export const store = {
     const { data, error } = await supabase.from('leads_negotiations').update({ status }).eq('id', id).select();
     return { data, error };
   },
+
+  subscribeToNegotiations(callback: (payload: any) => void) {
+    const channel = supabase
+      .channel('public:leads_negotiations')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'leads_negotiations' },
+        (payload) => callback(payload)
+      )
+      .subscribe();
+    return channel;
+  },
+
+  unsubscribeFromNegotiations(channel: any) {
+    supabase.removeChannel(channel);
+  },
 };
