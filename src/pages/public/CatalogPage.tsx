@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ShoppingBag, Star, ChevronLeft, Send, Search, Loader2, CheckCircle, Info, MessageCircle, AlertCircle, X } from 'lucide-react';
+import { ShoppingBag, Star, ChevronLeft, Send, Search, Loader2, CheckCircle, Info, MessageCircle, AlertCircle, X, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 
 export default function CatalogPage() {
@@ -84,32 +84,29 @@ export default function CatalogPage() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', background: '#F8FAFC', paddingBottom: '40px', fontFamily: 'Inter, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#F5F5F5', paddingBottom: '60px', fontFamily: 'Inter, sans-serif' }}>
       
-      {/* Header Premium */}
-      <div style={{ background: '#fff', padding: '24px 20px', borderBottom: '1px solid rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* Shopee Header Style */}
+      <div style={{ background: 'linear-gradient(135deg, #FF5722 0%, #FF9800 100%)', padding: '20px 16px 30px', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-             <div style={{ width: '44px', height: '44px', background: 'var(--brand-yellow)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.3)' }}>
-                <ShoppingBag size={22} color="#000" strokeWidth={2.5} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+             <div style={{ width: '40px', height: '40px', background: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ShoppingBag size={24} color="#FF5722" strokeWidth={2.5} />
              </div>
              <div>
-                <h1 style={{ fontSize: '20px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.5px' }}>IKT Marketplace</h1>
+                <h1 style={{ fontSize: '18px', fontWeight: 900, color: '#fff', margin: 0 }}>IKT Official Store</h1>
                 {referrerSales && (
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                      <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Partner: {referrerSales.nama}</span>
-                   </div>
+                   <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.9)', margin: 0, fontWeight: 700 }}>Sales Partner: {referrerSales.nama}</p>
                 )}
              </div>
           </div>
 
           <div style={{ position: 'relative' }}>
-             <Search size={18} color="#94a3b8" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
+             <Search size={16} color="#999" style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)' }} />
              <input 
                type="text" 
-               placeholder="Cari produk IKT..." 
-               style={{ width: '100%', padding: '16px 16px 16px 48px', background: '#F1F5F9', border: 'none', borderRadius: '16px', fontSize: '14px', fontWeight: 700, color: '#1e293b' }}
+               placeholder="Cari produk di toko ini..." 
+               style={{ width: '100%', padding: '12px 16px 12px 42px', background: '#fff', border: 'none', borderRadius: '4px', fontSize: '13px', fontWeight: 600 }}
                value={search}
                onChange={e => setSearch(e.target.value)}
              />
@@ -117,49 +114,49 @@ export default function CatalogPage() {
         </div>
       </div>
 
-      <div style={{ maxWidth: '500px', margin: '0 auto', padding: '24px 20px' }}>
+      <div style={{ maxWidth: '500px', margin: '0 auto', padding: '12px' }}>
+        
+        {/* Promo Banner Style */}
+        <div style={{ background: '#fff', borderRadius: '8px', padding: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+           <div style={{ background: '#FFF3E0', padding: '10px', borderRadius: '8px' }}><Star color="#FF9800" fill="#FF9800" size={20} /></div>
+           <div>
+              <div style={{ fontSize: '13px', fontWeight: 900, color: '#333' }}>Katalog Produk IKT</div>
+              <div style={{ fontSize: '11px', color: '#666', fontWeight: 600 }}>Dapatkan harga terbaik dengan ajuan penawaran</div>
+           </div>
+        </div>
+
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: '#999' }}>
              <Loader2 className="animate-spin" size={32} style={{ margin: '0 auto 12px' }} />
-             <p style={{ fontSize: '14px', fontWeight: 800 }}>Memuat Katalog...</p>
+             <p style={{ fontSize: '12px', fontWeight: 700 }}>Memuat Produk...</p>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px 20px' }}>
-             <Search size={48} color="#cbd5e1" style={{ margin: '0 auto 20px', opacity: 0.5 }} />
-             <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#1e293b' }}>Produk Tidak Ditemukan</h3>
-             <p style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Coba gunakan kata kunci pencarian lain.</p>
+             <Search size={48} color="#ddd" style={{ margin: '0 auto 20px' }} />
+             <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#666' }}>Produk Tidak Ditemukan</h3>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          /* SHOPEE GRID 2 COLUMNS */
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
              {filteredProducts.map(product => (
-               <div key={product.id} className="shadow-premium" style={{ background: '#fff', borderRadius: '28px', overflow: 'hidden', border: '1px solid rgba(0,0,0,0.02)' }}>
-                  <div style={{ position: 'relative', aspectRatio: '4/3', overflow: 'hidden' }}>
+               <div key={product.id} className="tap-active" style={{ background: '#fff', borderRadius: '4px', overflow: 'hidden', boxShadow: '0 2px 6px rgba(0,0,0,0.05)' }} onClick={() => { setSelectedProduct(product); setShowForm(true); }}>
+                  <div style={{ position: 'relative', aspectRatio: '1/1', overflow: 'hidden' }}>
                      <img src={product.image_url} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                     <div style={{ position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.9)', padding: '6px 12px', borderRadius: '12px', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <Star size={12} fill="#F59E0B" color="#F59E0B" />
-                        <span style={{ fontSize: '11px', fontWeight: 900, color: '#1e293b' }}>4.9</span>
-                     </div>
+                     {/* Label Category Style */}
+                     <div style={{ position: 'absolute', top: 0, left: 0, background: 'rgba(255, 87, 34, 0.9)', color: '#fff', fontSize: '9px', fontWeight: 900, padding: '4px 8px', borderRadius: '0 0 8px 0' }}>{product.category}</div>
                   </div>
-                  <div style={{ padding: '20px' }}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-                        <div>
-                           <span style={{ fontSize: '9px', fontWeight: 900, color: '#F59E0B', background: '#FFFBEB', padding: '3px 8px', borderRadius: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{product.category}</span>
-                           <h3 style={{ fontSize: '18px', fontWeight: 950, color: '#111827', margin: '6px 0 0' }}>{product.name}</h3>
-                        </div>
-                        <div style={{ textAlign: 'right' }}>
-                           <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>Mulai Dari</div>
-                           <div style={{ fontSize: '18px', fontWeight: 950, color: '#111827' }}>Rp {product.base_price?.toLocaleString('id-ID')}<span style={{ fontSize: '12px', color: '#94a3b8' }}>/kg</span></div>
+                  <div style={{ padding: '10px' }}>
+                     <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#333', margin: '0 0 8px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '34px' }}>{product.name}</h3>
+                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '11px', color: '#FF5722', fontWeight: 800 }}>Rp</span>
+                        <span style={{ fontSize: '15px', color: '#FF5722', fontWeight: 900 }}>{product.base_price?.toLocaleString('id-ID')}</span>
+                     </div>
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                           <Star size={10} fill="#FFC107" color="#FFC107" />
+                           <span style={{ fontSize: '10px', color: '#666', fontWeight: 600 }}>4.9 | 100+ terjual</span>
                         </div>
                      </div>
-                     <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, lineHeight: '1.6', marginBottom: '20px' }}>{product.description}</p>
-                     
-                     <button 
-                       className="tap-active"
-                       onClick={() => { setSelectedProduct(product); setShowForm(true); }}
-                       style={{ width: '100%', padding: '16px', background: '#111827', color: '#fff', border: 'none', borderRadius: '16px', fontSize: '14px', fontWeight: 950, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 10px 20px rgba(0,0,0,0.1)' }}
-                     >
-                       AJUKAN PENAWARAN <Send size={16} />
-                     </button>
                   </div>
                </div>
              ))}
@@ -167,110 +164,116 @@ export default function CatalogPage() {
         )}
       </div>
 
-      {/* Negotiation Form Drawer */}
+      {/* Shopee Style Bottom Drawer */}
       {showForm && (
         <div className="modal-overlay" onClick={() => !isSubmitting && setShowForm(false)} style={{ alignItems: 'flex-end', padding: 0 }}>
           <div className="modal-card animate-fade-up" onClick={e => e.stopPropagation()} style={{ 
-            borderTopLeftRadius: '32px', borderTopRightRadius: '32px', 
-            padding: '24px 20px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none',
-            maxHeight: '92vh', overflowY: 'auto'
+            borderTopLeftRadius: '16px', borderTopRightRadius: '16px', 
+            padding: '20px 16px calc(40px + env(safe-area-inset-bottom))', background: '#fff', border: 'none',
+            maxHeight: '85vh', overflowY: 'auto'
           }}>
-            <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             
             {success ? (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                 <div style={{ width: '72px', height: '72px', background: '#F0FDF4', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                    <CheckCircle size={40} color="#10B981" />
+                 <div style={{ width: '60px', height: '60px', background: '#E8F5E9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+                    <CheckCircle size={32} color="#4CAF50" />
                  </div>
-                 <h2 style={{ fontSize: '24px', fontWeight: 950, color: '#111827', margin: '0 0 8px' }}>Penawaran Terkirim!</h2>
-                 <p style={{ fontSize: '14px', color: '#64748b', fontWeight: 600 }}>Sales Partner kami akan segera menghubungi Anda melalui WhatsApp.</p>
+                 <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#333', margin: '0 0 8px' }}>Pesan Terkirim!</h2>
+                 <p style={{ fontSize: '13px', color: '#666', fontWeight: 600 }}>Sales Partner kami akan segera menghubungi Anda melalui WhatsApp.</p>
               </div>
             ) : (
               <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ background: '#F1F5F9', padding: '8px', borderRadius: '12px' }} onClick={() => setShowForm(false)}>
-                      <ChevronLeft size={20} />
-                    </div>
-                    <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827' }}>Buat Pesanan</h3>
-                  </div>
-                  <X size={24} color="#94a3b8" onClick={() => setShowForm(false)} />
-                </div>
-
-                <div style={{ background: '#F8FAFC', borderRadius: '20px', padding: '16px', display: 'flex', gap: '12px', marginBottom: '24px', border: '1px solid #f1f5f9' }}>
-                   <img src={selectedProduct?.image_url} alt="" style={{ width: '56px', height: '56px', borderRadius: '12px', objectFit: 'cover' }} />
-                   <div>
-                      <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>{selectedProduct?.category}</div>
-                      <div style={{ fontSize: '15px', fontWeight: 950, color: '#111827' }}>{selectedProduct?.name}</div>
-                      <div style={{ fontSize: '13px', fontWeight: 900, color: 'var(--brand-yellow)' }}>Rp {selectedProduct?.base_price?.toLocaleString('id-ID')}/kg</div>
+                <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', borderBottom: '1px solid #f5f5f5', paddingBottom: '16px' }}>
+                   <div style={{ width: '100px', height: '100px', borderRadius: '4px', overflow: 'hidden', border: '1px solid #eee' }}>
+                      <img src={selectedProduct?.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                   </div>
+                   <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: '#FF5722' }}>Rp {selectedProduct?.base_price?.toLocaleString('id-ID')}</div>
+                      <div style={{ fontSize: '13px', color: '#666', fontWeight: 600 }}>Stok: Banyak</div>
+                      <X size={20} color="#999" style={{ position: 'absolute', top: '20px', right: '16px' }} onClick={() => setShowForm(false)} />
                    </div>
                 </div>
 
+                <div style={{ marginBottom: '20px' }}>
+                   <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#333', marginBottom: '12px' }}>{selectedProduct?.name}</h3>
+                   <p style={{ fontSize: '12px', color: '#666', lineHeight: '1.5' }}>{selectedProduct?.description}</p>
+                </div>
+
                 {errorMsg && (
-                  <div style={{ background: '#FEF2F2', padding: '12px', borderRadius: '12px', border: '1px solid #FEE2E2', color: '#EF4444', fontSize: '12px', fontWeight: 700, marginBottom: '20px', display: 'flex', gap: '8px' }}>
-                    <AlertCircle size={16} /> {errorMsg}
+                  <div style={{ background: '#FFEBEE', padding: '10px', borderRadius: '4px', color: '#D32F2F', fontSize: '11px', fontWeight: 700, marginBottom: '20px' }}>
+                    {errorMsg}
                   </div>
                 )}
 
                 <form onSubmit={handleSubmitNegotiation} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 900, color: '#64748b', display: 'block', marginBottom: '8px', marginLeft: '4px' }}>NAMA LENGKAP</label>
+                      <label style={{ fontSize: '12px', fontWeight: 700, color: '#444', display: 'block', marginBottom: '8px' }}>Nama Lengkap</label>
                       <input 
                         type="text" 
                         required
-                        placeholder="Siapa nama Anda?"
-                        style={{ width: '100%', padding: '14px 16px', background: '#F8FAFC', border: '2px solid #F1F5F9', borderRadius: '14px', fontSize: '14px', fontWeight: 750 }}
+                        placeholder="Masukkan nama Anda"
+                        style={{ width: '100%', padding: '12px', background: '#F5F5F5', border: '1px solid #eee', borderRadius: '4px', fontSize: '13px', fontWeight: 600 }}
                         value={formData.name}
                         onChange={e => setFormData({...formData, name: e.target.value})}
                       />
                    </div>
                    <div>
-                      <label style={{ fontSize: '11px', fontWeight: 900, color: '#64748b', display: 'block', marginBottom: '8px', marginLeft: '4px' }}>NOMOR WHATSAPP</label>
+                      <label style={{ fontSize: '12px', fontWeight: 700, color: '#444', display: 'block', marginBottom: '8px' }}>Nomor WhatsApp</label>
                       <input 
                         type="tel" 
                         required
                         placeholder="Contoh: 0812345678"
-                        style={{ width: '100%', padding: '14px 16px', background: '#F8FAFC', border: '2px solid #F1F5F9', borderRadius: '14px', fontSize: '14px', fontWeight: 750 }}
+                        style={{ width: '100%', padding: '12px', background: '#F5F5F5', border: '1px solid #eee', borderRadius: '4px', fontSize: '13px', fontWeight: 600 }}
                         value={formData.whatsapp}
                         onChange={e => setFormData({...formData, whatsapp: e.target.value})}
                       />
                    </div>
-                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 900, color: '#64748b', display: 'block', marginBottom: '8px', marginLeft: '4px' }}>JUMLAH (KG)</label>
-                        <input 
-                          type="number" 
-                          required
-                          placeholder="Berapa Kg?"
-                          style={{ width: '100%', padding: '14px 16px', background: '#F8FAFC', border: '2px solid #F1F5F9', borderRadius: '14px', fontSize: '14px', fontWeight: 750 }}
-                          value={formData.quantity}
-                          onChange={e => setFormData({...formData, quantity: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '11px', fontWeight: 900, color: '#64748b', display: 'block', marginBottom: '8px', marginLeft: '4px' }}>HARGA AJUAN</label>
-                        <input 
-                          type="number" 
-                          required
-                          placeholder="Rp /kg"
-                          style={{ width: '100%', padding: '14px 16px', background: '#F8FAFC', border: '2px solid #F1F5F9', borderRadius: '14px', fontSize: '14px', fontWeight: 750 }}
-                          value={formData.price}
-                          onChange={e => setFormData({...formData, price: e.target.value})}
-                        />
+                   
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #f5f5f5', paddingTop: '16px', marginTop: '8px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#333' }}>Jumlah Order</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <input 
+                            type="number" 
+                            required
+                            placeholder="Qty"
+                            style={{ width: '70px', padding: '8px', background: '#F5F5F5', border: '1px solid #eee', borderRadius: '4px', fontSize: '13px', fontWeight: 800, textAlign: 'center' }}
+                            value={formData.quantity}
+                            onChange={e => setFormData({...formData, quantity: e.target.value})}
+                         />
+                         <span style={{ fontSize: '13px', fontWeight: 700, color: '#666' }}>Kg</span>
                       </div>
                    </div>
 
-                   <button 
-                     type="submit" 
-                     disabled={isSubmitting}
-                     className="tap-active"
-                     style={{ width: '100%', padding: '18px', background: 'var(--brand-yellow)', color: '#111827', border: 'none', borderRadius: '18px', fontSize: '16px', fontWeight: 950, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 12px 24px rgba(255, 204, 0, 0.3)', marginTop: '12px' }}
-                   >
-                     {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <><MessageCircle size={20} /> KIRIM PENAWARAN</>}
-                   </button>
-                   
-                   <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '8px' }}>
-                      <Info size={12} style={{ display: 'inline', marginBottom: '-2px', marginRight: '4px' }} /> Data aman & terhubung ke sistem IKT
+                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: 700, color: '#333' }}>Ajukan Harga</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <span style={{ fontSize: '13px', fontWeight: 700, color: '#666' }}>Rp</span>
+                         <input 
+                            type="number" 
+                            required
+                            placeholder="Harga /kg"
+                            style={{ width: '120px', padding: '8px', background: '#F5F5F5', border: '1px solid #eee', borderRadius: '4px', fontSize: '13px', fontWeight: 800, textAlign: 'right' }}
+                            value={formData.price}
+                            onChange={e => setFormData({...formData, price: e.target.value})}
+                         />
+                      </div>
+                   </div>
+
+                   <div style={{ display: 'flex', gap: '10px' }}>
+                      <button 
+                        type="button"
+                        onClick={() => setShowForm(false)}
+                        style={{ flex: 1, padding: '16px', background: '#E8F5E9', color: '#2E7D32', border: '1px solid #2E7D32', borderRadius: '4px', fontSize: '14px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                      >
+                        <MessageCircle size={18} /> Chat
+                      </button>
+                      <button 
+                        type="submit" 
+                        disabled={isSubmitting}
+                        style={{ flex: 2, padding: '16px', background: '#FF5722', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '14px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', boxShadow: '0 4px 12px rgba(255, 87, 34, 0.3)' }}
+                      >
+                        {isSubmitting ? <Loader2 className="animate-spin" size={20} /> : <><ShoppingCart size={18} /> BELI SEKARANG</>}
+                      </button>
                    </div>
                 </form>
               </>
