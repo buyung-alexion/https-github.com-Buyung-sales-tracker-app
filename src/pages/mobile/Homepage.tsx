@@ -77,7 +77,7 @@ export default function Homepage({ salesId }: Props) {
     // 3. Find all other pending negotiations for the same customer to group them in the message
     // 3. Find all other pending negotiations for the same customer to group them in the message
     const otherItems = myNegotiations.filter(n => n.customer_wa === nego.customer_wa && n.status === 'pending');
-    const productList = otherItems.map(item => `- ${item.products?.name || 'Produk'}`).join('\n');
+    const productList = otherItems.map(item => `- ${item.products?.name || 'Produk'} (${item.requested_qty} ${item.products?.unit || ''})`).join('\n');
 
     // 4. Open WhatsApp with formatted number
     let phone = nego.customer_wa || '';

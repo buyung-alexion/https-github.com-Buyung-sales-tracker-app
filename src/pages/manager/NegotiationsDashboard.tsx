@@ -24,7 +24,8 @@ export default function NegotiationsDashboard() {
     description: '',
     discount_percent: 0,
     stock: 0,
-    sold_count: 0
+    sold_count: 0,
+    unit: 'pcs'
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -58,11 +59,12 @@ export default function NegotiationsDashboard() {
         description: existingData.description || '',
         discount_percent: existingData.discount_percent || 0,
         stock: existingData.stock || 0,
-        sold_count: existingData.sold_count || 0
+        sold_count: existingData.sold_count || 0,
+        unit: existingData.unit || 'pcs'
       });
       setEditingProduct(existingData);
     } else {
-      setProductForm({ name: '', category: '', price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '', discount_percent: 0, stock: 0, sold_count: 0 });
+      setProductForm({ name: '', category: '', price: 0, image_url: '', min_bulk_qty: 1, is_active: true, description: '', discount_percent: 0, stock: 0, sold_count: 0, unit: 'pcs' });
       setEditingProduct(null);
     }
     setProductModalOpen(true);
@@ -459,28 +461,27 @@ export default function NegotiationsDashboard() {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Stok Tersedia</label>
-                      <input 
-                        type="number"
-                        placeholder="0"
-                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
-                        value={productForm.stock}
-                        onChange={(e) => setProductForm({...productForm, stock: parseInt(e.target.value) || 0})}
-                      />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Stok Tersedia</label>
+                        <input 
+                          type="number"
+                          placeholder="0"
+                          style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#111827' }}
+                          value={productForm.stock}
+                          onChange={(e) => setProductForm({...productForm, stock: parseInt(e.target.value) || 0})}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Satuan (Unit)</label>
+                        <input 
+                          placeholder="kg, pcs, bal, dll"
+                          style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#1e293b' }}
+                          value={productForm.unit}
+                          onChange={(e) => setProductForm({...productForm, unit: e.target.value})}
+                        />
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Jumlah Terjual</label>
-                      <input 
-                        type="number"
-                        placeholder="0"
-                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#64748b' }}
-                        value={productForm.sold_count}
-                        onChange={(e) => setProductForm({...productForm, sold_count: parseInt(e.target.value) || 0})}
-                      />
-                    </div>
-                  </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Foto Produk (JPG/PNG)</label>
