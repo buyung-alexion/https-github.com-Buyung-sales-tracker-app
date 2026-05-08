@@ -3,7 +3,7 @@ import { useSalesData } from '../../hooks/useSalesData';
 
 
 import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X, Activity } from 'lucide-react';
-import { Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
+import { Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from 'recharts';
 
 
 
@@ -421,29 +421,32 @@ export default function LiveActivityFeed() {
                   border: '1px solid #fff',
                   zIndex: 1
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', padding: '0 8px' }}>
-                    <div style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b' }}>{totalActs}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', padding: '0 8px' }}>
+                    <div style={{ fontSize: '42px', fontWeight: 950, color: '#1e293b', letterSpacing: '-1px' }}>{totalActs}</div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>Total</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase' }}>Aktivitas</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Total</div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Aktivitas</div>
                     </div>
                   </div>
 
-                  <ResponsiveContainer width="100%" height={200}>
+                  <ResponsiveContainer width="100%" height={280}>
                     <BarChart
                       layout="vertical"
                       data={pieData}
-                      margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
+                      margin={{ top: 5, right: 60, left: 60, bottom: 5 }}
                       barSize={24}
                     >
                       <XAxis type="number" hide />
                       <YAxis 
                         dataKey="name" 
                         type="category" 
-                        hide 
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 11, fontWeight: 900, fill: '#64748b' }}
+                        width={60}
                       />
                       <RechartsTooltip 
-                        cursor={{ fill: 'transparent' }}
+                        cursor={{ fill: 'rgba(238, 77, 45, 0.04)' }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 800 }}
                       />
                       <Bar 
@@ -455,37 +458,17 @@ export default function LiveActivityFeed() {
                         {pieData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
+                        <LabelList 
+                           dataKey="value" 
+                           position="right" 
+                           style={{ fill: '#1e293b', fontSize: 13, fontWeight: 950 }}
+                           offset={15}
+                        />
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                </div>
 
-               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', position: 'relative', zIndex: 1 }}>
-                  {pieData.map(d => {
-                    const pct = totalActs > 0 ? Math.round((d.value / totalActs) * 100) : 0;
-                    return (
-                       <div key={d.name} style={{ 
-                         background: 'rgba(255, 255, 255, 0.9)', 
-                         padding: '12px 16px', 
-                         borderRadius: '16px',
-                         display: 'flex',
-                         justifyContent: 'space-between',
-                         alignItems: 'center',
-                         boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
-                         border: '1px solid rgba(255,255,255,0.5)'
-                       }}>
-                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: d.color }} />
-                           <span style={{ fontSize: '11px', fontWeight: 850, color: '#475569' }}>{d.name}</span>
-                         </div>
-                         <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                           <span style={{ fontSize: '14px', fontWeight: 950, color: '#1e293b' }}>{d.value}</span>
-                           <span style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8' }}>({pct}%)</span>
-                         </div>
-                       </div>
-                    );
-                  })}
-               </div>
             </div>
 
           </div>
