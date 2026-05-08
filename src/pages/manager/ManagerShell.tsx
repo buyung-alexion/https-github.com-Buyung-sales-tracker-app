@@ -52,11 +52,11 @@ export default function ManagerShell() {
     {
       category: 'Main Menu',
       items: [
-        { to: '/manager/activity', icon: <Activity size={18} />, label: 'Live Activity' },
+        { to: '/manager/activity', icon: <Activity size={18} />, label: 'Activity' },
         { to: '/manager/prospek', icon: <Users size={18} />, label: 'Data Prospek' },
         { to: '/manager/customer', icon: <Users size={18} />, label: 'Data Customer' },
         { to: '/manager/inbox', icon: <Mail size={18} />, label: 'Info Tim' },
-        { to: '/manager/chat', icon: <MessageCircle size={18} />, label: 'Live Chat' },
+        { to: '/manager/chat', icon: <MessageCircle size={18} />, label: 'Inbox' },
         { to: '/manager/negotiations', icon: <ShoppingBag size={18} />, label: 'Marketplace' },
       ]
     },
@@ -130,7 +130,7 @@ export default function ManagerShell() {
               ) : (
                 <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
                   {item.icon} {!sidebarCollapsed && <span>{item.label}</span>}
-                  {item.label === 'Live Chat' && chatUnread > 0 && (
+                  {item.label === 'Inbox' && chatUnread > 0 && (
                     <span style={{ 
                       position: 'absolute', 
                       top: sidebarCollapsed ? '8px' : '12px', 
@@ -179,7 +179,7 @@ export default function ManagerShell() {
             {menuCategories.flatMap(c => c.items).filter(i => !i.action).map(item => (
               <NavLink key={item.to} to={item.to} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
                 {item.icon} <span>{item.label}</span>
-                {item.label === 'Live Chat' && chatUnread > 0 && (
+                {item.label === 'Inbox' && chatUnread > 0 && (
                   <span style={{ 
                     position: 'absolute', top: '-4px', right: '-4px', 
                     background: '#EE4D2D', color: '#fff', fontSize: '10px', 
@@ -193,7 +193,7 @@ export default function ManagerShell() {
               </NavLink>
             ))}
           </nav>
-          <div className="topbar-right" />
+
         </header>
 
         {/* NOTIFICATION TOAST (New Message) */}

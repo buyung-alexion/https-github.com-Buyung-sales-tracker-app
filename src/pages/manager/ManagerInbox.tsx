@@ -91,8 +91,8 @@ export default function ManagerInbox() {
         id: 1,
         tab: 'update',
         sender: 'System Admin',
-        subject: '🚀 Dashboard v4.0 is Live!',
-        snippet: 'Aesthetics improved with GrabFood style and real-time Chat sync.',
+        subject: '🚀 Dashboard v4.0 Update',
+        snippet: 'Minimalist premium design with real-time sync enabled.',
         date: 'Just Now',
         isRead: false,
         isStarred: true,
@@ -100,11 +100,11 @@ export default function ManagerInbox() {
         details: {
           fullText: (
             <div>
-              <p style={{marginBottom: '16px', fontSize: '16px'}}><strong>Update Fitur Dashboard versi 4.0 telah Live! 🚀</strong></p>
+              <p style={{marginBottom: '16px', fontSize: '16px'}}><strong>Update Fitur Dashboard versi 4.0 🚀</strong></p>
               <ul style={{marginLeft: '24px', marginBottom: '24px', lineHeight: '1.8'}}>
-                <li><strong>Gaya GrabFood:</strong> Layout header di HP lebih ramping dan premium.</li>
-                <li><strong>Chat Sync:</strong> Sinkronisasi pesan antara Manager & Sales sudah real-time.</li>
-                <li><strong>Data Inbox:</strong> Sekarang Inbox menampilkan aktivitas tim secara langsung!</li>
+                <li><strong>Minimalist Premium:</strong> Layout header lebih ramping dan terfokus.</li>
+                <li><strong>Sync Terpadu:</strong> Sinkronisasi pesan antara Manager & Sales sudah real-time.</li>
+                <li><strong>Pusat Aktivitas:</strong> Sekarang Inbox menampilkan aktivitas tim secara langsung!</li>
               </ul>
               <p>Selamat bekerja dan sukses hari ini!</p>
             </div>

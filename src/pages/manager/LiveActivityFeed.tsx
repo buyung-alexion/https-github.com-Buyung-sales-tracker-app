@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Fragment } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 
 
@@ -53,13 +53,25 @@ export default function LiveActivityFeed() {
 
 
 
+  const [expandedDates, setExpandedDates] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Expand today by default
+    const today = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+    setExpandedDates([today]);
+  }, []);
+
+  const toggleDate = (date: string) => {
+    setExpandedDates(prev => prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]);
+  };
+
   const filtered = useMemo(() => {
     const acts = activities || [];
     return acts
       .filter(a => {
-        const isSalesRole = sales.some(s => s.id == a.id_sales);
+        // Allow all activities from known sales/managers in the feed
         const matchSales = filterSales === 'all' || a.id_sales == filterSales;
-        return isSalesRole && matchSales;
+        return matchSales;
       })
       .filter(a => {
         if (dateFilter === 'all') return true;
@@ -82,7 +94,8 @@ export default function LiveActivityFeed() {
       .filter(a => 
         (a.target_nama || '').toLowerCase().includes(search.toLowerCase()) || 
         getSalesName(a.id_sales).toLowerCase().includes(search.toLowerCase())
-      );
+      )
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, filterSales, dateFilter, selectedArea, selectedCategory, search, todayMs, weekMs, monthMs]);
   
   const filteredProspek = useMemo(() => {
@@ -90,9 +103,9 @@ export default function LiveActivityFeed() {
     
     return (allProspek || [])
       .filter(p => {
-        const isSalesRole = sales.some(s => s.id == p.sales_owner);
+        // Allow all prospects assigned to known sales/managers
         const matchSales = filterSales === 'all' || p.sales_owner == filterSales;
-        return isSalesRole && matchSales;
+        return matchSales;
       })
       .filter(p => {
         if (dateFilter === 'all') return true;
@@ -477,78 +490,155 @@ export default function LiveActivityFeed() {
           border: '1px solid #f1f5f9',
           overflow: 'hidden'
         }}>
-          <div className="activity-table-wrap" style={{ border: 'none', background: 'transparent', boxShadow: 'none' }}>
-            <table className="activity-table">
-              <thead>
-                <tr>
-                  <th>Waktu</th>
-                  <th>Sales</th>
-                  <th>Tipe</th>
-                  <th>Target</th>
-                  <th>Note</th>
-                  <th>Area</th>
-                  <th style={{ textAlign: 'center' }}>Bukti</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(() => {
-                  const displayedData = viewAll ? filtered : filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-                  return (
-                    <>
-                      {displayedData.map(a => (
-                        <tr key={a.id} className={`act-row ${new Date(a.timestamp).toDateString() === new Date().toDateString() ? 'today-row' : ''}`}>
-                          <td className="time-cell">
-                            <span>{new Date(a.timestamp).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}</span>
-                            <span className="time-sub">{new Date(a.timestamp).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</span>
-                          </td>
-                          <td><span className="sales-pill">{getSalesName(a.id_sales)}</span></td>
-                          <td>
-                            <span className={`act-type-badge ${ACT_COLOR[a.tipe_aksi] || 'act-visit'}`}>
-                            {ACT_ICON[a.tipe_aksi]} {getActLabel(a.tipe_aksi)}
-                          </span>
-                          </td>
-                          <td>
-                            <span className="target-name">{a.target_nama}</span>
-                            <span className="target-type">{a.target_type}</span>
-                          </td>
-                          <td className="note-cell">{a.catatan_hasil}</td>
-                          <td>{a.geotagging?.area || '—'}</td>
-                          <td style={{ textAlign: 'center', width: '60px' }}>
-                            {a.geotagging?.photo ? (
-                              <button 
-                                onClick={() => setSelectedImage({
-                                  url: a.geotagging!.photo!,
-                                  sales: getSalesName(a.id_sales),
-                                  store: a.target_nama,
-                                  timestamp: a.timestamp,
-                                  note: a.catatan_hasil
-                                })}
-                                style={{
-                                  padding: '8px 16px', borderRadius: '12px', border: '1px solid #f1f5f9',
-                                  background: '#fff', fontSize: '12px', fontWeight: 800, color: '#1e293b',
-                                  display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer',
-                                  boxShadow: '0 4px 6px rgba(0,0,0,0.05)'
-                                }}
-                              >
-                                <ImageIcon size={14} color="#EE4D2D" /> FOTO BUKTI
-                              </button>
-                            ) : (
-                              <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', margin: '0 auto', border: '1px dashed #e2e8f0' }}>
-                                <ImageIcon size={18} />
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                      {filtered.length === 0 && (
-                        <tr><td colSpan={7} className="empty-row">Tidak ada aktivitas ditemukan.</td></tr>
-                      )}
-                    </>
-                  );
-                })()}
-              </tbody>
-            </table>
-          </div>
+          <div className="activity-accordion-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {(() => {
+            const sortedActivities = filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+            
+            // Group activities by date
+            const groups: Record<string, typeof filtered> = {};
+            sortedActivities.forEach(a => {
+              const d = new Date(a.timestamp);
+              const key = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+              if (!groups[key]) groups[key] = [];
+              groups[key].push(a);
+            });
+
+            const sortedDates = Object.keys(groups).sort((a, b) => {
+              // Extract date components for proper sorting
+              return new Date(groups[b][0].timestamp).getTime() - new Date(groups[a][0].timestamp).getTime();
+            });
+
+            if (sortedDates.length === 0) {
+              return <div style={{ padding: '40px', textAlign: 'center', background: '#fff', borderRadius: '24px', color: '#94a3b8', fontWeight: 800 }}>Tidak ada aktivitas ditemukan.</div>;
+            }
+
+            return sortedDates.map((dateKey) => {
+              const actsInGroup = groups[dateKey];
+              const isToday = new Date(actsInGroup[0].timestamp).toDateString() === new Date().toDateString();
+              const isExpanded = expandedDates.includes(dateKey);
+
+              return (
+                <div key={dateKey} style={{ 
+                  background: '#fff', 
+                  borderRadius: '24px', 
+                  boxShadow: '0 8px 30px rgba(0,0,0,0.03)', 
+                  overflow: 'hidden',
+                  border: isToday ? '2px solid rgba(238, 77, 45, 0.1)' : '1px solid #f1f5f9'
+                }}>
+                  {/* Group Header */}
+                  <div 
+                    onClick={() => toggleDate(dateKey)}
+                    style={{ 
+                      padding: '20px 28px', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      cursor: 'pointer',
+                      background: isToday ? 'linear-gradient(to right, rgba(238, 77, 45, 0.03), #fff)' : '#fff',
+                      borderLeft: '6px solid #EE4D2D',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div style={{ 
+                        width: '40px', height: '40px', borderRadius: '12px', 
+                        background: isToday ? '#EE4D2D' : '#f8fafc', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: isToday ? '#fff' : '#EE4D2D'
+                      }}>
+                        {isToday ? <Activity size={20} /> : <MapPin size={20} />}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '18px', fontWeight: 950, color: '#1e293b' }}>
+                          {isToday ? 'Hari Ini' : dateKey}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 800, marginTop: '2px' }}>
+                          {actsInGroup.length} Aktivitas Tercatat
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ 
+                      width: '32px', height: '32px', borderRadius: '10px', 
+                      background: '#f8fafc', display: 'flex', alignItems: 'center', 
+                      justifyContent: 'center', color: '#94a3b8',
+                      transform: isExpanded ? 'rotate(180deg)' : 'none',
+                      transition: 'transform 0.3s'
+                    }}>
+                      <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Group Content */}
+                  {isExpanded && (
+                    <div style={{ padding: '0 28px 28px' }}>
+                      <div className="activity-table-wrap" style={{ border: 'none', background: 'transparent', boxShadow: 'none', padding: 0 }}>
+                        <table className="activity-table">
+                          <thead>
+                            <tr>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px', borderRadius: '10px 0 0 10px' }}>Waktu</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Sales</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Tipe</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Target</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px' }}>Note</th>
+                              <th style={{ background: '#f8fafc', color: '#64748b', fontSize: '11px', fontWeight: 900, textTransform: 'uppercase', padding: '12px 16px', borderRadius: '0 10px 10px 0', textAlign: 'center' }}>Bukti</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {actsInGroup.map((a) => {
+                              const dateObj = new Date(a.timestamp);
+                              return (
+                                <tr key={a.id} className="act-row">
+                                  <td style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px' }}>
+                                    {dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
+                                  </td>
+                                  <td><span className="sales-pill" style={{ fontSize: '11px', fontWeight: 900 }}>{getSalesName(a.id_sales)}</span></td>
+                                  <td>
+                                    <span className={`act-type-badge ${ACT_COLOR[a.tipe_aksi] || 'act-visit'}`} style={{ fontWeight: 900, fontSize: '11px' }}>
+                                      {ACT_ICON[a.tipe_aksi]} {getActLabel(a.tipe_aksi)}
+                                    </span>
+                                  </td>
+                                  <td>
+                                    <span className="target-name" style={{ fontWeight: 900, color: '#1e293b' }}>{a.target_nama}</span>
+                                    <span className="target-type" style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 700 }}>{a.target_type}</span>
+                                  </td>
+                                  <td style={{ color: '#475569', fontWeight: 600, fontSize: '13px' }}>{a.catatan_hasil}</td>
+                                  <td style={{ textAlign: 'center' }}>
+                                    {a.geotagging?.photo ? (
+                                      <button 
+                                        onClick={() => setSelectedImage({
+                                          url: a.geotagging!.photo!,
+                                          sales: getSalesName(a.id_sales),
+                                          store: a.target_nama,
+                                          timestamp: a.timestamp,
+                                          note: a.catatan_hasil
+                                        })}
+                                        style={{
+                                          padding: '8px 12px', borderRadius: '10px', border: '1px solid #f1f5f9',
+                                          background: '#fff', fontSize: '10px', fontWeight: 900, color: '#EE4D2D',
+                                          cursor: 'pointer', boxShadow: '0 4px 8px rgba(0,0,0,0.03)'
+                                        }}
+                                      >
+                                        LIHAT FOTO
+                                      </button>
+                                    ) : (
+                                      <div style={{ color: '#cbd5e1' }}><ImageIcon size={16} /></div>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
+        </div>
 
           {/* Pagination Footer */}
           {filtered.length > 0 && (
@@ -640,7 +730,7 @@ export default function LiveActivityFeed() {
             {/* Content Side */}
             <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                <div>
-                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>History Live Activity</div>
+                  <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Activity Log</div>
                   <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
                     <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#EE4D2D', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -672,7 +762,7 @@ export default function LiveActivityFeed() {
                <div style={{ flex: 1 }}>
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Insight / Laporan</div>
                   <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #f1f5f9', fontSize: '13px', lineHeight: 1.6, color: '#475569', fontWeight: 600 }}>
-                    {selectedImage.note || 'Tidak ada catatan aktivias live feed.'}
+                    {selectedImage.note || 'Tidak ada catatan aktivitas tim.'}
                   </div>
                </div>
 

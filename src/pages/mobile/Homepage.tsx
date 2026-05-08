@@ -277,10 +277,9 @@ export default function Homepage({ salesId }: Props) {
                 />
               </div>
               <div>
-                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10B981' }} />
-                    <span style={{ fontSize: '10px', color: '#000', fontWeight: 800, opacity: 0.6, letterSpacing: '0.05em' }}>ONLINE</span>
-                 </div>
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
+                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10B981', boxShadow: '0 0 10px rgba(16,185,129,0.4)' }} />
+                  </div>
                  <h2 style={{ fontSize: '20px', fontWeight: 950, color: '#000', margin: 0, letterSpacing: '-0.5px' }}>
                    Halo, {salesDisplayName}!
                  </h2>
