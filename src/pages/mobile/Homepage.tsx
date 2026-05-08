@@ -707,23 +707,26 @@ export default function Homepage({ salesId }: Props) {
                </button>
 
                <button 
-                 className="tap-active"
-                 onClick={() => { setMarketplaceModalOpen(false); setIncomingOrdersModalOpen(true); }}
-                 style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
-               >
-                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><List size={24} /></div>
-                 <div style={{ flex: 1 }}>
-                   <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
-                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
-                   <div style={{ fontSize: '10px', color: '#cbd5e1' }}>Debug: ID {user?.id} | My: {myNegotiations.length} | TotalDB: {allNegoCount}</div>
-                 </div>
-                 {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
-                   <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
-                     {myNegotiations.filter(n => n.status === 'pending').length}
-                   </div>
-                 )}
-                 <ChevronRight size={18} color="#cbd5e1" />
-               </button>
+                  className="tap-active"
+                  onClick={() => { setMarketplaceModalOpen(false); setIncomingOrdersModalOpen(true); }}
+                  style={{ width: '100%', padding: '20px', borderRadius: '24px', border: '2px solid #f8fafc', background: '#F8FAFC', display: 'flex', alignItems: 'center', gap: '16px', textAlign: 'left', transition: 'all 0.2s' }}
+                >
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><List size={24} /></div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
+                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
+                    <div style={{ fontSize: '10px', color: '#cbd5e1', fontWeight: 700, marginTop: '4px' }}>
+                      DEBUG: ID {salesId} | My: {myNegotiations.length} | TotalDB: {allNegoCount}
+                      {negoError && <div style={{ color: '#ef4444' }}>Error: {negoError}</div>}
+                    </div>
+                  </div>
+                  {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
+                    <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
+                      {myNegotiations.filter(n => n.status === 'pending').length}
+                    </div>
+                  )}
+                  <ChevronRight size={18} color="#cbd5e1" />
+                </button>
             </div>
           </div>
         </div>
