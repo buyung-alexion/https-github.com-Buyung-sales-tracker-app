@@ -22,9 +22,7 @@ export default function Homepage({ salesId }: Props) {
   const [marketplaceModalOpen, setMarketplaceModalOpen] = useState(false);
   const [incomingOrdersModalOpen, setIncomingOrdersModalOpen] = useState(false);
   const [myNegotiations, setMyNegotiations] = useState<any[]>([]);
-  const [allNegoCount, setAllNegoCount] = useState(0); // DEBUG TOTAL
   const [loadingNego, setLoadingNego] = useState(false);
-  const [negoError, setNegoError] = useState<string | null>(null);
   const [selectedCust, setSelectedCust] = useState<any>(null); 
   const [orderSearch, setOrderSearch] = useState('');
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -53,16 +51,13 @@ export default function Homepage({ salesId }: Props) {
   const loadMyNegotiations = async () => {
     if (!salesId) return;
     setLoadingNego(true);
-    setNegoError(null);
     const { data, error } = await store.fetchNegotiations();
     if (error) {
       console.error('Fetch Nego Error:', error);
-      setNegoError(error.message);
     }
     const allNego = data || [];
-    setAllNegoCount(allNego.length); // SIMPAN TOTAL UNTUK DEBUG
     
-    // Gunakan salesId (prop) yang berisi S007, bukan user.id
+    // Gunakan salesId (prop) yang berisi S007
     const filtered = allNego.filter(n => String(n.sales_id) === String(salesId));
     
     setMyNegotiations(filtered);
@@ -76,9 +71,18 @@ export default function Homepage({ salesId }: Props) {
     // 2. Refresh local list
     loadMyNegotiations();
 
-    // 3. Open WhatsApp
+    // 3. Open WhatsApp with formatted number
+    let phone = nego.customer_wa || '';
+    // Format 08... to 628...
+    if (phone.startsWith('0')) {
+      phone = '62' + phone.substring(1);
+    } else if (!phone.startsWith('62')) {
+      phone = '62' + phone;
+    }
+    const cleanPhone = phone.replace(/\D/g, ''); // Remove non-digits
+    
     const message = encodeURIComponent(`Halo ${nego.customer_name}, saya dari PT. IKT—mengenai pesanan Anda untuk produk ${nego.products?.name}. Ada yang bisa kami bantu untuk proses selanjutnya?`);
-    window.open(`https://wa.me/${nego.customer_wa}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${cleanPhone}?text=${message}`, '_blank');
   };
 
   const salesName = user?.nama || currentSales?.nama;
@@ -715,10 +719,6 @@ export default function Homepage({ salesId }: Props) {
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
                     <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
-                    <div style={{ fontSize: '10px', color: '#cbd5e1', fontWeight: 700, marginTop: '4px' }}>
-                      DEBUG: ID {salesId} | My: {myNegotiations.length} | TotalDB: {allNegoCount}
-                      {negoError && <div style={{ color: '#ef4444' }}>Error: {negoError}</div>}
-                    </div>
                   </div>
                   {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
                     <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
