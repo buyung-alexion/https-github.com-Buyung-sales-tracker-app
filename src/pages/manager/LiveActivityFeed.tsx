@@ -416,18 +416,11 @@ export default function LiveActivityFeed() {
                   backdropFilter: 'blur(10px)',
                   borderRadius: '24px',
                   margin: '0 0 24px',
-                  padding: '24px 16px',
+                  padding: '24px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
                   border: '1px solid #fff',
                   zIndex: 1
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px', padding: '0 8px' }}>
-                    <div style={{ fontSize: '42px', fontWeight: 950, color: '#1e293b', letterSpacing: '-1px' }}>{totalActs}</div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Total</div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>Aktivitas</div>
-                    </div>
-                  </div>
 
                   <ResponsiveContainer width="100%" height={280}>
                     <BarChart
