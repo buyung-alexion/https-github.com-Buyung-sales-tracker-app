@@ -42,7 +42,10 @@ export default function Homepage({ salesId }: Props) {
   const loadMyNegotiations = async () => {
     if (!user?.id) return;
     setLoadingNego(true);
-    const { data } = await store.fetchNegotiations();
+    const { data, error } = await store.fetchNegotiations();
+    if (error) {
+      console.error('Fetch Nego Error:', error);
+    }
     const filtered = (data || []).filter(n => n.sales_id === user.id);
     setMyNegotiations(filtered);
     setLoadingNego(false);

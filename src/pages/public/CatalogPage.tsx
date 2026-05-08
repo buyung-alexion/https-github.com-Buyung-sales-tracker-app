@@ -185,7 +185,15 @@ export default function CatalogPage() {
         })
       );
 
-      await Promise.all(promises);
+      const results = await Promise.all(promises);
+      const errors = results.filter(r => r.error);
+      
+      if (errors.length > 0) {
+        console.error('Submission Errors:', errors);
+        alert('Gagal menyimpan pesanan. Pastikan tabel database sudah siap.');
+        setIsSubmitting(false);
+        return;
+      }
 
       setSubmitSuccess(true);
       setCart([]);
