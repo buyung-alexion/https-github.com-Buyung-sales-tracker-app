@@ -534,21 +534,22 @@ export default function LiveActivityFeed() {
                 <div key={dateKey} style={{ 
                   background: '#fff', 
                   borderRadius: '24px', 
-                  boxShadow: '0 8px 30px rgba(0,0,0,0.03)', 
+                  boxShadow: isToday ? '0 12px 40px rgba(238, 77, 45, 0.08)' : '0 8px 30px rgba(0,0,0,0.03)', 
                   overflow: 'hidden',
-                  border: isToday ? '2px solid rgba(238, 77, 45, 0.1)' : '1px solid #f1f5f9'
+                  border: isToday ? '1px solid rgba(238, 77, 45, 0.2)' : '1px solid #f1f5f9'
                 }}>
                   {/* Group Header */}
                   <div 
                     onClick={() => toggleDate(dateKey)}
                     style={{ 
-                      padding: '20px 28px', 
+                      padding: '24px 28px', 
                       display: 'flex', 
                       justifyContent: 'space-between', 
                       alignItems: 'center', 
                       cursor: 'pointer',
-                      background: isToday ? 'linear-gradient(to right, rgba(238, 77, 45, 0.03), #fff)' : '#fff',
-                      borderLeft: '6px solid #EE4D2D',
+                      background: isToday ? 'linear-gradient(to right, rgba(238, 77, 45, 0.05), #fff)' : '#fff',
+                      borderLeft: '8px solid #EE4D2D',
+                      boxShadow: 'inset 4px 0 8px -4px rgba(238, 77, 45, 0.4)',
                       transition: 'all 0.2s'
                     }}
                   >
