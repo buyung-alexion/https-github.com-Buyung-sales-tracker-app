@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo, Fragment } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 
 
-import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X } from 'lucide-react';
+import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X, Activity } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
 
 
