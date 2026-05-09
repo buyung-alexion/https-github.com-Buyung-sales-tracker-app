@@ -222,7 +222,7 @@ export default function Leaderboard() {
       </div>
 
       {/* TOP 3 PODIUM */}
-      <div className="db-podium-grid">
+      <div className="db-podium-grid" style={{ marginTop: '60px' }}>
         {leaderboardData[0] && <PodCard data={leaderboardData[0]} rank={1} />}
         {leaderboardData[1] && <PodCard data={leaderboardData[1]} rank={2} />}
         {leaderboardData[2] && <PodCard data={leaderboardData[2]} rank={3} />}
