@@ -605,7 +605,7 @@ export default function ManagerCustomer() {
               </tr>
             </thead>
             <tbody>
-              {pagedCustomers.map(c => {
+              {pagedCustomers.map((c, idx) => {
                 const sName = c.salesName;
                 const lastAct = c.lastAct;
                 const diffOrderDays = c.last_order_date ? Math.floor((new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24)) : 999;

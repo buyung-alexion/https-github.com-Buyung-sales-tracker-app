@@ -461,7 +461,7 @@ export default function ManagerProspek() {
               </tr>
             </thead>
             <tbody>
-              {pagedProspek.map((p: any) => {
+              {pagedProspek.map((p: any, idx: number) => {
                 const isLate = p.ageMs > thirtyDaysMs;
                 const ageDays = Math.floor(p.ageMs / (1000 * 60 * 60 * 24));
 
