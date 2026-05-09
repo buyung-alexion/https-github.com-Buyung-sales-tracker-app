@@ -149,7 +149,7 @@ export default function MasterDataSettings() {
       if (teamModal.data) {
         const isRenaming = teamForm.id !== teamModal.data.id;
         if (isRenaming) {
-          if (!window.confirm(`PERINGATAN: Anda mengubah ID Karyawan dari "${teamModal.data.id}" menjadi "${teamForm.id}". \n\nSemua riwayat (absensi, visit, dll) akan ikut berpindah ke ID baru. Lanjutkan?`)) {
+          if (!window.confirm(`PERINGATAN: Anda mengubah ID Karyawan dari "${teamModal.data.id}" menjadi "${teamForm.id}". \n\nSemua riwayat (visit, prospek, dll) akan ikut berpindah ke ID baru. Lanjutkan?`)) {
             setIsSubmitting(false); return;
           }
         }
