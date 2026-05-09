@@ -404,18 +404,18 @@ export default function LiveActivityFeed() {
                   backdropFilter: 'blur(10px)',
                   borderRadius: '24px',
                   margin: '0 0 24px',
-                  padding: '24px',
+                  padding: '24px 32px',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
                   border: '1px solid #fff',
                   zIndex: 1
                 }}>
 
-                  <ResponsiveContainer width="100%" height={280}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <BarChart
                       layout="vertical"
                       data={pieData}
-                      margin={{ top: 5, right: 60, left: 60, bottom: 5 }}
-                      barSize={24}
+                      margin={{ top: 10, right: 50, left: 0, bottom: 10 }}
+                      barSize={20}
                     >
                       <XAxis type="number" hide />
                       <YAxis 
@@ -423,16 +423,17 @@ export default function LiveActivityFeed() {
                         type="category" 
                         axisLine={false}
                         tickLine={false}
-                        tick={{ fontSize: 11, fontWeight: 900, fill: '#64748b' }}
-                        width={60}
+                        tick={{ fontSize: 13, fontWeight: 800, fill: '#64748b' }}
+                        width={80}
                       />
                       <RechartsTooltip 
-                        cursor={{ fill: 'rgba(238, 77, 45, 0.04)' }}
+                        cursor={{ fill: 'rgba(238, 77, 45, 0.04)', radius: 10 }}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 800 }}
                       />
                       <Bar 
                         dataKey="value" 
-                        radius={[0, 12, 12, 0]}
+                        radius={[10, 10, 10, 10]}
+                        background={{ fill: '#f1f5f9', radius: [10, 10, 10, 10] }}
                         animationBegin={0}
                         animationDuration={1500}
                       >
@@ -442,8 +443,8 @@ export default function LiveActivityFeed() {
                         <LabelList 
                            dataKey="value" 
                            position="right" 
-                           style={{ fill: '#1e293b', fontSize: 13, fontWeight: 950 }}
-                           offset={15}
+                           style={{ fill: '#0f172a', fontSize: 14, fontWeight: 900 }}
+                           offset={12}
                         />
                       </Bar>
                     </BarChart>
