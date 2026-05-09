@@ -473,7 +473,7 @@ export default function ManagerProspek() {
                 }
 
                 return (
-                  <tr key={p.id} style={{ transition: 'all 0.2s', borderBottom: '1px solid #f1f5f9' }} className="premium-row">
+                  <tr key={p.id} style={{ transition: 'all 0.2s', borderBottom: '1px solid #f1f5f9', animationDelay: `${idx * 0.05}s` }} className="premium-row animate-fade-up">
                     <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ position: 'relative' }}>
