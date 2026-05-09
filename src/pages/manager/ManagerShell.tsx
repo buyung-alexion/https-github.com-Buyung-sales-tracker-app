@@ -21,15 +21,7 @@ export default function ManagerShell() {
   const { unreadCount: chatUnread, newMsg, clearNewMsg } = useChatNotifications(user?.id);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [shellTitle, setShellTitle] = useState('');
 
-  useEffect(() => {
-    const handleSetTitle = (e: any) => {
-      setShellTitle(e.detail.title);
-    };
-    window.addEventListener('setMgrTitle', handleSetTitle);
-    return () => window.removeEventListener('setMgrTitle', handleSetTitle);
-  }, []);
 
   const handleLogout = (e: any) => {
     e.preventDefault();
