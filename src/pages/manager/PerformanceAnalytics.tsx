@@ -7,7 +7,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 import { 
-  Calendar, User, MapPin, Wrench, Target, Users, CheckCircle, Zap, 
+  Calendar, MapPin, Target, Users, CheckCircle, Zap, 
   TrendingUp, TrendingDown, Flame, Snowflake, 
   CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X, Trophy
 } from 'lucide-react';
@@ -436,83 +436,70 @@ export default function PerformanceAnalytics() {
     <div className="mgr-page" style={{ background: '#f4f7fa', minHeight: '100vh', padding: '0 0 40px 0' }}>
       
       {/* MASTER FILTER BAR */}
-      <div style={{ 
-        background: 'rgba(255, 255, 255, 0.8)', 
-        backdropFilter: 'blur(10px)', 
-        padding: '12px 20px', 
-        borderRadius: '20px', 
-        border: '1px solid #e2e8f0', 
-        marginBottom: '24px', 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '20px', 
-        flexWrap: 'wrap',
-        position: 'sticky',
-        top: '10px',
-        zIndex: 100,
-        boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Calendar size={18} color="#94a3b8" />
-          <select 
-            value={selectedPeriod} 
-            onChange={(e) => setSelectedPeriod(e.target.value as any)}
-            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
-          >
-            <option value="today">Hari Ini</option>
-            <option value="week">Minggu Ini</option>
-            <option value="month">Bulan Ini</option>
-            <option value="all">Semua Waktu</option>
-          </select>
-        </div>
+      <div className="mgr-master-filter-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>📅</span>
+            <select 
+              className="mgr-filter-select"
+              value={selectedPeriod} 
+              onChange={(e) => setSelectedPeriod(e.target.value as any)}
+            >
+              <option value="today">Hari Ini</option>
+              <option value="week">Minggu Ini</option>
+              <option value="month">Bulan Ini</option>
+              <option value="all">Semua Waktu</option>
+            </select>
+          </div>
 
-        <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+          <div className="mgr-filter-divider" />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <User size={18} color="#94a3b8" />
-          <select 
-            value={selectedSales} 
-            onChange={(e) => setSelectedSales(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
-          >
-            <option value="all">Semua Sales</option>
-            {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
-          </select>
-        </div>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>👤</span>
+            <select 
+              className="mgr-filter-select"
+              value={selectedSales} 
+              onChange={(e) => setSelectedSales(e.target.value)}
+            >
+              <option value="all">Semua Sales</option>
+              {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
+            </select>
+          </div>
 
-        <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+          <div className="mgr-filter-divider" />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <MapPin size={18} color="#94a3b8" />
-          <select 
-            value={selectedArea} 
-            onChange={(e) => setSelectedArea(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
-          >
-            <option value="all">Semua Wilayah</option>
-            {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
-          </select>
-        </div>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>📍</span>
+            <select 
+              className="mgr-filter-select"
+              value={selectedArea} 
+              onChange={(e) => setSelectedArea(e.target.value)}
+            >
+              <option value="all">Semua Wilayah</option>
+              {areas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
+            </select>
+          </div>
 
-        <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+          <div className="mgr-filter-divider" />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Wrench size={18} color="#94a3b8" />
-          <select 
-            value={selectedCategory} 
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
-          >
-            <option value="all">Semua Aktivitas</option>
-            <option value="Visit">Visit Only</option>
-            <option value="Closing">Closing Only</option>
-            <option value="Order">Order Only</option>
-          </select>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>🛠️</span>
+            <select 
+              className="mgr-filter-select"
+              value={selectedCategory} 
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              <option value="all">Semua Aktivitas</option>
+              <option value="Visit">Visit Only</option>
+              <option value="Closing">Closing Only</option>
+              <option value="Order">Order Only</option>
+            </select>
+          </div>
         </div>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Data: <span style={{ color: '#3b82f6' }}>{activities.length} Logs</span>
+          <div style={{ fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            Data: <span style={{ color: '#fff', fontWeight: 900 }}>{activities.length} Logs</span>
           </div>
           <button 
             onClick={() => {
@@ -523,12 +510,12 @@ export default function PerformanceAnalytics() {
             }}
             style={{ 
               padding: '8px 16px', 
-              background: '#f1f5f9', 
+              background: 'rgba(255,255,255,0.2)', 
               border: 'none', 
               borderRadius: '10px', 
               fontSize: '12px', 
               fontWeight: 700, 
-              color: '#475569',
+              color: '#fff',
               cursor: 'pointer'
             }}
           >

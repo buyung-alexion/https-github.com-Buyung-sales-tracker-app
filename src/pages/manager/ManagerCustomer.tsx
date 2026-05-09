@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, Tag, Briefcase, ShoppingCart, TrendingUp, Target, Layers, Layout } from 'lucide-react';
+import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, ShoppingCart, TrendingUp, Target, Layers, Layout } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
@@ -466,125 +466,58 @@ export default function ManagerCustomer() {
     <div className="mgr-page" style={{ padding: '0 0 40px 0' }}>
       
       {/* MASTER FILTER BAR */}
-      <div style={{ 
-        background: '#fff', 
-        padding: '24px', 
-        borderRadius: '32px', 
-        marginBottom: '32px', 
-        boxShadow: '0 10px 30px rgba(0,0,0,0.03)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '24px',
-        border: '1px solid #f8fafc'
-      }}>
-        {/* Search Input */}
-        <div style={{ position: 'relative', flex: 1 }}>
-          <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+      <div className="mgr-master-filter-bar">
+        <div className="mgr-search-input-wrapper">
+          <Search size={18} color="rgba(255,255,255,0.7)" />
           <input 
-            type="text" 
+            className="mgr-search-input"
             placeholder="Cari nama toko..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            style={{ 
-              width: '100%', 
-              padding: '14px 14px 14px 48px', 
-              borderRadius: '16px', 
-              border: '1px solid #f1f5f9', 
-              fontSize: '14px', 
-              background: '#f8fafc',
-              fontWeight: 750,
-              color: '#1e293b'
-            }}
           />
         </div>
 
-        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
-
-        {/* Filter by Area */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <MapPin size={18} color="#3b82f6" />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Filter Area</span>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>📍</span>
             <select 
+              className="mgr-filter-select"
               value={filterArea} 
               onChange={(e) => setFilterArea(e.target.value)}
-              style={{ 
-                padding: '0', 
-                border: 'none', 
-                background: 'transparent', 
-                fontSize: '14px', 
-                fontWeight: 950, 
-                color: '#1e293b', 
-                cursor: 'pointer',
-                outline: 'none'
-              }}
             >
               <option value="All">Semua Wilayah</option>
               {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
-        </div>
 
-        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
+          <div className="mgr-filter-divider" />
 
-        {/* Filter by Category */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fdf2f8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Tag size={18} color="#ec4899" />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Segmentasi</span>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>🏷️</span>
             <select 
+              className="mgr-filter-select"
               value={filterCategory} 
               onChange={(e) => setFilterCategory(e.target.value)}
-              style={{ 
-                padding: '0', 
-                border: 'none', 
-                background: 'transparent', 
-                fontSize: '14px', 
-                fontWeight: 950, 
-                color: '#1e293b', 
-                cursor: 'pointer',
-                outline: 'none'
-              }}
             >
               <option value="All">Semua Kategori</option>
               {masterCategories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
-        </div>
 
-        <div style={{ width: '1px', height: '40px', background: '#f1f5f9' }} />
+          <div className="mgr-filter-divider" />
 
-        {/* Filter by Sales */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'rgba(238, 77, 45, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Briefcase size={18} color="#EE4D2D" />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Filter Sales</span>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>👤</span>
             <select 
+              className="mgr-filter-select"
               value={filterSales} 
               onChange={(e) => setFilterSales(e.target.value)}
-              style={{ 
-                padding: '0', 
-                border: 'none', 
-                background: 'transparent', 
-                fontSize: '14px', 
-                fontWeight: 950, 
-                color: '#1e293b', 
-                cursor: 'pointer',
-                outline: 'none'
-              }}
             >
               <option value="All">Semua Sales</option>
               {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
             </select>
           </div>
         </div>
-
       </div>
 
       <CustomerOverviewCharts 

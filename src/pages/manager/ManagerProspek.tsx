@@ -291,39 +291,25 @@ export default function ManagerProspek() {
   };
 
   return (
-    <div className="mgr-page">
-
-      {/* A. MASTER FILTER BAR (TOP POSITION) */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(10px)',
-        padding: '12px 20px',
-        borderRadius: '20px',
-        border: '1px solid #e2e8f0',
-        marginBottom: '24px',
-        gap: '20px',
-        flexWrap: 'wrap'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '8px 16px', gap: '12px', flex: 1, minWidth: '250px' }}>
-          <Search size={16} color="#94a3b8" />
+    <div className="mgr-page">      {/* A. MASTER FILTER BAR (TOP POSITION) */}
+      <div className="mgr-master-filter-bar">
+        <div className="mgr-search-input-wrapper">
+          <Search size={16} color="rgba(255,255,255,0.7)" />
           <input
+            className="mgr-search-input"
             placeholder="Cari toko atau sales..."
             value={search}
             onChange={e => { setSearch(e.target.value); }}
-            style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', fontSize: '13px' }}
           />
         </div>
 
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="mgr-filter-item">
             <span style={{ fontSize: '18px' }}>📅</span>
             <select
+              className="mgr-filter-select"
               value={filterDate}
               onChange={e => { setFilterDate(e.target.value); }}
-              style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="all">Semua Waktu</option>
               <option value="today">Hari Ini</option>
@@ -332,35 +318,34 @@ export default function ManagerProspek() {
             </select>
           </div>
 
-          <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }} />
+          <div className="mgr-filter-divider" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
+          <div className="mgr-filter-item">
             <span style={{ fontSize: '18px' }}>📍</span>
             <select
+              className="mgr-filter-select"
               value={filterArea}
               onChange={e => { setFilterArea(e.target.value); }}
-              style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="All">Semua Wilayah</option>
               {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
             </select>
           </div>
 
-          <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }} />
+          <div className="mgr-filter-divider" />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'white', border: '1px solid #e2e8f0', padding: '6px 12px', borderRadius: '12px' }}>
+          <div className="mgr-filter-item">
             <span style={{ fontSize: '18px' }}>👤</span>
             <select
+              className="mgr-filter-select"
               value={filterSales}
               onChange={e => { setFilterSales(e.target.value); }}
-              style={{ border: 'none', outline: 'none', fontSize: '13px', fontWeight: 700, color: '#475569', background: 'transparent' }}
             >
               <option value="All">Semua Sales</option>
               {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
             </select>
           </div>
         </div>
-
       </div>
 
       {/* B. KPI GRID (SYNCHRONIZED) */}

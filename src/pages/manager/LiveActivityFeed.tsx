@@ -236,35 +236,24 @@ export default function LiveActivityFeed() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* 1. TOP: MASTER FILTER BAR (Now Moved Above Grid) */}
-        <div style={{ 
-          background: 'rgba(255,255,255,0.8)', 
-          backdropFilter: 'blur(10px)', 
-          padding: '16px 24px', 
-          borderRadius: '20px', 
-          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '20px',
-          border: '1px solid rgba(255,255,255,0.5)',
-          flexWrap: 'wrap'
-        }}>
-          <div className="search-bar compact" style={{ flex: 1, minWidth: '200px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
-            <Search size={14} color="#94a3b8" />
+        <div className="mgr-master-filter-bar">
+          <div className="mgr-search-input-wrapper">
+            <Search size={16} color="rgba(255,255,255,0.7)" />
             <input 
+              className="mgr-search-input"
               placeholder="Cari toko atau sales..." 
               value={search} 
               onChange={e => setSearch(e.target.value)} 
-              style={{ fontSize: '12px' }}
             />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="mgr-filter-item">
               <span style={{ fontSize: '18px' }}>📅</span>
               <select 
+                className="mgr-filter-select"
                 value={dateFilter} 
                 onChange={(e) => {setDateFilter(e.target.value as any); setPage(1);}}
-                style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
               >
                 <option value="today">Hari Ini</option>
                 <option value="week">Minggu Ini</option>
@@ -273,42 +262,42 @@ export default function LiveActivityFeed() {
               </select>
             </div>
 
-            <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+            <div className="mgr-filter-divider" />
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="mgr-filter-item">
               <span style={{ fontSize: '18px' }}>👤</span>
               <select 
+                className="mgr-filter-select"
                 value={filterSales} 
                 onChange={(e) => {setFilterSales(e.target.value); setPage(1);}}
-                style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
               >
                 <option value="all">Semua Sales</option>
-                {sales.map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
+                {(sales || []).map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
               </select>
             </div>
 
-            <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+            <div className="mgr-filter-divider" />
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="mgr-filter-item">
               <span style={{ fontSize: '18px' }}>📍</span>
               <select 
+                className="mgr-filter-select"
                 value={selectedArea} 
                 onChange={(e) => {setSelectedArea(e.target.value); setPage(1);}}
-                style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
               >
                 <option value="all">Semua Wilayah</option>
                 {areas.map(a => <option key={a} value={a}>{a}</option>)}
               </select>
             </div>
 
-            <div style={{ width: '1px', height: '24px', background: '#e2e8f0' }} />
+            <div className="mgr-filter-divider" />
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div className="mgr-filter-item">
               <span style={{ fontSize: '18px' }}>🛠️</span>
               <select 
+                className="mgr-filter-select"
                 value={selectedCategory} 
                 onChange={(e) => {setSelectedCategory(e.target.value); setPage(1);}}
-                style={{ padding: '8px 12px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '13px', fontWeight: 600, color: '#475569' }}
               >
                 <option value="all">Semua Tipe</option>
                 <option value="Visit">Visit</option>
