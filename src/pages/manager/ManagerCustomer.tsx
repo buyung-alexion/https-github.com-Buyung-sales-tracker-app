@@ -587,21 +587,21 @@ export default function ManagerCustomer() {
         </div>
 
         <div className="custom-table-container" style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 12px' }}>
-            <thead>
+          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' }}>
+            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
               <tr>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Toko / PIC</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Area</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sales PIC</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Followup</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Target Vol</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Actual Vol</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Progress</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Last Order</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Category</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Catatan</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Retention</th>
-                <th style={{ textAlign: 'center', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Aksi</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Toko / PIC</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Area</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales PIC</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Followup</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Target Vol</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Actual Vol</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Progress</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Last Order</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Category</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Catatan</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Retention</th>
+                <th style={{ textAlign: 'center', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -611,8 +611,8 @@ export default function ManagerCustomer() {
                 const diffOrderDays = c.last_order_date ? Math.floor((new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24)) : 999;
 
                 return (
-                  <tr key={c.id} style={{ transition: 'all 0.2s ease' }}>
-                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '24px 0 0 24px', border: '1px solid #f1f5f9', borderRight: 'none' }}>
+                  <tr key={c.id} style={{ transition: 'all 0.2s ease', borderBottom: '1px solid #f1f5f9' }} className="premium-row">
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ position: 'relative' }}>
                           {c.foto_profil ? (
@@ -641,19 +641,19 @@ export default function ManagerCustomer() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
                         {masterAreas.find(ma => ma.id == c.area || (Number(ma.id) === Number(c.area) && c.area !== ''))?.name || c.area || 'Unknown'}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }} />
                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#475569', letterSpacing: '0.3px' }}>{sName.toUpperCase()}</span>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       {lastAct ? (
                         <div>
                           <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -665,17 +665,17 @@ export default function ManagerCustomer() {
                         <span style={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 600 }}>Belum ada log</span>
                       )}
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>
                         {(c as any).target_volume || 0}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>
                         {(c as any).total_order_volume || 0}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ width: '120px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ 
@@ -705,7 +705,7 @@ export default function ManagerCustomer() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: '#fdf4ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <ShoppingCart size={14} color="#d946ef" />
@@ -722,7 +722,7 @@ export default function ManagerCustomer() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ 
                         display: 'inline-flex', 
                         alignItems: 'center', 
@@ -737,12 +737,12 @@ export default function ManagerCustomer() {
                         {(masterCategories.find(mc => mc.id == c.kategori || (Number(mc.id) === Number(c.kategori) && c.kategori !== ''))?.name || c.kategori || 'Retail').toUpperCase()}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle', maxWidth: '200px' }}>
                       <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
                         {lastAct?.catatan_hasil || <span style={{ color: '#cbd5e1' }}>-</span>}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ 
                         display: 'inline-flex', 
                         alignItems: 'center', 
@@ -757,7 +757,7 @@ export default function ManagerCustomer() {
                         <ShieldAlert size={12} style={{ marginRight: '6px' }}/> {diffOrderDays <= 14 ? 'AKTIF' : 'NON-AKTIF'}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '0 24px 24px 0', border: '1px solid #f1f5f9', borderLeft: 'none', textAlign: 'center' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                         {lastAct?.geotagging?.photo ? (
                            <div 

@@ -446,18 +446,18 @@ export default function ManagerProspek() {
         </div>
 
         <div className="custom-table-container" style={{ padding: '0 24px 24px 24px', overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '0 12px' }}>
-            <thead>
+          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)' }}>
+            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
               <tr>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Toko / PIC</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Area</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Kategori</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Sales PIC</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Followup</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Status</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Catatan</th>
-                <th style={{ textAlign: 'left', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Peringatan</th>
-                <th style={{ textAlign: 'center', padding: '0 20px 12px 20px', fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.5px' }}>Aksi</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Toko / PIC</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Area</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Kategori</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Sales PIC</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Followup</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Status</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Catatan</th>
+                <th style={{ textAlign: 'left', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Peringatan</th>
+                <th style={{ textAlign: 'center', padding: '16px 20px', fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -473,8 +473,8 @@ export default function ManagerProspek() {
                 }
 
                 return (
-                  <tr key={p.id} style={{ transition: 'all 0.2s' }}>
-                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '24px 0 0 24px', border: '1px solid #f1f5f9', borderRight: 'none' }}>
+                  <tr key={p.id} style={{ transition: 'all 0.2s', borderBottom: '1px solid #f1f5f9' }} className="premium-row">
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <div style={{ position: 'relative' }}>
                           {p.foto_profil ? (
@@ -500,13 +500,13 @@ export default function ManagerProspek() {
                         </div>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#475569' }}>
                         <MapPin size={14} color="#3b82f6" />
                         {masterAreas.find(ma => ma.id == p.area || (Number(ma.id) === Number(p.area) && p.area !== ''))?.name || p.area || 'Unknown'}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                        <div style={{ 
                          display: 'inline-flex', 
                          alignItems: 'center', 
@@ -522,13 +522,13 @@ export default function ManagerProspek() {
                          {masterCategories.find(mc => mc.id == p.kategori || (Number(mc.id) === Number(p.kategori) && p.kategori !== ''))?.name || p.kategori || 'Retail'}
                        </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 12px', borderRadius: '10px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
                         <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }} />
                         <span style={{ fontSize: '11px', fontWeight: 900, color: '#475569', letterSpacing: '0.3px' }}>{p.salesName.toUpperCase()}</span>
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       {p.lastActivity ? (
                         <div>
                           <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -540,7 +540,7 @@ export default function ManagerProspek() {
                         <span style={{ color: '#cbd5e1', fontSize: '12px', fontWeight: 600 }}>Belum ada log</span>
                       )}
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',
@@ -555,12 +555,12 @@ export default function ManagerProspek() {
                         {getStatusName(p.status).toUpperCase()}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none', maxWidth: '200px' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle', maxWidth: '200px' }}>
                       <div style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: '1.5' }}>
                         {p.lastActivity?.catatan_hasil || <span style={{ color: '#cbd5e1' }}>-</span>}
                       </div>
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', border: '1px solid #f1f5f9', borderLeft: 'none', borderRight: 'none' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle' }}>
                       {isLate ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#b45309', background: '#fffbeb', padding: '6px 12px', borderRadius: '10px', fontSize: '11px', fontWeight: 800, border: '1px solid #fef3c7' }}>
                           <ShieldAlert size={12} /> LAMA ({ageDays}d)
@@ -575,7 +575,7 @@ export default function ManagerProspek() {
                         </div>
                       )}
                     </td>
-                    <td style={{ padding: '16px 20px', background: '#fff', borderRadius: '0 24px 24px 0', border: '1px solid #f1f5f9', borderLeft: 'none', textAlign: 'center' }}>
+                    <td style={{ padding: '16px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
                         {p.lastActivity?.geotagging?.photo ? (
                           <div 
