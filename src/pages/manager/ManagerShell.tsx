@@ -226,7 +226,7 @@ export default function ManagerShell() {
           </div>
         )}
 
-        <main className="manager-content" style={{ paddingTop: shellTitle ? '10px' : '0' }}>
+        <main className="manager-content">
           <Routes>
             <Route index element={<LiveActivityFeed />} />
             <Route path="activity" element={<LiveActivityFeed />} />
