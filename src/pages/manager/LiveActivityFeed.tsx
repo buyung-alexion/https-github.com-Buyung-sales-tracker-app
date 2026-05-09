@@ -433,7 +433,7 @@ export default function LiveActivityFeed() {
                       <Bar 
                         dataKey="value" 
                         radius={[10, 10, 10, 10]}
-                        background={{ fill: '#f1f5f9', radius: [10, 10, 10, 10] }}
+                        background={{ fill: '#f1f5f9', radius: 10 }}
                         animationBegin={0}
                         animationDuration={1500}
                       >

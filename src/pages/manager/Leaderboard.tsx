@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { Award, TrendingUp, Filter } from 'lucide-react';
+import { Award, TrendingUp } from 'lucide-react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { calculateSalesPoints } from '../../utils/points';
 import type { FilterType } from '../../utils/points';
@@ -121,26 +121,20 @@ export default function Leaderboard() {
   ];
 
   const PodCard = ({ data, rank }: { data: any, rank: number }) => {
-    // Unified dark luxury theme — differentiated only by accent color
-    const accent = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#cd7f32';
-    const accentShadow = rank === 1
-      ? '0 20px 50px -10px rgba(245,158,11,0.35)'
-      : rank === 2
-      ? '0 20px 50px -10px rgba(148,163,184,0.2)'
-      : '0 20px 50px -10px rgba(205,127,50,0.25)';
-
-    const medalColor = rank === 1 ? '#eab308' : rank === 2 ? '#94a3b8' : '#b45309';
+    // Light Luxury Theme matching Shopee Orange
+    const accent = rank === 1 ? '#EE4D2D' : rank === 2 ? '#64748b' : '#d97706';
+    const medalColor = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#b45309';
 
     return (
       <div
-        style={{ width: '100%', height: '100%', background: '#1e293b', borderRadius: '20px', border: `2px solid ${accent}`, boxShadow: accentShadow, position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'transform 0.3s', cursor: 'default' }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-5px)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+        style={{ width: '100%', height: '100%', background: '#ffffff', borderRadius: '24px', border: `1px solid #f1f5f9`, boxShadow: '0 10px 40px rgba(0,0,0,0.05)', position: 'relative', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'transform 0.3s, box-shadow 0.3s', cursor: 'default' }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = `0 20px 40px ${accent}22`; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.05)'; }}
       >
         {/* Colored accent strip at top */}
-        <div style={{ height: '4px', background: accent, width: '100%', flexShrink: 0 }} />
+        <div style={{ height: '6px', background: accent, width: '100%', flexShrink: 0 }} />
 
-        <div style={{ padding: '20px 24px 24px 24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
+        <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', flex: 1 }}>
           {/* Rank Emblem */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: '20px', position: 'relative' }}>
             {rank <= 3 && (
@@ -148,9 +142,9 @@ export default function Leaderboard() {
                 <img
                   src={`/assets/image/Rank ${rank}.png`}
                   alt={`Rank ${rank}`}
-                  style={{ width: rank === 1 ? '170px' : '120px', height: rank === 1 ? '170px' : '120px', objectFit: 'contain', filter: 'brightness(1.05)' }}
+                  style={{ width: rank === 1 ? '170px' : '120px', height: rank === 1 ? '170px' : '120px', objectFit: 'contain' }}
                 />
-                <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '32px', height: '32px', background: medalColor, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 900, border: '3px solid #1e293b', boxShadow: '0 4px 8px rgba(0,0,0,0.5)' }}>
+                <div style={{ position: 'absolute', bottom: '4px', left: '50%', transform: 'translateX(-50%)', width: '32px', height: '32px', background: medalColor, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '16px', fontWeight: 900, border: '3px solid #fff', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
                   {rank}
                 </div>
               </div>
@@ -160,17 +154,17 @@ export default function Leaderboard() {
 
             {/* Name */}
             <div style={{ width: '100%', textAlign: 'center', padding: '0 8px' }}>
-              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#f1f5f9', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.nama}</h3>
+              <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{data.nama}</h3>
             </div>
           </div>
 
-          {/* Stats: dark panel */}
-          <div style={{ background: '#0f172a', borderRadius: '14px', padding: '14px 10px', marginBottom: '20px' }}>
+          {/* Stats: light panel */}
+          <div style={{ background: '#f8fafc', borderRadius: '16px', padding: '16px 12px', marginBottom: '20px', border: '1px solid #f1f5f9' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', width: '100%', gap: '4px' }}>
               {statDefs.map(({ key, label }, i) => (
-                <div key={key} style={{ textAlign: 'center', padding: '8px 4px', borderRight: i < statDefs.length - 1 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>{label}</div>
-                  <div style={{ fontSize: '22px', fontWeight: 900, color: '#ffffff', lineHeight: 1 }}>{data[key]}</div>
+                <div key={key} style={{ textAlign: 'center', padding: '8px 4px', borderRight: i < statDefs.length - 1 ? '1px solid #e2e8f0' : 'none' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' }}>{label}</div>
+                  <div style={{ fontSize: '22px', fontWeight: 900, color: '#0f172a', lineHeight: 1 }}>{data[key]}</div>
                 </div>
               ))}
             </div>
@@ -178,11 +172,11 @@ export default function Leaderboard() {
 
           {/* Bottom pills */}
           <div style={{ display: 'flex', width: '100%', gap: '10px', marginTop: 'auto' }}>
-            <div style={{ flex: 1, background: `${accent}22`, border: `1px solid ${accent}55`, borderRadius: '12px', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: accent, fontWeight: 900, fontSize: '14px' }}>
-              <Award size={16} strokeWidth={2.5} /> {data.actualPoints} Poin
+            <div style={{ flex: 1, background: `${accent}15`, border: `1px solid ${accent}33`, borderRadius: '14px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: accent, fontWeight: 900, fontSize: '15px' }}>
+              <Award size={18} strokeWidth={2.5} /> {data.actualPoints} Poin
             </div>
-            <div style={{ flex: 1, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '10px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#94a3b8', fontWeight: 900, fontSize: '14px' }}>
-              <TrendingUp size={16} strokeWidth={2.5} /> {data.percent}%
+            <div style={{ flex: 1, background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '14px', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#64748b', fontWeight: 900, fontSize: '15px' }}>
+              <TrendingUp size={18} strokeWidth={2.5} /> {data.percent}%
             </div>
           </div>
         </div>
@@ -194,36 +188,36 @@ export default function Leaderboard() {
     <div className="mgr-page" style={{ padding: '0 32px 32px 32px', display: 'flex', flexDirection: 'column', gap: '32px' }}>
 
 
-      {/* FILTERS */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', background: 'white', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '8px 16px', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-          <Filter size={14} color="#94a3b8" />
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Waktu:</span>
-          <select
-            value={filterDate}
-            onChange={e => setFilterDate(e.target.value)}
-            style={{ border: 'none', padding: '0', outline: 'none', fontSize: '13px', fontWeight: 800, color: '#0f172a', background: 'transparent', cursor: 'pointer' }}
-          >
-            <option value="all">Semua Waktu</option>
-            <option value="today">Hari Ini</option>
-            <option value="week">7 Hari Terakhir</option>
-            <option value="month">Bulan Ini</option>
-            <option value="last_month">Bulan Lalu</option>
-          </select>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', background: 'white', border: '1px solid #e2e8f0', borderRadius: '24px', padding: '8px 16px', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-          <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600 }}>Sales:</span>
-          <select
-            value={filterSales}
-            onChange={e => setFilterSales(e.target.value)}
-            style={{ border: 'none', padding: '0', outline: 'none', fontSize: '13px', fontWeight: 800, color: '#0f172a', background: 'transparent', cursor: 'pointer', maxWidth: '140px' }}
-          >
-            <option value="All">Semua Sales</option>
-            {sales.map(s => (
-              <option key={s.id} value={s.id}>{s.nama}</option>
-            ))}
-          </select>
+      {/* MASTER FILTER BAR */}
+      <div className="mgr-master-filter-bar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>📅</span>
+            <select 
+              className="mgr-filter-select"
+              value={filterDate}
+              onChange={e => setFilterDate(e.target.value)}
+            >
+              <option value="all">Semua Waktu</option>
+              <option value="today">Hari Ini</option>
+              <option value="week">7 Hari Terakhir</option>
+              <option value="month">Bulan Ini</option>
+              <option value="last_month">Bulan Lalu</option>
+            </select>
+          </div>
+          <div className="mgr-filter-item">
+            <span style={{ fontSize: '18px' }}>👤</span>
+            <select 
+              className="mgr-filter-select"
+              value={filterSales}
+              onChange={e => setFilterSales(e.target.value)}
+            >
+              <option value="All">Semua Sales</option>
+              {sales.map(s => (
+                <option key={s.id} value={s.id}>{s.nama}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
