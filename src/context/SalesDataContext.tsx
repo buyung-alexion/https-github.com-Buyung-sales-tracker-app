@@ -3,8 +3,14 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import type { SystemTargets, Prospek, Customer, Activity, Sales, SalesOrder } from '../types';
 
-
-
+const loadCache = (key: string, defaultVal: any) => {
+  try {
+    const cached = localStorage.getItem(`st_cache_${key}`);
+    return cached ? JSON.parse(cached) : defaultVal;
+  } catch (e) {
+    return defaultVal;
+  }
+};
 
 interface SalesDataContextType {
   sales: Sales[];
@@ -29,21 +35,24 @@ const SalesDataContext = createContext<SalesDataContextType | undefined>(undefin
 
 export function SalesDataProvider({ children }: { children: React.ReactNode }) {
   const { isLoggedIn } = useAuth();
-  const [sales, setSales] = useState<Sales[]>([]);
-  const [allSales, setAllSales] = useState<Sales[]>([]);
-  const [prospek, setProspek] = useState<Prospek[]>([]);
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [orders, setOrders] = useState<SalesOrder[]>([]);
-  const [systemTargets, setSystemTargets] = useState<SystemTargets | null>(null);
-  const [masterAreas, setMasterAreas] = useState<{id: string, name: string}[]>([]);
-  const [masterCategories, setMasterCategories] = useState<{id: string, name: string}[]>([]);
-  const [masterProductCategories, setMasterProductCategories] = useState<{id: string, name: string}[]>([]);
-  const [masterChannels, setMasterChannels] = useState<{id: string, name: string}[]>([]);
-  const [masterStatuses, setMasterStatuses] = useState<{id: string, name: string}[]>([]);
-  const [masterActions, setMasterActions] = useState<{id: string, name: string}[]>([]);
-  const [masterUnits, setMasterUnits] = useState<{id: string, name: string}[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [sales, setSales] = useState<Sales[]>(() => loadCache('sales', []));
+  const [allSales, setAllSales] = useState<Sales[]>(() => loadCache('allSales', []));
+  const [prospek, setProspek] = useState<Prospek[]>(() => loadCache('prospek', []));
+  const [customers, setCustomers] = useState<Customer[]>(() => loadCache('customers', []));
+  const [activities, setActivities] = useState<Activity[]>(() => loadCache('activities', []));
+  const [orders, setOrders] = useState<SalesOrder[]>(() => loadCache('orders', []));
+  const [systemTargets, setSystemTargets] = useState<SystemTargets | null>(() => loadCache('systemTargets', null));
+  const [masterAreas, setMasterAreas] = useState<{id: string, name: string}[]>(() => loadCache('masterAreas', []));
+  const [masterCategories, setMasterCategories] = useState<{id: string, name: string}[]>(() => loadCache('masterCategories', []));
+  const [masterProductCategories, setMasterProductCategories] = useState<{id: string, name: string}[]>(() => loadCache('masterProductCategories', []));
+  const [masterChannels, setMasterChannels] = useState<{id: string, name: string}[]>(() => loadCache('masterChannels', []));
+  const [masterStatuses, setMasterStatuses] = useState<{id: string, name: string}[]>(() => loadCache('masterStatuses', []));
+  const [masterActions, setMasterActions] = useState<{id: string, name: string}[]>(() => loadCache('masterActions', []));
+  const [masterUnits, setMasterUnits] = useState<{id: string, name: string}[]>(() => loadCache('masterUnits', []));
+  const [loading, setLoading] = useState(() => {
+    const hasCache = localStorage.getItem('st_cache_customers');
+    return !hasCache; // if we have cache, don't show loading overlay
+  });
   const fetchTimeoutRef = React.useRef<any>(null);
 
   const fetchData = useCallback(async () => {
@@ -77,8 +86,13 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       const salesOnly = allSalesData.filter(s => (s.role || '').toLowerCase() === 'sales');
       
       setSales(salesOnly);
+      localStorage.setItem('st_cache_sales', JSON.stringify(salesOnly));
+      
       setAllSales(allSalesData);
+      localStorage.setItem('st_cache_allSales', JSON.stringify(allSalesData));
+      
       setProspek(resProspek.data || []);
+      localStorage.setItem('st_cache_prospek', JSON.stringify(resProspek.data || []));
       const now = new Date();
       const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -104,16 +118,39 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         };
       });
       setCustomers(customersWithTargets);
+      localStorage.setItem('st_cache_customers', JSON.stringify(customersWithTargets));
+      
       setActivities(resActivity.data || []);
-      if (resTargets.data) setSystemTargets(resTargets.data);
+      localStorage.setItem('st_cache_activities', JSON.stringify(resActivity.data || []));
+      
+      if (resTargets.data) {
+        setSystemTargets(resTargets.data);
+        localStorage.setItem('st_cache_systemTargets', JSON.stringify(resTargets.data));
+      }
+      
       setMasterAreas(resMA.data || []);
+      localStorage.setItem('st_cache_masterAreas', JSON.stringify(resMA.data || []));
+      
       setMasterCategories(resMC.data || []);
+      localStorage.setItem('st_cache_masterCategories', JSON.stringify(resMC.data || []));
+      
       setMasterChannels(resMCH.data || []);
+      localStorage.setItem('st_cache_masterChannels', JSON.stringify(resMCH.data || []));
+      
       setMasterStatuses(resMS.data || []);
+      localStorage.setItem('st_cache_masterStatuses', JSON.stringify(resMS.data || []));
+      
       setMasterActions(resMAC.data || []);
+      localStorage.setItem('st_cache_masterActions', JSON.stringify(resMAC.data || []));
+      
       setOrders(resOrders.data || []);
+      localStorage.setItem('st_cache_orders', JSON.stringify(resOrders.data || []));
+      
       setMasterProductCategories(resMPC.data || []);
+      localStorage.setItem('st_cache_masterProductCategories', JSON.stringify(resMPC.data || []));
+      
       setMasterUnits(resMU.data || []);
+      localStorage.setItem('st_cache_masterUnits', JSON.stringify(resMU.data || []));
       // resMA, resMC, resMCH, resMS, resMAC, resOrders are already handled
       // But I added a new fetch at the end of Promise.all, so I need to access it.
       // Promise.all order: resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC
