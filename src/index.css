@@ -540,7 +540,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .topbar-nav { display: flex; gap: 4px; flex: 1; }
 .topbar-link { display: none; }
 
-.manager-content { flex: 1; overflow-y: auto; padding: 48px 32px 40px; scrollbar-gutter: stable; min-height: 0; }
+.manager-content { flex: 1; overflow-y: auto; padding: 56px 32px 40px; scrollbar-gutter: stable; min-height: 0; }
 
 /* ─── MANAGER PAGES ──────────────────────────────────────── */
 .mgr-page { display: flex; flex-direction: column; gap: 24px; }
