@@ -154,7 +154,7 @@ export default function MasterDataSettings() {
           }
         }
 
-        console.log('DEBUG: Updating team', teamModal.data.id, teamForm);
+
         const updates: any = {
           nama: teamForm.nama, username: teamForm.username, password: teamForm.pass,
           role: teamForm.role, foto_profil: teamForm.foto_profil, no_wa: teamForm.no_wa
@@ -189,7 +189,7 @@ export default function MasterDataSettings() {
       
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
-      console.log('DEBUG: Save process complete');
+
     } catch (err: any) {
       setFormError(err.message || 'Gagal menyimpan data karyawan.');
     } finally { setIsSubmitting(false); }

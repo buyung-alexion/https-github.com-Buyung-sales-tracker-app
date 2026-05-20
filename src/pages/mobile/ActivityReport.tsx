@@ -116,7 +116,7 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
   useEffect(() => {
     // Auto-fetch GPS strictly on first load
     handleGetLocation();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, []);
 
   const handleGetLocation = () => {
@@ -167,7 +167,7 @@ export default function ActivityReport({ salesId, onSuccess }: Props) {
     setIsSubmitting(true);
     setSaveError(null);
     try {
-      let tName = targetData ? targetData.name : `Aktivitas area ${selectedArea}`;
+      const tName = targetData ? targetData.name : `Aktivitas area ${selectedArea}`;
       const { error } = await store.logActivity({
         id_sales: salesId,
         target_id: targetType === 'General' ? salesId : targetId,

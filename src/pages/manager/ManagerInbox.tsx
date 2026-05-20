@@ -134,22 +134,22 @@ export default function ManagerInbox() {
   const unreadPrimary = messages.filter(m => m.tab === 'primary' && !m.isRead && !m.isArchived).length;
   const unreadUpdate = messages.filter(m => m.tab === 'update' && !m.isRead && !m.isArchived).length;
 
-  const toggleStar = (id: number) => {
-     console.log('Toggling star for:', id);
+  const toggleStar = (_id: number) => {
+
   };
 
-  const markAsRead = (id: number) => {
-    console.log('Marking as read:', id);
+  const markAsRead = (_id: number) => {
+
   };
 
-  const handleArchive = (id: number, e: React.MouseEvent) => {
+  const handleArchive = (_id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('Archiving:', id);
+
   };
 
-  const handleDelete = (id: number, e: React.MouseEvent) => {
+  const handleDelete = (_id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    console.log('Deleting:', id);
+
   };
 
   const handleRefresh = () => {

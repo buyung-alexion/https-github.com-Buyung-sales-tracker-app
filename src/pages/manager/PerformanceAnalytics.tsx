@@ -2,20 +2,17 @@ import { useSalesData } from '../../hooks/useSalesData';
 import { getAreaName } from '../../constants';
 import { calculateSalesPoints } from '../../utils/points';
 import { useState, useEffect, useMemo } from 'react';
-import { 
-  ResponsiveContainer, 
-  PieChart, Pie, Cell
-} from 'recharts';
+
 import { 
   Calendar, MapPin, Target, Users, CheckCircle, Zap, 
-  TrendingUp, TrendingDown, Flame, Snowflake, 
-  CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X, Trophy
+  TrendingUp, TrendingDown, Flame, 
+  CheckSquare, Award, AlertTriangle, MessageCircle, ClipboardList, Rocket, X
 } from 'lucide-react';
 
 
 
 export default function PerformanceAnalytics() {
-  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas, masterChannels, masterStatuses = [] } = useSalesData();
+  const { sales, activities: realActivities, customers: realCustomers, prospek: realProspek, systemTargets, masterAreas, masterStatuses = [] } = useSalesData();
 
   // --- MASTER FILTER STATES ---
   const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month');
@@ -122,18 +119,19 @@ export default function PerformanceAnalytics() {
 
       const visitCount = vProspek + vCustomer;
       const totalActs = waCount + soCount + visitCount;
-      const revenueReal = sClosingCount * 3500000;
       const closingRate = totalActs > 0 ? Math.round((sClosingCount / totalActs) * 100) : 0;
       
       return {
         id: s.id, nama: s.nama,
         visitCount, waCount, callCount: 0, soCount, totalActs,
-        closingCount: sClosingCount, revenueReal, closingRate, activeFollowups: waCount,
-        maintainCount: vCustomer, points: totalActual, prospekBaru: activeProspekCount,
+        closingCount: sClosingCount, closingRate, activeFollowups: waCount,
+        maintainCount: vCustomer, 
+        totalPoin: totalActual, 
+        prospekBaru: activeProspekCount,
         foto_profil: s.foto_profil,
-        pointProgressPct: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100))
+        progress: Math.min(100, Math.round((totalActual / (systemTargets?.ind_poin || 150)) * 100))
       };
-    }).sort((a,b) => b.points - a.points);
+    }).sort((a,b) => b.totalPoin - a.totalPoin);
   }, [sales, realActivities, realProspek, systemTargets, selectedPeriod, selectedArea, selectedCategory, realCustomers]);
 
   // Master Aggregation for Customer Progress
@@ -227,57 +225,7 @@ export default function PerformanceAnalytics() {
     { name: 'Empty', value: Math.max(0, fTotal - (fClosedNum + fStatusHotNum + fStatusColdNum)), color: '#f1f5f9' }
   ], [fClosedNum, fStatusHotNum, fStatusColdNum, fTotal]);
 
-  const monthsData = useMemo(() => {
-    return Array.from({ length: 6 }).map((_, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() - 5 + i, 1);
-      const year = d.getFullYear();
-      const month = d.getMonth();
-      const label = d.toLocaleDateString('id-ID', { month: 'short' });
-      
-      const filterByMonth = (dateStr: string | undefined) => {
-        if (!dateStr) return false;
-        const date = new Date(dateStr);
-        return date.getFullYear() === year && date.getMonth() === month;
-      };
 
-      // Filter by selection
-      const mP = realProspek.filter(p => {
-        if (selectedSales !== 'all' && p.sales_owner !== selectedSales) return false;
-        if (selectedArea !== 'all' && p.area !== selectedArea) return false;
-        return filterByMonth(p.created_at);
-      }).length;
-
-      const mC = realCustomers.filter(c => {
-        if (selectedSales !== 'all' && c.sales_pic !== selectedSales) return false;
-        if (selectedArea !== 'all' && c.area !== selectedArea) return false;
-        return filterByMonth(c.tanggal_join || c.created_at);
-      }).length;
-
-      const mActs = realActivities.filter(a => {
-        if (selectedSales !== 'all' && a.id_sales !== selectedSales) return false;
-        if (selectedArea !== 'all' && (a as any).geotagging?.area !== selectedArea) return false;
-        if (selectedCategory !== 'all') {
-          if (selectedCategory === 'Visit' && a.tipe_aksi !== 'Visit') return false;
-          if (selectedCategory === 'Order' && a.tipe_aksi !== 'Order') return false;
-          if (selectedCategory === 'Closing' && !a.catatan_hasil.toLowerCase().includes('closing')) return false;
-        }
-        return filterByMonth(a.timestamp);
-      });
-
-      const mOrder = mActs.filter(a => a.tipe_aksi === 'Order').length;
-      const total = mP + mC + mOrder;
-
-      return { 
-        label, 
-        mProspek: mP, 
-        mCustomer: mC, 
-        mVisit: mActs.filter(a => a.tipe_aksi === 'Visit').length, 
-        mFollowup: mActs.filter(a => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length, 
-        mOrder, 
-        total 
-      };
-    });
-  }, [now, realActivities, realCustomers, realProspek, selectedSales, selectedArea]);
 
 
 
@@ -372,65 +320,9 @@ export default function PerformanceAnalytics() {
 
 
 
-  const channelDistribution = useMemo(() => {
-    const counts: Record<string, number> = {};
-    prospek.forEach(p => {
-      const ch = p.channel || 'Lainnya';
-      counts[ch] = (counts[ch] || 0) + 1;
-    });
-    
-    const total = prospek.length || 1;
-    const colors = ['#EE4D2D', '#3b82f6', '#10b981', '#f97316', '#ef4444', '#6366f1'];
-    
-    return Object.entries(counts)
-      .map(([name, value], i) => {
-        const channelObj = masterChannels.find(mc => mc.id === name);
-        const resolvedName = channelObj ? channelObj.name : name;
-        return {
-          name: resolvedName,
-          value,
-          percentage: Math.round((value / total) * 100),
-          color: colors[i % colors.length]
-        };
-      })
-      .sort((a, b) => b.value - a.value);
-  }, [prospek]);
 
-  const areaDistribution = useMemo(() => {
-    const counts: Record<string, number> = {};
-    prospek.forEach(p => {
-      const a = p.area || 'Lainnya';
-      counts[a] = (counts[a] || 0) + 1;
-    });
-    const total = prospek.length || 1;
-    const colors = ['#10b981', '#6366f1', '#EE4D2D', '#3b82f6', '#ef4444'];
-    return Object.entries(counts)
-      .map(([name, value], i) => {
-        const areaObj = masterAreas.find(ma => ma.id === name);
-        const resolvedName = areaObj ? areaObj.name : name;
-        return {
-          name: resolvedName,
-          value,
-          percentage: Math.round((value / total) * 100),
-          color: colors[i % colors.length]
-        };
-      })
-      .sort((a,b) => b.value - a.value);
-  }, [prospek]);
 
-  const salesLeadDistribution = useMemo(() => {
-    const counts: Record<string, number> = {};
-    prospek.forEach(p => {
-      const sId = p.sales_owner || 'unknown';
-      counts[sId] = (counts[sId] || 0) + 1;
-    });
-    return Object.entries(counts)
-      .map(([id, value]) => {
-        const sName = sales.find(s => s.id === id)?.nama || id;
-        return { id, name: sName, value };
-      })
-      .sort((a,b) => b.value - a.value);
-  }, [prospek, sales]);
+
 
   return (
     <div className="mgr-page" style={{ background: '#f4f7fa', minHeight: '100vh', padding: '0 0 40px 0' }}>
@@ -614,687 +506,273 @@ export default function PerformanceAnalytics() {
                   )}
                 </div>
               </div>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '2px' }}>
-                {item.label}
-              </div>
+              <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '2px' }}>{item.label}</div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* ROW 2: PERFORMANCE COMMAND CENTER */}
-      <div style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '28px' }}>
-          <div style={{ width: '6px', height: '24px', background: 'linear-gradient(to bottom, #3b82f6, #60a5fa)', borderRadius: '6px' }} />
-          <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#1e293b', letterSpacing: '-0.03em', margin: 0, textTransform: 'uppercase' }}>Summary Overview</h2>
-        </div>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'minmax(400px, 1fr) 2fr', gap: '24px' }}>
-
-          <div style={{ 
-            background: '#fff', 
-            borderRadius: '24px', 
-            padding: '32px', 
-            boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
-            border: '1px solid #f1f5f9', 
-            display: 'flex', 
-            flexDirection: 'column' 
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-              <div>
-                <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Trend Pertumbuhan</div>
-                <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>6 Bulan Terakhir</div>
-              </div>
-              {/* Legend (Keterangan) */}
-              <div style={{ display: 'flex', gap: '12px' }}>
-                {[
-                  { label: 'Prospek', color: '#8b5cf6' },
-                  { label: 'Cust', color: '#3b82f6' },
-                  { label: 'Order', color: '#ef4444' }
-                ].map(l => (
-                  <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <div style={{ width: '8px', height: '8px', borderRadius: '2px', background: l.color }} />
-                    <span style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{l.label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ height: '140px', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: '12px', padding: '0 10px', marginBottom: '16px' }}>
-              {monthsData.map((d, i) => {
-                const maxTotal = Math.max(...monthsData.map(dm => dm.total), 1);
-                
-                // Calculate Monthly Growth % compared to previous month
-                let growthPerc = 0;
-                if (i > 0) {
-                  const prevTotal = monthsData[i-1].total;
-                  if (prevTotal > 0) {
-                    growthPerc = Math.round(((d.total - prevTotal) / prevTotal) * 100);
-                  } else if (d.total > 0) {
-                    growthPerc = 100;
-                  }
-                }
-
-                return (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
-                    {/* Growth Percentage Label on Top */}
-                    {i > 0 && (
-                      <div style={{ 
-                        position: 'absolute', 
-                        top: '-32px', 
-                        fontSize: '10px', 
-                        fontWeight: 950, 
-                        color: growthPerc >= 0 ? '#10b981' : '#ef4444',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '2px',
-                        background: growthPerc >= 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                        padding: '2px 4px',
-                        borderRadius: '4px'
-                      }}>
-                        {growthPerc >= 0 ? '+' : ''}{growthPerc}% {growthPerc >= 0 ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                      </div>
-                    )}
-                    
-                    {/* Bar Track */}
-                    <div style={{ 
-                      width: '100%', 
-                      maxWidth: '32px', 
-                      height: '130px', 
-                      background: '#f8fafc', 
-                      borderRadius: '12px', 
-                      overflow: 'hidden', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      justifyContent: 'flex-end', 
-                      position: 'relative',
-                      border: '1px solid #f1f5f9'
-                    }}>
-                      {/* Segment: Prospek */}
-                      <div style={{ 
-                        height: `${(d.mProspek/maxTotal)*100}%`, 
-                        background: 'linear-gradient(to top, #8b5cf6, #a78bfa)', 
-                        width: '100%', 
-                        transition: 'height 0.8s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        color: '#fff'
-                      }}>
-                        {(d.mProspek/d.total) > 0.15 && d.total > 0 && `${Math.round((d.mProspek/d.total)*100)}%`}
-                      </div>
-
-                      {/* Segment: Customer */}
-                      <div style={{ 
-                        height: `${(d.mCustomer/maxTotal)*100}%`, 
-                        background: 'linear-gradient(to top, #3b82f6, #2563eb)', 
-                        width: '100%', 
-                        transition: 'height 0.8s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        color: '#fff'
-                      }}>
-                        {(d.mCustomer/d.total) > 0.1 && d.total > 0 && `${Math.round((d.mCustomer/d.total)*100)}%`}
-                      </div>
-
-                      {/* Segment: Order */}
-                      <div style={{ 
-                        height: `${(d.mOrder/maxTotal)*100}%`, 
-                        background: 'linear-gradient(to top, #ef4444, #dc2626)', 
-                        width: '100%', 
-                        transition: 'height 0.8s ease',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: 900,
-                        color: '#fff'
-                      }}>
-                        {(d.mOrder/d.total) > 0.1 && d.total > 0 && `${Math.round((d.mOrder/d.total)*100)}%`}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div style={{ borderTop: '2px solid #f1f5f9', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', gap: '12px', paddingLeft: '10px', paddingRight: '10px' }}>
-              {monthsData.map((d, i) => (
-                <div key={i} style={{ 
-                  flex: 1, 
-                  textAlign: 'center',
-                  background: '#EE4D2D',
-                  padding: '4px 0',
-                  borderRadius: '8px',
-                  boxShadow: '0 2px 4px rgba(238, 77, 45, 0.2)',
-                }}>
-                  <div style={{ fontSize: '10px', color: '#fff', fontWeight: 950, textTransform: 'uppercase' }}>{d.label}</div>
-                </div>
-              ))}
+      {/* ROW 2: ANALYTICS OVERVIEW */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
+        <div style={{ background: '#fff', borderRadius: '24px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#eff6ff', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ClipboardList size={18} /></div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>Data Overview</div>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Bulan Lalu VS Bulan Ini</div>
             </div>
           </div>
-
-          <div style={{ 
-            background: '#fff', 
-            borderRadius: '24px', 
-            padding: '32px', 
-            boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
-            border: '1px solid #f1f5f9', 
-            display: 'flex', 
-            flexDirection: 'column' 
-          }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Sales Leaderboard</div>
-              <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', background: '#eff6ff', padding: '4px 12px', borderRadius: '20px' }}>{sales.length} Sales</div>
-            </div>
-
-            {/* Column Headers */}
-            <div style={{ display: 'grid', gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr 1fr', gap: '8px', paddingBottom: '16px', borderBottom: '1px solid #f1f5f9', marginBottom: '8px' }}>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Salesman</div>
-              {['Prospek','Closing','Visit','F.up','Poin','Progress'].map(h => (
-                <div key={h} style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '1px' }}>{h}</div>
-              ))}
-            </div>
-
-            {/* Rows */}
-            <div className="custom-scrollbar" style={{ overflowY: 'auto', maxHeight: '500px', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {statsPerSales.map((s, idx) => {
-                const followup = s.waCount + s.callCount;
-
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {(() => {
+              const now = new Date();
+              const cutThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+              const cutLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+              const thisMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutThisMonth).length || 0;
+              const lastMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 0;
+              const thisMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutThisMonth);
+              const lastMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutLastMonth && new Date(a.timestamp) < cutThisMonth);
+              const thisMonthVisit = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
+              const lastMonthVisit = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
+              const thisMonthFollowup = thisMonthActs.filter((a: any) => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length || 0;
+              const lastMonthFollowup = lastMonthActs.filter((a: any) => a.tipe_aksi === 'WA' || a.tipe_aksi === 'Call').length || 0;
+              const thisMonthClosing = thisMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
+              const lastMonthClosing = lastMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
+              const thisMonthSO = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
+              const lastMonthSO = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
+              const metrics = [
+                { label: 'Prospek', thisMonth: thisMonthProspek, lastMonth: lastMonthProspek, color: '#6366f1' },
+                { label: 'Followup', thisMonth: thisMonthFollowup, lastMonth: lastMonthFollowup, color: '#a855f7' },
+                { label: 'Visit', thisMonth: thisMonthVisit, lastMonth: lastMonthVisit, color: '#3b82f6' },
+                { label: 'Closing', thisMonth: thisMonthClosing, lastMonth: lastMonthClosing, color: '#10b981' },
+                { label: 'Sales Order', thisMonth: thisMonthSO, lastMonth: lastMonthSO, color: '#f59e0b' }
+              ];
+              return metrics.map((m, i) => {
+                const isUp = m.thisMonth >= m.lastMonth;
+                const diff = m.lastMonth > 0 ? Math.round(((m.thisMonth - m.lastMonth) / m.lastMonth) * 100) : (m.thisMonth > 0 ? 100 : 0);
                 return (
-                  <div key={s.id} 
-                    className="act-row"
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '180px 1fr 1fr 1fr 1fr 1fr 1fr',
-                      gap: '8px',
-                      alignItems: 'center',
-                      padding: '12px 10px',
-                      borderBottom: '1px solid #f8fafc',
-                      borderRadius: '12px',
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    {/* Identity: avatar-badge + name */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      {/* Avatar with absolute rank badge */}
-                      <div style={{ position: 'relative', flexShrink: 0 }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: '-6px',
-                          left: '-6px',
-                          width: '18px',
-                          height: '18px',
-                          borderRadius: '50%',
-                          background: '#fff',
-                          color: '#1e293b',
-                          fontSize: '10px',
-                          fontWeight: 950,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                          border: `1.5px solid ${['#EE4D2D','#94a3b8','#9a3412'][idx] || '#f1f5f9'}`,
-                          zIndex: 2
-                        }}>
-                          {idx + 1}
-                        </div>
-                        <img
-                           src={s.foto_profil || `https://api.dicebear.com/7.x/notionists/svg?seed=${s.nama}`}
-                          alt={s.nama}
-                          style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover', border: idx < 3 ? `2px solid ${['#EE4D2D','#94a3b8','#9a3412'][idx]}` : '2px solid #f1f5f9' }}
-                        />
-                      </div>
-                      {/* Name */}
-                      <div style={{ fontSize: '12px', fontWeight: 800, color: '#111827', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {s.nama.split(' ')[0]}
+                  <div key={i} style={{ padding: '14px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 800, color: '#64748b' }}>{m.label}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: isUp ? '#10b981' : '#ef4444', fontSize: '10px', fontWeight: 900 }}>
+                        {isUp ? <TrendingUp size={10} /> : <TrendingDown size={10} />} {Math.abs(diff)}%
                       </div>
                     </div>
-
-                    {/* Prospek */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#6366f1' }}>{s.prospekBaru}</div>
-                    </div>
-
-                    {/* Closing */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#10b981' }}>{s.closingCount}</div>
-                    </div>
-
-                    {/* Visit */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#3b82f6' }}>{s.visitCount}</div>
-                    </div>
-
-                    {/* Followup */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{ fontSize: '14px', fontWeight: 900, color: '#f43f5e' }}>{followup}</div>
-                    </div>
-
-                    {/* Total Poin */}
-                    <div style={{ textAlign: 'center' }}>
-                      <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: '2px',
-                        background: idx === 0 ? 'linear-gradient(135deg,#EE4D2D,#f97316)' : '#f8fafc',
-                        color: idx === 0 ? '#fff' : '#334155',
-                        padding: '4px 10px', borderRadius: '20px',
-                        fontSize: '13px', fontWeight: 950,
-                        boxShadow: idx === 0 ? '0 4px 12px rgba(238, 77, 45, 0.2)' : 'none'
-                      }}>
-                        {s.points}
-                      </div>
-                    </div>
-
-                    {/* Progress (visual bar) */}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                      <div style={{
-                        fontSize: '10px', fontWeight: 950,
-                        color: s.pointProgressPct >= 100 ? '#10b981' : s.pointProgressPct >= 50 ? '#f59e0b' : '#f43f5e',
-                      }}>
-                        {s.pointProgressPct}%
-                      </div>
-                      <div style={{ width: '60px', height: '6px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                        <div style={{ 
-                          width: `${s.pointProgressPct}%`, 
-                          height: '100%', 
-                          background: s.pointProgressPct >= 100 ? '#10b981' : s.pointProgressPct >= 50 ? '#f59e0b' : '#f43f5e',
-                          borderRadius: '10px' 
-                        }} />
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                      <span style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>{m.thisMonth}</span>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>vs {m.lastMonth} bulan lalu</span>
                     </div>
                   </div>
                 );
-              })}
+              });
+            })()}
+          </div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: '24px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#ecfdf5', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Users size={18} /></div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>Customer Overview</div>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Landscape & Engagement</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ padding: '14px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+               <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '10px', textTransform: 'uppercase' }}>Top Target Progress</div>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                 {customerProgressStats.slice(0, 3).map((c, idx) => (
+                   <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{c.nama_toko}</div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <div style={{ width: '40px', height: '4px', background: '#e2e8f0', borderRadius: '4px', overflow: 'hidden' }}><div style={{ width: `${Math.min(100, c.progress)}%`, height: '100%', background: '#10b981' }} /></div>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: '#10b981' }}>{Math.round(c.progress)}%</span>
+                      </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+            <div style={{ padding: '14px', background: 'linear-gradient(135deg, #10b981, #059669)', borderRadius: '16px', color: '#fff' }}>
+               <div style={{ fontSize: '11px', fontWeight: 800, opacity: 0.9, marginBottom: '4px' }}>RETENTION RATE</div>
+               <div style={{ fontSize: '24px', fontWeight: 950 }}>{customers.length > 0 ? Math.round((retentionAnalysis.activeCount/customers.length)*100) : 0}%</div>
+               <div style={{ fontSize: '10px', fontWeight: 700, opacity: 0.8, marginTop: '4px' }}>{retentionAnalysis.activeCount} Toko aktif melakukan order</div>
+            </div>
+            <div style={{ padding: '14px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div>
+                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>TOTAL DATABASE</div>
+                 <div style={{ fontSize: '18px', fontWeight: 950, color: '#1e293b' }}>{customers.length} Toko</div>
+               </div>
+               <div style={{ textAlign: 'right' }}>
+                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b' }}>NEW (30D)</div>
+                 <div style={{ fontSize: '18px', fontWeight: 950, color: '#3b82f6' }}>+{(customers as any[]).filter((c: any) => new Date(c.created_at) >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length}</div>
+               </div>
+            </div>
+          </div>
+        </div>
+        <div style={{ background: '#fff', borderRadius: '24px', padding: '24px', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#fff7ed', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Flame size={18} /></div>
+            <div>
+              <div style={{ fontSize: '16px', fontWeight: 900, color: '#111827' }}>Prospek Overview</div>
+              <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Pipeline & Funnel</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ padding: '14px', background: '#f8fafc', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
+               <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '12px', textTransform: 'uppercase' }}>Pipeline Distribution</div>
+               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                 {statusDistData.map((item, idx) => (
+                   <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#475569' }}>{item.name}</span>
+                        <span style={{ fontSize: '11px', fontWeight: 900, color: '#1e293b' }}>{item.value}</span>
+                      </div>
+                      <div style={{ width: '100%', height: '4px', background: '#e2e8f0', borderRadius: '2px', overflow: 'hidden' }}>
+                        <div style={{ width: `${(item.value / Math.max(prospek.length, 1)) * 100}%`, height: '100%', background: item.color }} />
+                      </div>
+                   </div>
+                 ))}
+               </div>
+            </div>
+            <div style={{ padding: '14px', background: 'linear-gradient(135deg, #f59e0b, #d97706)', borderRadius: '16px', color: '#fff' }}>
+               <div style={{ fontSize: '11px', fontWeight: 800, opacity: 0.9, marginBottom: '4px' }}>CONVERSION RATE</div>
+               <div style={{ fontSize: '24px', fontWeight: 950 }}>{Math.round((realCustomers.length / Math.max(prospek.length + realCustomers.length, 1)) * 100)}%</div>
+               <div style={{ fontSize: '10px', fontWeight: 700, opacity: 0.8, marginTop: '4px' }}>Total konversi menjadi Customer tetap</div>
+            </div>
+            <div style={{ padding: '14px', background: '#fff1f2', borderRadius: '16px', border: '1px solid #ffe4e6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <div>
+                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#e11d48' }}>AGING PROSPEK</div>
+                 <div style={{ fontSize: '18px', fontWeight: 950, color: '#9f1239' }}>{(() => {
+                   const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+                   return (prospek as any[]).filter((p: any) => new Date(p.created_at).getTime() < cutoff).length;
+                 })()} Prospek</div>
+               </div>
+               <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f43f5e', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><AlertTriangle size={16} /></div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ROW 2: ANALISA (CLOSING RATE | CUSTOMER HEALTH | CONSISTENCY MOMENTUM - 3 COLS) */}
-      <div style={{ marginBottom: '40px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-          <div style={{ width: '4px', height: '24px', background: '#10b981', borderRadius: '4px' }} />
-          <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: 0 }}>Analisa Overview</h2>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 340px', gap: '24px' }}>
-          {/* COLUMN 1: CLOSING RATE PROGRESS */}
-          <div className="db-card" style={{ display: 'flex', flexDirection: 'column', gap: '20px', background: '#fff', borderRadius: '24px', padding: '24px', minHeight: '380px' }}>
-            <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Closing Rate Progress</div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', flex: 1 }}>
-              {/* FIXED GAUGE: Explicit dimensions for ResponsiveContainer */}
-              <div style={{ width: '160px', height: '160px', position: 'relative' }}>
-                <ResponsiveContainer width={160} height={160}>
-                  <PieChart width={160} height={160}>
-                    <Pie 
-                      data={statusDistData} 
-                      cx={80} 
-                      cy={80} 
-                      innerRadius={52} 
-                      outerRadius={72} 
-                      startAngle={90} 
-                      endAngle={450} 
-                      dataKey="value" 
-                      stroke="none" 
-                      cornerRadius={6}
-                      paddingAngle={2}
-                    >
-                      {statusDistData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                  {(() => {
-                    const rate = fTotal > 0 ? Math.round((fClosedNum / fTotal) * 100) : 0;
-                    const color = rate >= 10 ? '#10b981' : rate >= 5 ? '#f59e0b' : '#3b82f6';
-                    return (
-                      <>
-                        <div style={{ fontSize: '32px', fontWeight: 950, color: color, letterSpacing: '-1px' }}>{rate}%</div>
-                        <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', marginTop: '-4px' }}>Closing Rate</div>
-                      </>
-                    );
-                  })()}
-                </div>
-              </div>
-
-              <div className="vertical-progress-container" style={{ width: '100%', display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: '#f8fafc', borderRadius: '24px' }}>
-                {[
-                  { label: 'Prospek', val: 100, color: 'linear-gradient(to top, #6366f1, #818cf8)', icon: <Target size={14} /> },
-                  { label: 'Cold', val: Math.round((fStatusColdNum / fTotal) * 100), color: 'linear-gradient(to top, #3b82f6, #60a5fa)', icon: <Snowflake size={14} /> },
-                  { label: 'Hot', val: Math.round((fStatusHotNum / fTotal) * 100), color: 'linear-gradient(to top, #f59e0b, #fbbf24)', icon: <Flame size={14} /> },
-                  { label: 'Clos.', val: Math.round((fClosedNum / fTotal) * 100), color: 'linear-gradient(to top, #10b981, #34d399)', icon: <CheckCircle size={14} /> }
-                ].map((bar, i) => (
-                  <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '48px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#1e293b' }}>{bar.val}%</span>
-                    <div style={{ height: '100px', width: '14px', background: '#e2e8f0', borderRadius: '20px', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)' }}>
-                      <div style={{ height: `${bar.val}%`, background: bar.color, borderRadius: '20px', transition: 'height 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)' }} />
-                    </div>
-                    <div style={{ width: '28px', height: '28px', background: '#fff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', border: '1px solid #f1f5f9' }}>
-                      {bar.icon}
-                    </div>
-                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.02em', marginTop: '2px' }}>{bar.label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* ROW 3: PEOPLE PERFORMANCE (Leaderboard) */}
+      <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ width: '6px', height: '24px', background: 'linear-gradient(to bottom, #EE4D2D, #f97316)', borderRadius: '6px' }} />
+            <h2 style={{ fontSize: '22px', fontWeight: 950, color: '#111827', margin: 0, letterSpacing: '-0.02em' }}>People Performance</h2>
           </div>
-
-           {/* COLUMN 2: ANALISA PROSPEK (Area & Salesman) */}
-           <div className="db-card" style={{ background: '#fff', borderRadius: '24px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
-             <div style={{ fontSize: '18px', fontWeight: 900, marginBottom: '20px' }}>Chanel Prospek Distribusi</div>
-             
-             <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
-               <div style={{ width: '120px', height: '120px', position: 'relative', flexShrink: 0 }}>
-                 <ResponsiveContainer width="100%" height="100%">
-                   <PieChart>
-                     <Pie 
-                       data={channelDistribution} 
-                       cx="50%" 
-                       cy="50%" 
-                       innerRadius={35} 
-                       outerRadius={50} 
-                       paddingAngle={4} 
-                       dataKey="value"
-                     >
-                       {channelDistribution.map((d, i) => <Cell key={`ch-${i}`} fill={d.color} stroke="none" />)}
-                     </Pie>
-                   </PieChart>
-                 </ResponsiveContainer>
-                 <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
-                   <div style={{ fontSize: '18px', fontWeight: 950, color: '#111827' }}>{prospek.length}</div>
-                   <div style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Total</div>
-                 </div>
-               </div>
-
-               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                 {channelDistribution.slice(0, 5).map((ch, i) => (
-                   <div key={i}>
-                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                       <span style={{ fontSize: '10px', fontWeight: 800, color: '#475569' }}>{ch.name}</span>
-                       <span style={{ fontSize: '10px', fontWeight: 900, color: '#111827' }}>{ch.value} ({ch.percentage}%)</span>
-                     </div>
-                     <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
-                       <div style={{ height: '100%', background: ch.color, width: `${ch.percentage}%`, borderRadius: '10px' }} />
-                     </div>
-                   </div>
-                 ))}
-               </div>
-             </div>
-
-             {/* --- 3-Widget Micro Dashboard (Area & Salesman) --- */}
-             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
-               
-               {/* Widget 1: Top Area (Segmented Bar) */}
-               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                   <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Top 5 Area</div>
-                   <div style={{ fontSize: '9px', fontWeight: 800, background: '#e2e8f0', color: '#475569', padding: '3px 7px', borderRadius: '10px' }}>Penyumbang</div>
-                 </div>
-                 {/* Segmented Bar */}
-                 <div style={{ display: 'flex', width: '100%', height: '7px', borderRadius: '4px', overflow: 'hidden' }}>
-                   {areaDistribution.slice(0, 5).map((ar, i) => (
-                     <div key={i} style={{ flex: ar.value || 1, background: ar.color }} />
-                   ))}
-                 </div>
-                 {/* List */}
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                   {areaDistribution.slice(0, 5).map((ar, i) => (
-                     <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                       <div style={{ fontSize: '10px', fontWeight: 700, color: '#64748b', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                         <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: ar.color }} /> {ar.name.substring(0, 10)}
-                       </div>
-                       <div style={{ fontSize: '10px', fontWeight: 800, color: '#1e293b' }}>{ar.value}</div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
-
-               {/* Widget 2: Area Growth (Donut) */}
-               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                 <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                   <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Growth Top</div>
-                   <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
-                 </div>
-                 <div style={{ position: 'relative', width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                   {(() => {
-                     const topAr = areaDistribution[0];
-                     return (
-                       <>
-                         <svg width="90" height="90" viewBox="0 0 90 90" style={{ transform: 'rotate(-90deg)' }}>
-                           <circle cx="45" cy="45" r="35" fill="none" stroke="#e2e8f0" strokeWidth="7" />
-                           {topAr && <circle cx="45" cy="45" r="35" fill="none" stroke={topAr.color} strokeWidth="7" strokeDasharray="220" strokeDashoffset={220 * (1 - topAr.percentage/100)} strokeLinecap="round" />}
-                         </svg>
-                         <div style={{ position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                           <span style={{ fontSize: '8px', fontWeight: 800, color: '#94a3b8' }}>{topAr?.name || 'Area'}</span>
-                           <span style={{ fontSize: '13px', fontWeight: 900, color: topAr?.color || '#10b981' }}>+{topAr?.value || 0}</span>
-                         </div>
-                       </>
-                     );
-                   })()}
-                 </div>
-               </div>
-
-               {/* Widget 3: Salesman Teraktif (Pin Chart) */}
-               <div style={{ background: '#f8fafc', borderRadius: '14px', padding: '12px', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-                 {(() => {
-                   const topSales = salesLeadDistribution.slice(0, 2);
-                   const maxVal = Math.max(...salesLeadDistribution.map((s: any) => s.value), 1);
-                   return (
-                     <>
-                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                         <div style={{ fontSize: '11px', fontWeight: 800, color: '#475569' }}>Status Prospek</div>
-                         <span style={{ fontSize: '11px', color: '#cbd5e1' }}>•••</span>
-                       </div>
-                       <div style={{ fontSize: '8px', fontWeight: 800, color: '#10b981', display: 'flex', alignItems: 'center', gap: '3px', marginBottom: '6px' }}>
-                         <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M5 19L19 5M19 5v10M19 5H9"/></svg>
-                         Dominan: {topSales[0]?.name.split(' ')[0]}
-                       </div>
-                       {/* Mini Pin Chart (Sales) */}
-                       <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', flex: 1, marginTop: '8px', position: 'relative', minHeight: '60px' }}>
-                         {topSales.map((salesEntry: any, i: number) => {
-                           const h = (salesEntry.value / maxVal) * 45;
-                           const color = i === 0 ? '#3b82f6' : '#94a3b8';
-                           return (
-                             <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '40%', height: '100%', position: 'relative' }}>
-                               <div style={{ position: 'absolute', bottom: `calc(32px + ${h}px)`, fontSize: '7px', fontWeight: 900, color: '#475569' }}>
-                                 {salesEntry.value}
-                               </div>
-                               <div style={{ position: 'absolute', bottom: '32px', height: `${h}px`, width: '1.5px', background: color, borderRadius: '1px' }} />
-                               <div style={{ position: 'absolute', bottom: `calc(32px + ${h}px)`, width: '4px', height: '4px', background: color, borderRadius: '50%', transform: 'translateY(50%)' }} />
-                               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 'auto', gap: '4px' }}>
-                                 <div style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#fff', color: color, fontSize: '8px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: `1px solid ${color}44`, boxShadow: '0 2px 4px rgba(0,0,0,0.03)' }}>
-                                   {salesEntry.name.substring(0, 2).toUpperCase()}
-                                 </div>
-                                 <div style={{ fontSize: '6px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center' }}>
-                                   {salesEntry.name.split(' ')[0]}
-                                 </div>
-                               </div>
-                             </div>
-                           );
-                         })}
-                       </div>
-                     </>
-                   );
-                 })()}
-               </div>
-             </div>
-           </div>
-
-
-          {/* COLUMN 4: CUSTOMER HEALTH (Far Right) */}
-          <div className="db-card" style={{ 
-            background: 'linear-gradient(135deg, #fef08a 0%, #facc15 100%)', 
-            borderRadius: '24px', 
-            padding: '18px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            textAlign: 'center',
-            boxShadow: '0 12px 32px rgba(234, 179, 8, 0.2)',
-            border: '1px solid rgba(255, 255, 255, 0.4)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Subtle gloss effect overlay */}
-            <div style={{ position: 'absolute', top: '-50%', left: '-50%', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 60%)', pointerEvents: 'none' }} />
-
-            <div style={{ fontSize: '18px', fontWeight: 950, color: '#854d0e', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Customer Health</div>
-            
-            <div style={{ width: '100px', height: '100px', position: 'relative', marginBottom: '12px' }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie 
-                    data={[
-                      { value: customers.length > 0 ? Math.round((retentionAnalysis.activeCount/customers.length)*100) : 0 }, 
-                      { value: customers.length > 0 ? 100 - Math.round((retentionAnalysis.activeCount/customers.length)*100) : 100 }
-                    ]} 
-                    cx="50%" 
-                    cy="50%" 
-                    innerRadius={38} 
-                    outerRadius={48} 
-                    startAngle={90} 
-                    endAngle={450} 
-                    dataKey="value"
-                    stroke="none"
-                    cornerRadius={6}
-                  >
-                    <Cell fill={Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '#10b981' : '#ef4444'} />
-                    <Cell fill="rgba(0,0,0,0.05)" />
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', fontSize: '28px', filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.1))' }}>
-                ❤️
-              </div>
-            </div>
-
-            <div style={{ fontSize: '32px', fontWeight: 950, color: '#1e293b', marginBottom: '12px', letterSpacing: '-1px', textShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-              {customers.length > 0 ? Math.round((retentionAnalysis.activeCount/customers.length)*100) : 0}%
-            </div>
-
-            <div style={{ 
-              width: '100%', 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              gap: '4px', 
-              padding: '12px 0', 
-              borderTop: '1px solid rgba(133, 77, 14, 0.15)', 
-              marginBottom: '16px' 
-            }}>
-              {[
-                { label: 'TOTAL', val: customers.length, color: '#1e293b', icon: <Users size={14} /> },
-                { label: 'ACTIVE', val: retentionAnalysis.activeCount, color: '#10b981', icon: <CheckCircle size={14} /> },
-                { label: 'DORMANT', val: retentionAnalysis.dormantCount, color: '#ef4444', icon: <AlertTriangle size={14} /> }
-              ].map(m => (
-                <div key={m.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                   <span style={{ fontSize: '14px' }}>{m.icon}</span>
-                   <div style={{ fontSize: '14px', fontWeight: 950, color: '#1e293b' }}>{m.val}</div>
-                   <div style={{ fontSize: '8px', fontWeight: 800, color: '#854d0e', opacity: 0.8 }}>{m.label}</div>
-                </div>
-              ))}
-            </div>
-
-            <button style={{ 
-                width: '100%',
-                height: '52px', 
-                borderRadius: '18px', 
-                background: '#1e293b', 
-                boxShadow: '0 12px 24px rgba(30, 41, 59, 0.25)',
-                border: 'none', 
-                fontSize: '14px', 
-                fontWeight: 950, 
-                color: '#fff',
-                cursor: 'pointer',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}>
-               <span>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? 'Healthy Status' : 'Action Required'}</span>
-               <span style={{ fontSize: '16px' }}>{customers.length > 0 && Math.round((retentionAnalysis.activeCount/customers.length)*100) >= 60 ? '✨' : '⚡'}</span>
-            </button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+             <div style={{ fontSize: '11px', fontWeight: 800, color: '#3b82f6', background: '#eff6ff', padding: '6px 16px', borderRadius: '20px', border: '1px solid #dbeafe' }}>{sales.length} Active Sales</div>
           </div>
         </div>
 
-        {/* Customer Progress Leaderboard */}
+        {/* Table Head */}
         <div style={{ 
-          background: '#fff', 
-          borderRadius: '24px', 
-          padding: '32px', 
-          boxShadow: '0 10px 40px rgba(0,0,0,0.04)', 
-          border: '1px solid #f1f5f9', 
-          display: 'flex', 
-          flexDirection: 'column' 
+          display: 'grid', 
+          gridTemplateColumns: '240px 100px repeat(5, 1fr) 100px', 
+          gap: '12px', 
+          padding: '0 20px 16px 20px', 
+          borderBottom: '2px solid #f1f5f9' 
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <div>
-              <div style={{ fontSize: '18px', fontWeight: 900, color: '#111827' }}>Top Customer Progress</div>
-              <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>10 Toko dengan Progress Terbaik</div>
-            </div>
-            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Trophy size={20} color="#fff" />
-            </div>
-          </div>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Salesman Profile</div>
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#111827', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '0.05em', background: '#fef3c7', padding: '4px 0', borderRadius: '6px' }}>Total Poin</div>
+          {['Prospek','Followup','Closing','Visit','Sales Order'].map(h => (
+            <div key={h} style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center', letterSpacing: '0.05em' }}>{h}</div>
+          ))}
+          <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'right', letterSpacing: '0.05em' }}>Progress</div>
+        </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', paddingBottom: '12px', borderBottom: '1px solid #f1f5f9', gap: '12px' }}>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase' }}>Nama Toko</div>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'center' }}>Target vs Actual</div>
-              <div style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'right' }}>Progress</div>
-            </div>
+        {/* Table Body */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '12px' }}>
+          {statsPerSales.map((s, idx) => {
+            const isTop3 = idx < 3;
+            const rankLabel = idx === 0 ? "🏆 PERINGKAT 1" : idx === 1 ? "🥈 PERINGKAT 2" : idx === 2 ? "🥉 PERINGKAT 3" : null;
+            const rankColor = idx === 0 ? "#EE4D2D" : idx === 1 ? "#64748b" : idx === 2 ? "#b45309" : "#94a3b8";
+            const rowBg = idx === 0 ? 'rgba(238, 77, 45, 0.04)' : idx === 1 ? 'rgba(100, 116, 139, 0.02)' : idx === 2 ? 'rgba(180, 83, 9, 0.02)' : 'transparent';
 
-            {customerProgressStats.map((c, idx) => (
-              <div key={c.id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', alignItems: 'center', gap: '12px', padding: '4px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: 900, color: '#3b82f6', border: '1px solid #f1f5f9' }}>
-                    {idx + 1}
-                  </div>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 800, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.nama_toko}</div>
-                    <div style={{ fontSize: '9px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>PIC: {c.salesName.split(' ')[0]}</div>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 900, color: '#475569' }}>
-                    {c.actual} <span style={{ color: '#cbd5e1', fontSize: '10px' }}>/</span> {c.target}
-                  </div>
-                  <div style={{ fontSize: '9px', fontWeight: 800, color: '#94a3b8' }}>KG</div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 950, color: c.progress >= 100 ? '#10b981' : '#f59e0b' }}>
-                    {Math.round(c.progress)}%
-                  </div>
-                  <div style={{ width: '80px', height: '4px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
+            return (
+              <div key={s.id} style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '240px 100px repeat(5, 1fr) 100px', 
+                gap: '12px', 
+                alignItems: 'center',
+                padding: '16px 20px',
+                borderRadius: '16px',
+                transition: 'all 0.2s',
+                background: rowBg,
+                border: isTop3 ? `1px solid ${rankColor}20` : '1px solid transparent',
+                position: 'relative'
+              }} className="hover-lift">
+                
+                {/* Profile Section */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ position: 'relative' }}>
+                    <img 
+                      src={s.foto_profil || `https://api.dicebear.com/7.x/notionists/svg?seed=${s.nama}`}
+                      alt={s.nama}
+                      style={{ width: '48px', height: '48px', borderRadius: '16px', objectFit: 'cover', border: `2.5px solid ${isTop3 ? rankColor : '#f1f5f9'}` }}
+                    />
                     <div style={{ 
-                      width: `${Math.min(100, c.progress)}%`, 
+                      position: 'absolute', bottom: '-6px', right: '-6px', width: '22px', height: '22px', 
+                      borderRadius: '50%', background: '#fff', border: `2px solid ${isTop3 ? rankColor : '#cbd5e1'}`, 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 950, color: isTop3 ? rankColor : '#64748b',
+                      boxShadow: '0 4px 10px rgba(0,0,0,0.12)', zIndex: 2
+                    }}>
+                      {idx + 1}
+                    </div>
+                  </div>
+                  <div>
+                    {rankLabel && (
+                      <div style={{ 
+                        fontSize: '9px', fontWeight: 950, color: rankColor, 
+                        background: `${rankColor}15`, padding: '2px 8px', borderRadius: '6px',
+                        display: 'inline-block', marginBottom: '4px', letterSpacing: '0.02em' 
+                      }}>
+                        {rankLabel}
+                      </div>
+                    )}
+                    <div style={{ fontSize: '15px', fontWeight: 900, color: '#1e293b', letterSpacing: '-0.01em' }}>{s.nama}</div>
+                    <div style={{ fontSize: '10px', fontWeight: 700, color: '#94a3b8' }}>Sales Consultant</div>
+                  </div>
+                </div>
+
+                {/* Total Poin Column (Yellow Highlight) */}
+                <div style={{ 
+                  textAlign: 'center', 
+                  background: '#fef3c7', 
+                  padding: '12px 0', 
+                  borderRadius: '14px',
+                  border: '1.5px solid #fde68a',
+                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.1)'
+                }}>
+                  <div style={{ fontSize: '20px', fontWeight: 950, color: '#92400e', lineHeight: 1 }}>{s.totalPoin}</div>
+                  <div style={{ fontSize: '8px', fontWeight: 800, color: '#b45309', textTransform: 'uppercase', marginTop: '2px' }}>Poin</div>
+                </div>
+
+                {/* Breakdown Columns */}
+                <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 900, color: '#6366f1' }}>{s.prospekBaru}</div>
+                <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 900, color: '#f43f5e' }}>{s.waCount + s.callCount}</div>
+                <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 900, color: '#10b981' }}>{s.closingCount}</div>
+                <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 900, color: '#3b82f6' }}>{s.visitCount}</div>
+                <div style={{ textAlign: 'center', fontSize: '16px', fontWeight: 900, color: '#f59e0b' }}>{s.soCount}</div>
+
+                {/* Progress Column */}
+                <div style={{ textAlign: 'right', paddingRight: '4px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 950, color: '#1e293b', marginBottom: '6px' }}>{Math.round(s.progress)}%</div>
+                  <div style={{ width: '100%', height: '8px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                    <div style={{ 
+                      width: `${Math.min(100, s.progress)}%`, 
                       height: '100%', 
-                      background: c.progress >= 100 ? '#10b981' : '#f59e0b',
-                      borderRadius: '4px'
+                      background: s.progress >= 100 ? 'linear-gradient(90deg, #10b981, #059669)' : 'linear-gradient(90deg, #f59e0b, #d97706)', 
+                      borderRadius: '10px' 
                     }} />
                   </div>
                 </div>
               </div>
-            ))}
-
-            {customerProgressStats.length === 0 && (
-              <div style={{ padding: '40px 0', textAlign: 'center', color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>
-                Belum ada data target customer
-              </div>
-            )}
-          </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* ROW 4: REMOVED ANALYTICS GRID AS PER REQUEST */}
+
 
       {/* ACTIVITY FIELD REPORT: Grouped bar chart per salesman + Dominance Panel */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', marginBottom: '40px' }}>
@@ -1632,103 +1110,8 @@ export default function PerformanceAnalytics() {
         })()}
       </div>
 
-      {/* DATA OVERVIEW: Bulan Lalu VS Bulan Ini & Pesebaran Wilayah Customer */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-        <div style={{ width: '4px', height: '24px', background: 'linear-gradient(to bottom, #f59e0b, #eab308)', borderRadius: '4px' }} />
-        <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: 0 }}>Data Overview</h2>
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px', marginBottom: '40px' }}>
-        
-        {/* Left Card: Bulan Lalu vs Bulan Ini */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* Table Card: Bulan Lalu vs Bulan Ini */}
-        {(() => {
-          const now = new Date();
-          const cutThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-          const cutLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-          const thisMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutThisMonth).length || 0;
-          const lastMonthProspek = (prospek as any[]).filter((p: any) => new Date(p.created_at) >= cutLastMonth && new Date(p.created_at) < cutThisMonth).length || 0;
-
-          const thisMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutThisMonth);
-          const lastMonthActs = (activities as any[]).filter((a: any) => new Date(a.timestamp) >= cutLastMonth && new Date(a.timestamp) < cutThisMonth);
-
-          const thisMonthClosing = thisMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
-          const lastMonthClosing = lastMonthActs.filter((a: any) => (a.catatan_hasil || '').toLowerCase().includes('closing')).length || 0;
-
-          const thisMonthSO = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
-          const lastMonthSO = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Order').length || 0;
-
-          const thisMonthVisit = thisMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
-          const lastMonthVisit = lastMonthActs.filter((a: any) => a.tipe_aksi === 'Visit').length || 0;
-
-          const thisMonthCust = (customers as any[]).filter((c: any) => new Date(c.created_at || now.toISOString()) >= cutThisMonth).length || 0;
-          const lastMonthCust = (customers as any[]).filter((c: any) => new Date(c.created_at || now.toISOString()) >= cutLastMonth && new Date(c.created_at || now.toISOString()) < cutThisMonth).length || 0;
-
-          const metrics = [
-            { label: 'Prospek Baru', thisMonth: thisMonthProspek, lastMonth: lastMonthProspek, color: '#6366f1' },
-            { label: 'Closing', thisMonth: thisMonthClosing, lastMonth: lastMonthClosing, color: '#10b981' },
-            { label: 'SO', thisMonth: thisMonthSO, lastMonth: lastMonthSO, color: '#f59e0b' },
-            { label: 'Visit', thisMonth: thisMonthVisit, lastMonth: lastMonthVisit, color: '#3b82f6' },
-            { label: 'Customer Aktif', thisMonth: thisMonthCust, lastMonth: lastMonthCust, color: '#f43f5e' }
-          ];
-
-          return (
-            <div style={{ background: '#fff', borderRadius: '24px', padding: '32px', boxShadow: '0 4px 24px rgba(0,0,0,0.04)', display: 'flex', flexDirection: 'column' }}>
-               <div style={{ fontSize: '20px', fontWeight: 900, marginBottom: '24px', color: '#111827' }}>Bulan Lalu VS Bulan Ini</div>
-               
-               {/* Table Header */}
-               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 2fr) minmax(80px, 1fr) minmax(120px, 1.5fr) 60px', paddingBottom: '16px', borderBottom: '2px solid #f8fafc', marginBottom: '20px', gap: '16px' }}>
-                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Kategori</div>
-                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Bulan Lalu</div>
-                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>Bulan Ini</div>
-                 <div style={{ fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', textAlign: 'right' }}>Trend</div>
-               </div>
-
-               {/* Table Body */}
-               <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                 {metrics.map((m, i) => {
-                   const progress = Math.min((m.thisMonth / (Math.max(m.lastMonth, 1))) * 100, 100);
-                   const isUp = m.thisMonth >= m.lastMonth;
-                   return (
-                     <div key={i} style={{ display: 'grid', gridTemplateColumns: 'minmax(120px, 2fr) minmax(80px, 1fr) minmax(120px, 1.5fr) 60px', alignItems: 'center', gap: '16px' }}>
-                       {/* Categori */}
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                         <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: m.color }} />
-                         <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{m.label}</div>
-                       </div>
-                       {/* Last Month */}
-                       <div style={{ fontSize: '14px', fontWeight: 800, color: '#64748b' }}>
-                         {m.lastMonth}
-                       </div>
-                       {/* This Month */}
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                         <div style={{ fontSize: '15px', fontWeight: 900, color: '#1e293b', minWidth: '24px' }}>{m.thisMonth}</div>
-                         <div style={{ flex: 1, maxWidth: '60px', height: '8px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                           <div style={{ width: `${progress}%`, height: '100%', background: m.color, borderRadius: '4px' }} />
-                         </div>
-                       </div>
-                       {/* Trend */}
-                       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                         <div style={{ 
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: '24px', height: '24px', borderRadius: '50%',
-                            background: isUp ? '#ecfdf5' : '#fef2f2',
-                            color: isUp ? '#10b981' : '#ef4444',
-                            fontSize: '12px', fontWeight: 900,
-                         }}>
-                            {isUp ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-                         </div>
-                       </div>
-                     </div>
-                   );
-                 })}
-               </div>
-            </div>
-          );
-        })()}
-
+      {/* ROW 6: MAP & INSIGHTS */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', marginBottom: '40px' }}>
         {/* Card: Smart Resolve Panel */}
         {(() => {
                   // Insight 1: Sales closing turun vs bulan lalu
@@ -1792,7 +1175,6 @@ export default function PerformanceAnalytics() {
                     </div>
                   );
                 })()}
-              </div>
 
         {/* Right Card: Area Distribution */}
         {(() => {
@@ -1817,7 +1199,7 @@ export default function PerformanceAnalytics() {
 
           // 4. Build mapDataPois (Discover New Areas)
           const COLORS = ['#3b82f6', '#10b981', '#a855f7', '#f59e0b', '#e11d48', '#0ea5e9', '#6366f1', '#f43f5e', '#14b8a6', '#8b5cf6'];
-          let finalPois: any[] = [...BASE_CITIES.map((c: any) => ({ ...c, value: 0 }))];
+          const finalPois: any[] = [...BASE_CITIES.map((c: any) => ({ ...c, value: 0 }))];
           
           Object.entries(areaCounts).forEach(([areaName, count]) => {
             const areaLower = areaName.toLowerCase();
@@ -2060,13 +1442,14 @@ export default function PerformanceAnalytics() {
                         </div>
                       </>
                      ); 
-                   })()}
+                    })()}
                 </div>
               </div>
             </div>
           );
         })()}
       </div>
+
 
 
 

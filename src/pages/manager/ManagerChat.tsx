@@ -177,8 +177,8 @@ export default function ManagerChat() {
 
   const formatTime = (isoString: string) => {
     const d = new Date(isoString);
-    let h = d.getHours().toString().padStart(2, '0');
-    let m = d.getMinutes().toString().padStart(2, '0');
+    const h = d.getHours().toString().padStart(2, '0');
+    const m = d.getMinutes().toString().padStart(2, '0');
     return `${h}:${m}`;
   };
 

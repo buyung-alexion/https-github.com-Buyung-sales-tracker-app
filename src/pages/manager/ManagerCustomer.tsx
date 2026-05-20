@@ -299,23 +299,11 @@ export default function ManagerCustomer() {
   const [viewAll, setViewAll] = useState(false);
   const [filterRetention, setFilterRetention] = useState('All');
   
-  // Modal States
-  const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const [addForm, setAddForm] = useState({
-    nama_toko: '',
-    nama_pic: '',
-    no_wa: '',
-    area: '',
-    kategori: '',
-    link_map: '',
-    rating: 5,
-    foto_profil: ''
-  });
 
   const [editForm, setEditForm] = useState({
     id: '',
@@ -431,18 +419,14 @@ export default function ManagerCustomer() {
     setIsSubmitting(true);
     setSaveError(null);
 
-    const payload = editModal ? editForm : addForm;
+    const payload = editForm;
 
       try {
         let error;
         if (editModal) {
           ({ error } = await store.updateCustomer(editModal.id, payload));
         } else {
-          ({ error } = await store.addCustomer({ 
-            ...payload, 
-            sales_pic: filterSales === 'All' ? 'm001' : filterSales,
-            last_order_date: new Date().toISOString()
-          }));
+          error = { message: 'Invalid action' };
         }
 
         if (error) throw error;
@@ -450,7 +434,6 @@ export default function ManagerCustomer() {
         setSaveSuccess(true);
         await refresh();
         setTimeout(() => {
-          setAddModal(false);
           setEditModal(null);
           setSaveSuccess(false);
         }, 1000);
@@ -808,11 +791,10 @@ export default function ManagerCustomer() {
       </div>
 
       <CustomerModal 
-        isOpen={addModal || !!editModal}
-        onClose={() => { setAddModal(false); setEditModal(null); }}
-        customer={editModal}
-        form={editModal ? editForm : addForm}
-        setForm={editModal ? setEditForm : setAddForm}
+        isOpen={!!editModal}
+        onClose={() => { setEditModal(null); }}
+        form={editForm}
+        setForm={setEditForm}
         onSave={handleSave}
         isSubmitting={isSubmitting}
         saveError={saveError}
@@ -917,7 +899,7 @@ export default function ManagerCustomer() {
 }
 
 // Add/Edit Modal (Premium Manager Style)
-function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [] }: any) {
+function CustomerModal({ isOpen, onClose, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [] }: any) {
   if (!isOpen) return null;
 
   return (
@@ -928,10 +910,10 @@ function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSub
         </button>
 
         <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-          {customer ? 'Edit Customer' : 'Tambah Customer'}
+          Edit Customer
         </h3>
         <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 32px 0', fontWeight: 600 }}>
-          {customer ? 'Perbarui informasi mitra toko aktif' : 'Daftarkan mitra toko baru ke database'}
+          Perbarui informasi mitra toko aktif
         </p>
 
         <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -1015,7 +997,7 @@ function CustomerModal({ isOpen, onClose, customer, form, setForm, onSave, isSub
             >
               {isSubmitting ? <div className="animate-spin" style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%' }} /> : 
                saveSuccess ? <><UserCheck size={18} /> Tersimpan!</> : 
-               customer ? 'Update Perubahan' : 'Daftarkan Customer'}
+               'Update Perubahan'}
             </button>
           </div>
         </form>

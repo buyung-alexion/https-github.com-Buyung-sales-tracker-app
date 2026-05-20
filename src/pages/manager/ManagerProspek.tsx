@@ -97,24 +97,10 @@ export default function ManagerProspek() {
   const [filterArea, setFilterArea] = useState<string>('All');
 
   // Modal States
-  const [addModal, setAddModal] = useState(false);
   const [editModal, setEditModal] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  const [addForm, setAddForm] = useState({
-    nama_toko: '',
-    nama_pic: '',
-    no_wa: '',
-    area: '',
-    status: 'Cold' as any,
-    link_map: '',
-    kategori: '',
-    rating: 5,
-    foto_profil: '',
-    channel: ''
-  });
 
   const [editForm, setEditForm] = useState({
     id: '',
@@ -261,17 +247,14 @@ export default function ManagerProspek() {
     setIsSubmitting(true);
     setSaveError(null);
 
-    const payload = editModal ? editForm : addForm;
+    const payload = editForm;
 
     try {
       let error;
       if (editModal) {
         ({ error } = await store.updateProspek(editModal.id, payload));
       } else {
-        ({ error } = await store.addProspek({
-          ...payload,
-          sales_owner: filterSales === 'All' ? 'm001' : filterSales
-        }));
+        error = { message: 'Invalid action' };
       }
 
       if (error) throw error;
@@ -279,7 +262,6 @@ export default function ManagerProspek() {
       setSaveSuccess(true);
       await refresh();
       setTimeout(() => {
-        setAddModal(false);
         setEditModal(null);
         setSaveSuccess(false);
       }, 1000);
@@ -626,11 +608,10 @@ export default function ManagerProspek() {
       </div>
 
       <ProspectModal 
-        isOpen={addModal || !!editModal}
-        onClose={() => { setAddModal(false); setEditModal(null); }}
-        prospect={editModal}
-        form={editModal ? editForm : addForm}
-        setForm={editModal ? setEditForm : setAddForm}
+        isOpen={!!editModal}
+        onClose={() => { setEditModal(null); }}
+        form={editForm}
+        setForm={setEditForm}
         onSave={handleSave}
         isSubmitting={isSubmitting}
         saveError={saveError}
@@ -736,7 +717,7 @@ export default function ManagerProspek() {
 }
 
 // Add/Edit Prospect Modal
-function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [], masterChannels = [] }: any) {
+function ProspectModal({ isOpen, onClose, form, setForm, onSave, isSubmitting, saveError, saveSuccess, masterAreas = [], masterCategories = [], masterChannels = [] }: any) {
   if (!isOpen) return null;
 
   return (
@@ -747,10 +728,10 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
         </button>
 
         <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>
-          {prospect ? 'Edit Prospek' : 'Tambah Prospek'}
+          Edit Prospek
         </h3>
         <p style={{ fontSize: '14px', color: '#64748b', margin: '0 0 32px 0', fontWeight: 600 }}>
-          {prospect ? 'Perbarui informasi data prospek lapangan' : 'Input data prospek baru hasil canvasing'}
+          Perbarui informasi data prospek lapangan
         </p>
 
         <form onSubmit={onSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -869,7 +850,7 @@ function ProspectModal({ isOpen, onClose, prospect, form, setForm, onSave, isSub
             >
               {isSubmitting ? <div className="animate-spin" style={{ width: '18px', height: '18px', border: '2px solid rgba(255,255,255,0.2)', borderTopColor: '#fff', borderRadius: '50%' }} /> : 
                saveSuccess ? <><UserCheck size={18} /> Tersimpan!</> : 
-               prospect ? 'Update Prospek' : 'Simpan Prospek'}
+               'Update Prospek'}
             </button>
           </div>
         </form>

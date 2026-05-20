@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MapPin, BarChart2, MessageSquare, Menu, X, LogOut, User as UserIcon } from 'lucide-react';
+import { LayoutDashboard, MapPin, BarChart2, MessageSquare, X, LogOut, User as UserIcon, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import Homepage from './Homepage';
+import Homepage from './HomepageV2';
 import DashboardTarget from './DashboardTarget';
 import ProspectingTool from './ProspectingTool';
 import CustomerMaintenance from './CustomerMaintenance';
@@ -127,29 +127,10 @@ export default function MobileShell() {
       )}
 
 
-      {/* Header with Menu Trigger - Integrated with Homepage via props or absolute overlay */}
-      <div style={{ 
-        position: 'fixed', top: '16px', left: '20px', zIndex: 1000,
-        display: location.pathname === '/mobile/home' ? 'block' : 'none' 
-      }}>
-        <button 
-          onClick={() => setSidebarOpen(true)}
-          className="tap-active"
-          style={{ 
-            width: '40px', height: '40px', borderRadius: '12px', 
-            background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(10px)',
-            border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-          }}
-        >
-          <Menu size={22} color="#111827" strokeWidth={3} />
-        </button>
-      </div>
-
       <main className={`mobile-main ${location.pathname.startsWith('/mobile/chat') ? 'no-scroll' : ''}`}>
         <Routes>
-          <Route index element={<Homepage salesId={user.id} />} />
-          <Route path="home" element={<Homepage salesId={user.id} />} />
+          <Route index element={<Homepage salesId={user.id} setSidebarOpen={setSidebarOpen} />} />
+          <Route path="home" element={<Homepage salesId={user.id} setSidebarOpen={setSidebarOpen} />} />
           <Route path="analytic" element={<DashboardTarget salesId={user.id} />} />
           <Route path="prospek" element={<ProspectingTool salesId={user.id} />} />
           <Route path="customer" element={<CustomerMaintenance salesId={user.id} />} />
@@ -162,47 +143,67 @@ export default function MobileShell() {
         </Routes>
       </main>
 
+      {/* FAB is now integrated into Bottom Nav for perfect alignment */}
       {(!isEditingProfile) && (
-        <nav className="bottom-nav shadow-premium">
+        <nav className="bottom-nav shadow-premium wallet-nav-dark">
+          <div 
+            style={{ 
+              left: '50%', 
+              transform: 'translateX(-50%)', 
+              zIndex: 10001,
+              cursor: 'pointer'
+            }}
+            className="wallet-nav-fab tap-active" 
+            onClick={() => navigate('/mobile/order-history')}
+          >
+            <ShoppingCart size={24} strokeWidth={2.5} color="#111827" />
+          </div>
+
           {[
             { to: '/mobile/home',     Icon: LayoutDashboard, label: 'Home'      },
             { to: '/mobile/analytic', Icon: BarChart2,        label: 'Analytics' },
+            { spacer: true },
             { to: '/mobile/activity', Icon: MapPin,           label: 'Activity'  },
             { to: '/mobile/chat',     Icon: MessageSquare,    label: 'Chat'      },
-          ].map(({ to, Icon, label }) => (
-            <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              {() => (
-                <>
-                  <span className="nav-icon-wrap">
-                    <span className="nav-icon-bubble" />
-                    <Icon size={20} className="nav-icon-svg" />
-                    {label === 'Chat' && chatUnread > 0 && (
-                      <span style={{ 
-                        position: 'absolute', 
-                        top: '-6px', 
-                        right: '-8px', 
-                        background: '#EF4444', 
-                        color: '#fff', 
-                        fontSize: '9px', 
-                        fontWeight: 950, 
-                        minWidth: '16px', 
-                        height: '16px', 
-                        borderRadius: '50%', 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center',
-                        border: '2px solid #fff',
-                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)'
-                      }}>
-                        {chatUnread > 9 ? '9+' : chatUnread}
-                      </span>
-                    )}
-                  </span>
-                  <span className="nav-label">{label}</span>
-                </>
-              )}
-            </NavLink>
-          ))}
+          ].map((item) => {
+            if (item.spacer) return <div key="spacer" className="nav-item" style={{ visibility: 'hidden' }}></div>;
+            
+            const { to, Icon, label } = item as any;
+            return (
+              <NavLink key={to} to={to} className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+                {() => (
+                  <>
+                    <span className="nav-icon-wrap">
+                      <span className="nav-icon-bubble" />
+                      <Icon size={20} className="nav-icon-svg" />
+                      {label === 'Chat' && chatUnread > 0 && (
+                        <span style={{ 
+                          position: 'absolute', 
+                          top: '-6px', 
+                          right: '-8px', 
+                          background: '#EF4444', 
+                          color: '#fff', 
+                          fontSize: '9px', 
+                          fontWeight: 950, 
+                          minWidth: '16px', 
+                          height: '16px', 
+                          borderRadius: '50%', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          border: '2px solid #fff',
+                          boxShadow: '0 2px 8px rgba(239, 68, 68, 0.4)'
+                        }}>
+                          {chatUnread > 9 ? '9+' : chatUnread}
+                        </span>
+                      )}
+                    </span>
+                    <span className="nav-label">{label}</span>
+                  </>
+                )}
+              </NavLink>
+            );
+          })}
         </nav>
       )}
     </div>

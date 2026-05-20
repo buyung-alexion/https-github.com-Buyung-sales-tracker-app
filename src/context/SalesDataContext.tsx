@@ -156,7 +156,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       // Promise.all order: resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC
       // Wait, I should have updated the destructuring.
 
-      console.log(`[SalesDataContext] Initialized. Items: ${resCustomer.data?.length || 0} Customers, ${resProspek.data?.length || 0} Prospeks`);
+
     } catch (err) {
       console.error('Error fetching data central:', err);
     } finally {
