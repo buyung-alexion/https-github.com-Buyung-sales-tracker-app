@@ -473,22 +473,33 @@ export default function NegotiationsDashboard() {
                         />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Satuan (Unit)</label>
-                        <select 
-                          required
-                          style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#1e293b' }}
-                          value={productForm.unit}
-                          onChange={(e) => setProductForm({...productForm, unit: e.target.value})}
-                        >
-                          <option value="">Pilih Satuan</option>
-                          {masterUnits.map((u: any) => <option key={u.id} value={u.name}>{u.name}</option>)}
-                        </select>
-                        {masterUnits.length === 0 && (
-                          <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', fontWeight: 700 }}>
-                            ⚠️ Belum ada satuan. Buat di Data Management {'>'} Satuan Produk.
-                          </p>
-                        )}
+                        <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Produk Terjual</label>
+                        <input 
+                          type="number"
+                          placeholder="0"
+                          style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#10B981' }}
+                          value={productForm.sold_count}
+                          onChange={(e) => setProductForm({...productForm, sold_count: parseInt(e.target.value) || 0})}
+                        />
                       </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <label style={{ fontSize: '13px', fontWeight: 800, color: '#475569' }}>Satuan (Unit)</label>
+                      <select 
+                        required
+                        style={{ width: '100%', padding: '14px 18px', borderRadius: '12px', border: '2px solid #f1f5f9', fontSize: '14px', fontWeight: 900, background: '#f8fafc', outline: 'none', color: '#1e293b' }}
+                        value={productForm.unit}
+                        onChange={(e) => setProductForm({...productForm, unit: e.target.value})}
+                      >
+                        <option value="">Pilih Satuan</option>
+                        {masterUnits.map((u: any) => <option key={u.id} value={u.name}>{u.name}</option>)}
+                      </select>
+                      {masterUnits.length === 0 && (
+                        <p style={{ fontSize: '11px', color: '#ef4444', marginTop: '4px', fontWeight: 700 }}>
+                          ⚠️ Belum ada satuan. Buat di Data Management {'>'} Satuan Produk.
+                        </p>
+                      )}
                     </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
