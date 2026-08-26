@@ -72,10 +72,9 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         supabase.from('master_units').select('*').order('name')
       ]);
 
-      // 2. Fetch Large Transactional Tables Separately (Prevents Timeout)
-      // Fetch up to 2000 activities without the heavy photo data
+      // Fetch up to 2000 activities. Do NOT fetch 'geotagging' here because it contains huge base64 photos that cause Statement Timeouts!
       const resActivity = await supabase.from('activity')
-        .select('id, id_sales, target_id, target_type, target_nama, tipe_aksi, catatan_hasil, timestamp, sales_name, geotagging')
+        .select('id, id_sales, target_id, target_type, target_nama, tipe_aksi, catatan_hasil, timestamp')
         .order('timestamp', { ascending: false })
         .limit(2000);
       const resOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
@@ -83,7 +82,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       // Logging for diagnostics (useful during deployment validation)
       if (resCustomer.error) console.error('Customer fetch error:', resCustomer.error);
       if (resProspek.error) console.error('Prospek fetch error:', resProspek.error);
-      if (resActivity.error) console.error('Activity fetch error:', resActivity.error);
+      if (resActivity.error) console.error('Activity fetch error:', JSON.stringify(resActivity.error));
       if (resOrders.error) console.error('Orders fetch error:', resOrders.error);
 
       const allSalesData = resSales.data || [];
@@ -123,21 +122,8 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('st_cache_customers', JSON.stringify(customersWithTargets));
       
       if (resActivity.data) {
-        // Since we select the full geotagging column now, we don't need to remap it,
-        // but we might want to strip the 'photo' property to save memory if it's large.
-        const optimizedActivities = resActivity.data.map((a: any) => {
-          let geo = a.geotagging;
-          if (typeof geo === 'string') {
-            try { geo = JSON.parse(geo); } catch(e) {}
-          }
-          if (geo && geo.photo) {
-            geo = { ...geo };
-            delete geo.photo; // don't keep base64 photos in memory feed
-          }
-          return { ...a, geotagging: geo };
-        });
-        setActivities(optimizedActivities);
-        localStorage.setItem('st_cache_activities', JSON.stringify(optimizedActivities));
+        setActivities(resActivity.data);
+        localStorage.setItem('st_cache_activities', JSON.stringify(resActivity.data));
       }
       
       if (resTargets.data) {
