@@ -57,25 +57,33 @@ export default function LiveActivityFeed() {
     const acts = activities || [];
     return acts
       .filter(a => {
-        if (filterSales !== 'all') return a.id_sales == filterSales;
+        // 1. Sales Filter
+        if (filterSales !== 'all' && a.id_sales != filterSales) return false;
+        
+        // 2. Area Filter
         if (areaFilter !== 'all') {
-          const s = allSales.find(x => x.id == a.id_sales);
-          return s && s.area === areaFilter;
+          const s = (allSales || []).find(x => x.id == a.id_sales);
+          if (!s || s.area !== areaFilter) return false;
         }
+
+        // 3. Date Filter
+        if (dateFilter !== 'all') {
+          const t = new Date(a.timestamp || 0).getTime();
+          if (dateFilter === 'today' && t < todayMs) return false;
+          if (dateFilter === 'week' && t < weekMs) return false;
+          if (dateFilter === 'month' && t < monthMs) return false;
+        }
+
+        // 4. Search Filter
+        if (search) {
+          const q = search.toLowerCase();
+          const tName = (a.target_nama || '').toLowerCase();
+          const sName = getSalesName(a.id_sales).toLowerCase();
+          if (!tName.includes(q) && !sName.includes(q)) return false;
+        }
+
         return true;
       })
-      .filter(a => {
-        if (dateFilter === 'all') return true;
-        const t = new Date(a.timestamp || 0).getTime();
-        if (dateFilter === 'today') return t >= todayMs;
-        if (dateFilter === 'week') return t >= weekMs;
-        if (dateFilter === 'month') return t >= monthMs;
-        return true;
-      })
-      .filter(a => 
-        (a.target_nama || '').toLowerCase().includes(search.toLowerCase()) || 
-        getSalesName(a.id_sales).toLowerCase().includes(search.toLowerCase())
-      )
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [activities, filterSales, areaFilter, dateFilter, search, todayMs, weekMs, monthMs, allSales]);
 
@@ -132,7 +140,7 @@ export default function LiveActivityFeed() {
               onChange={(e) => {setFilterSales(e.target.value); setPage(1);}}
             >
               <option value="all">Semua Sales</option>
-              {allSales.filter(s => areaFilter === 'all' || s.area === areaFilter).map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
+              {(allSales || []).filter(s => areaFilter === 'all' || s.area === areaFilter).map(s => <option key={s.id} value={s.id}>{s.nama}</option>)}
             </select>
             
             <div style={{ position: 'relative', width: '200px' }}>
