@@ -75,7 +75,7 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       // 2. Fetch Large Transactional Tables Separately (Prevents Timeout)
       // Fetch up to 2000 activities without the heavy photo data
       const resActivity = await supabase.from('activity')
-        .select('id, id_sales, target_id, target_type, target_nama, tipe_aksi, catatan_hasil, timestamp, sales_name, area:geotagging->area, lat:geotagging->lat, lng:geotagging->lng')
+        .select('id, id_sales, target_id, target_type, target_nama, tipe_aksi, catatan_hasil, timestamp, sales_name, geotagging')
         .order('timestamp', { ascending: false })
         .limit(2000);
       const resOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
@@ -108,12 +108,10 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
         
         // Sum order volume for current month dynamically
         const customerOrders = (resOrders.data || []).filter((o: any) => {
-          if (o.customer_id !== c.id) return false;
-          const orderDate = new Date(o.created_at);
-          const orderMonthStr = `${orderDate.getFullYear()}-${String(orderDate.getMonth() + 1).padStart(2, '0')}`;
-          return orderMonthStr === currentMonthStr;
+          if (o.id_customer !== c.id) return false;
+          return o.created_at.startsWith(currentMonthStr);
         });
-        const total_order_volume = customerOrders.reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+        const total_order_volume = customerOrders.reduce((sum: number, o: any) => sum + (Number(o.qty) || 0), 0);
 
         return {
           ...c,
@@ -125,15 +123,19 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem('st_cache_customers', JSON.stringify(customersWithTargets));
       
       if (resActivity.data) {
-        // Map back the aliased geotagging fields so the app structure doesn't break
-        const optimizedActivities = resActivity.data.map((a: any) => ({
-          ...a,
-          geotagging: {
-            area: a.area,
-            lat: a.lat,
-            lng: a.lng
+        // Since we select the full geotagging column now, we don't need to remap it,
+        // but we might want to strip the 'photo' property to save memory if it's large.
+        const optimizedActivities = resActivity.data.map((a: any) => {
+          let geo = a.geotagging;
+          if (typeof geo === 'string') {
+            try { geo = JSON.parse(geo); } catch(e) {}
           }
-        }));
+          if (geo && geo.photo) {
+            geo = { ...geo };
+            delete geo.photo; // don't keep base64 photos in memory feed
+          }
+          return { ...a, geotagging: geo };
+        });
         setActivities(optimizedActivities);
         localStorage.setItem('st_cache_activities', JSON.stringify(optimizedActivities));
       }
