@@ -26,6 +26,7 @@ export const store = {
     };
     const { error } = await supabase.from('prospek').insert([prospekData]);
     if (error) console.error('addProspek error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { data: prospekData as Prospek, error };
   },
 
@@ -37,12 +38,14 @@ export const store = {
     });
     const { data, error } = await supabase.from('prospek').update(allowedUpdates).eq('id', id);
     if (error) console.error('updateProspek error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { data, error };
   },
 
   async deleteProspek(id: string) {
     const { error } = await supabase.from('prospek').delete().eq('id', id);
     if (error) console.error('deleteProspek error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { error };
   },
 
@@ -66,12 +69,14 @@ export const store = {
     };
     const { error } = await supabase.from('customer').insert([customerData]);
     if (error) console.error('addCustomer error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { data: customerData as Customer, error };
   },
 
   async updateCustomer(id: string, updates: Partial<Customer>) {
     const { data, error } = await supabase.from('customer').update(updates).eq('id', id);
     if (error) console.error('updateCustomer error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { data, error };
   },
 
@@ -121,6 +126,8 @@ export const store = {
       catatan_hasil: `CLOSING! Data dipindahkan ke Customer.`,
     });
 
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
+
     return { data: customerData as Customer, error: null };
   },
 
@@ -140,7 +147,27 @@ export const store = {
     };
     const { error } = await supabase.from('activity').insert([activityData]);
     if (error) console.error('logActivity error:', error);
+    else if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     return { data: activityData as Activity, error };
+  },
+
+  async fetchActivityPhoto(id: string): Promise<string | null> {
+    try {
+      const { data, error } = await supabase
+        .from('activity')
+        .select('photo:geotagging->photo')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error('fetchActivityPhoto error:', error);
+        return null;
+      }
+      return (data?.photo as string) || null;
+    } catch (err) {
+      console.error('fetchActivityPhoto exception:', err);
+      return null;
+    }
   },
 
   async logWA(salesId: string, targetId: string, targetType: 'prospek' | 'customer', targetNama: string, noWA: string, catatan = '', salesName?: string) {
@@ -205,6 +232,8 @@ export const store = {
       last_order_date: orderDate,
       total_order_volume: newVolume
     }).eq('id', targetId);
+
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
   },
 
   async updateOrder(orderId: string, amount: number, customDate?: string) {
@@ -226,6 +255,7 @@ export const store = {
       const newVolume = currentVolume + diff;
       
       await supabase.from('customer').update({ total_order_volume: newVolume }).eq('id', oldOrder.customer_id);
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event('st_data_changed'));
     }
   },
 

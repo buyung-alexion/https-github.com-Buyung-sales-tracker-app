@@ -5,6 +5,31 @@ import { store } from '../../store/dataStore';
 import { ArrowLeft, MapPin, Star, Calendar, MessageCircle, PhoneCall, ShoppingCart, FileText } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
+import { ImageIcon, X } from 'lucide-react';
+
+const LazyPhotoThumbnail = ({ actId }: { actId: string }) => {
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  
+  if (photo) return <img src={photo} alt="Bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onClick={() => window.open(photo, '_blank')} />;
+  
+  return (
+    <div 
+      onClick={async () => {
+        if (loading) return;
+        setLoading(true);
+        const p = await store.fetchActivityPhoto(actId);
+        if (p) setPhoto(p);
+        else setError(true);
+        setLoading(false);
+      }}
+      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8fafc', cursor: 'pointer' }}
+    >
+      {loading ? <div className="animate-spin" style={{ width: '20px', height: '20px', border: '3px solid #cbd5e1', borderTopColor: '#3b82f6', borderRadius: '50%' }} /> : error ? <X size={20} color="#ef4444" /> : <div style={{ textAlign: 'center', color: '#94a3b8' }}><ImageIcon size={24} style={{ marginBottom: '4px' }} /><br/><span style={{ fontSize: '10px', fontWeight: 700 }}>LIHAT FOTO</span></div>}
+    </div>
+  );
+};
 
 export default function ClientDetail() {
   const { type, id } = useParams<{ type: string; id: string }>();
@@ -189,9 +214,9 @@ export default function ClientDetail() {
                       <div style={{ fontSize: '13px', color: '#64748b', lineHeight: '1.5', marginBottom: '8px' }}>
                         "{act.catatan_hasil}"
                       </div>
-                      {act.geotagging?.photo && (
-                        <div style={{ marginBottom: '12px' }}>
-                          <img src={act.geotagging.photo} alt="Bukti Interaksi" style={{ width: '100%', maxWidth: '200px', borderRadius: '12px', border: '1px solid #f1f5f9' }} />
+                      {(act.tipe_aksi === 'Visit' || act.tipe_aksi === 'Order') && (
+                        <div style={{ marginBottom: '12px', width: '100%', maxWidth: '200px', height: '150px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #f1f5f9' }}>
+                          <LazyPhotoThumbnail actId={act.id} />
                         </div>
                       )}
                       <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}>

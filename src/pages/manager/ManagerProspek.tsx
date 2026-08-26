@@ -117,6 +117,24 @@ export default function ManagerProspek() {
   });
 
   const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState<string | null>(null);
+
+  const handleViewPhoto = async (act: any, sName: string, storeName: string) => {
+    setIsLoadingPhoto(act.id);
+    const photo = await store.fetchActivityPhoto(act.id);
+    setIsLoadingPhoto(null);
+    if (photo) {
+      setSelectedImage({
+        url: photo,
+        sales: sName,
+        store: storeName,
+        timestamp: act.timestamp,
+        note: act.catatan_hasil
+      });
+    } else {
+      alert('Foto tidak tersedia untuk aktivitas ini.');
+    }
+  };
 
   // Pagination State
   const [viewAll, setViewAll] = useState(false);
@@ -559,20 +577,15 @@ export default function ManagerProspek() {
                     </td>
                     <td style={{ padding: '16px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                        {p.lastActivity?.geotagging?.photo ? (
+                        {p.lastActivity ? (
                           <div 
-                            style={{ width: '36px', height: '36px', borderRadius: '10px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', border: '2px solid #fff', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', transition: 'all 0.2s' }} 
+                            style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f8fafc', cursor: 'pointer', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.2s' }} 
                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            onClick={() => setSelectedImage({
-                              url: p.lastActivity!.geotagging!.photo!,
-                              sales: p.salesName,
-                              store: p.nama_toko,
-                              timestamp: p.lastActivity!.timestamp,
-                              note: p.lastActivity!.catatan_hasil
-                            })}
+                            onClick={() => handleViewPhoto(p.lastActivity, p.salesName, p.nama_toko)}
+                            title="Lihat Foto"
                           >
-                            <img src={p.lastActivity.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            {isLoadingPhoto === p.lastActivity.id ? <div className="animate-spin" style={{ width: '16px', height: '16px', border: '2px solid #cbd5e1', borderTopColor: '#3b82f6', borderRadius: '50%' }} /> : <ImageIcon size={16} color={p.lastActivity.tipe_aksi === 'Visit' || p.lastActivity.tipe_aksi === 'Order' ? '#3b82f6' : '#cbd5e1'} />}
                           </div>
                         ) : (
                           <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>

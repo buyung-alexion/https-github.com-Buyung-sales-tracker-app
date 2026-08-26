@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-
-
-import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X, Activity } from 'lucide-react';
+import { store } from '../../store/dataStore';import { MessageSquare, MapPin, Phone, Search, Image as ImageIcon, ShoppingCart, X, Activity } from 'lucide-react';
 import { Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from 'recharts';
 
 
@@ -31,6 +29,24 @@ export default function LiveActivityFeed() {
   const [search, setSearch] = useState('');
 
   const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState<string | null>(null);
+
+  const handleViewPhoto = async (act: any, sName: string, storeName: string) => {
+    setIsLoadingPhoto(act.id);
+    const photo = await store.fetchActivityPhoto(act.id);
+    setIsLoadingPhoto(null);
+    if (photo) {
+      setSelectedImage({
+        url: photo,
+        sales: sName,
+        store: storeName,
+        timestamp: act.timestamp,
+        note: act.catatan_hasil
+      });
+    } else {
+      alert('Foto tidak tersedia untuk aktivitas ini.');
+    }
+  };
 
   // Pagination states
   const [page, setPage] = useState(1);
@@ -605,31 +621,19 @@ export default function LiveActivityFeed() {
                                     </div>
                                   </td>
                                   <td style={{ padding: '20px', borderBottom: '1px solid #f1f5f9', textAlign: 'center' }}>
-                                    {a.geotagging?.photo ? (
-                                      <button 
-                                        onClick={() => setSelectedImage({
-                                          url: a.geotagging!.photo!,
-                                          sales: getSalesName(a.id_sales),
-                                          store: a.target_nama,
-                                          timestamp: a.timestamp,
-                                          note: a.catatan_hasil
-                                        })}
-                                        className="view-photo-btn"
-                                        style={{
-                                          padding: '10px 16px', borderRadius: '12px', border: '1px solid #e2e8f0',
-                                          background: '#fff', fontSize: '11px', fontWeight: 900, color: '#1e293b',
-                                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
-                                          margin: '0 auto', transition: 'all 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
-                                        }}
-                                      >
-                                        <ImageIcon size={14} color="#EE4D2D" />
-                                        BUKTI FOTO
-                                      </button>
-                                    ) : (
-                                      <div style={{ color: '#cbd5e1', fontSize: '10px', fontWeight: 800 }}>
-                                        <X size={14} style={{ marginBottom: '2px' }} /> <br/> NO PHOTO
-                                      </div>
-                                    )}
+                                    <button 
+                                      onClick={() => handleViewPhoto(a, getSalesName(a.id_sales), a.target_nama)}
+                                      className="view-photo-btn"
+                                      style={{
+                                        padding: '10px 16px', borderRadius: '12px', border: '1px solid #e2e8f0',
+                                        background: '#fff', fontSize: '11px', fontWeight: 900, color: '#1e293b',
+                                        cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
+                                        margin: '0 auto', transition: 'all 0.2s', boxShadow: '0 4px 6px rgba(0,0,0,0.02)'
+                                      }}
+                                    >
+                                      {isLoadingPhoto === a.id ? <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #cbd5e1', borderTopColor: '#EE4D2D', borderRadius: '50%' }} /> : <ImageIcon size={14} color="#EE4D2D" />}
+                                      LIHAT BUKTI
+                                    </button>
                                   </td>
                                 </tr>
                               );

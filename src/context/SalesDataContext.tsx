@@ -57,30 +57,34 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
 
   const fetchData = useCallback(async () => {
     try {
-      // Parallel fetch but individual handling to prevent one failure from blocking others
-      const [resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC, resMU] = await Promise.all([
+      // 1. Fetch Master Data & Core Tables (Small/Medium size)
+      const [resSales, resProspek, resCustomer, resTargets, resMA, resMC, resMCH, resMS, resMAC, resMPC, resMU] = await Promise.all([
         supabase.from('sales').select('*').order('id'),
-        supabase.from('prospek').select('*').order('created_at', { ascending: false }),
-        supabase.from('customer').select('*').order('tanggal_join', { ascending: false }),
-        supabase.from('activity').select('*').order('timestamp', { ascending: false }),
+        supabase.from('prospek').select('*').order('created_at', { ascending: false }).limit(1000),
+        supabase.from('customer').select('*').order('tanggal_join', { ascending: false }).limit(1000),
         supabase.from('system_targets').select('*').eq('id', 1).maybeSingle(), 
         supabase.from('master_areas').select('*').order('name'),
         supabase.from('master_categories').select('*').order('name'),
         supabase.from('master_channels').select('*').order('name'),
         supabase.from('master_prospect_status').select('*').order('name'),
         supabase.from('master_actions').select('*').order('name'),
-        supabase.from('orders').select('*').order('created_at', { ascending: false }),
         supabase.from('master_product_categories').select('*').order('name'),
         supabase.from('master_units').select('*').order('name')
       ]);
+
+      // 2. Fetch Large Transactional Tables Separately (Prevents Timeout)
+      // Fetch up to 2000 activities without the heavy photo data
+      const resActivity = await supabase.from('activity')
+        .select('id, id_sales, target_id, target_type, target_nama, tipe_aksi, catatan_hasil, timestamp, sales_name, area:geotagging->area, lat:geotagging->lat, lng:geotagging->lng')
+        .order('timestamp', { ascending: false })
+        .limit(2000);
+      const resOrders = await supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(500);
 
       // Logging for diagnostics (useful during deployment validation)
       if (resCustomer.error) console.error('Customer fetch error:', resCustomer.error);
       if (resProspek.error) console.error('Prospek fetch error:', resProspek.error);
       if (resActivity.error) console.error('Activity fetch error:', resActivity.error);
-      if (resMPC.error) console.error('Master Product Category fetch error (Table might be missing):', resMPC.error);
-      if (resMS.error) console.error('Master Status fetch error:', resMS.error);
-      if (resMAC.error) console.error('Master Actions fetch error:', resMAC.error);
+      if (resOrders.error) console.error('Orders fetch error:', resOrders.error);
 
       const allSalesData = resSales.data || [];
       const salesOnly = allSalesData.filter(s => (s.role || '').toLowerCase() === 'sales');
@@ -120,8 +124,19 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setCustomers(customersWithTargets);
       localStorage.setItem('st_cache_customers', JSON.stringify(customersWithTargets));
       
-      setActivities(resActivity.data || []);
-      localStorage.setItem('st_cache_activities', JSON.stringify(resActivity.data || []));
+      if (resActivity.data) {
+        // Map back the aliased geotagging fields so the app structure doesn't break
+        const optimizedActivities = resActivity.data.map((a: any) => ({
+          ...a,
+          geotagging: {
+            area: a.area,
+            lat: a.lat,
+            lng: a.lng
+          }
+        }));
+        setActivities(optimizedActivities);
+        localStorage.setItem('st_cache_activities', JSON.stringify(optimizedActivities));
+      }
       
       if (resTargets.data) {
         setSystemTargets(resTargets.data);
@@ -143,19 +158,16 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
       setMasterActions(resMAC.data || []);
       localStorage.setItem('st_cache_masterActions', JSON.stringify(resMAC.data || []));
       
-      setOrders(resOrders.data || []);
-      localStorage.setItem('st_cache_orders', JSON.stringify(resOrders.data || []));
+      if (resOrders.data) {
+        setOrders(resOrders.data);
+        localStorage.setItem('st_cache_orders', JSON.stringify(resOrders.data));
+      }
       
       setMasterProductCategories(resMPC.data || []);
       localStorage.setItem('st_cache_masterProductCategories', JSON.stringify(resMPC.data || []));
       
       setMasterUnits(resMU.data || []);
       localStorage.setItem('st_cache_masterUnits', JSON.stringify(resMU.data || []));
-      // resMA, resMC, resMCH, resMS, resMAC, resOrders are already handled
-      // But I added a new fetch at the end of Promise.all, so I need to access it.
-      // Promise.all order: resSales, resProspek, resCustomer, resActivity, resTargets, resMA, resMC, resMCH, resMS, resMAC, resOrders, resMPC
-      // Wait, I should have updated the destructuring.
-
 
     } catch (err) {
       console.error('Error fetching data central:', err);
@@ -179,23 +191,17 @@ export function SalesDataProvider({ children }: { children: React.ReactNode }) {
 
     fetchData();
 
+    // [NEW] Local custom event listener for local state refresh
+    const handleLocalRefresh = () => debouncedFetch();
+    window.addEventListener('st_data_changed', handleLocalRefresh);
+
     const channel = supabase.channel('st_global_realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'sales' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'prospek' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'customer' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'activity' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'system_targets' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_areas' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_categories' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_product_categories' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_channels' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_prospect_status' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_actions' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'master_units' }, () => debouncedFetch())
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => debouncedFetch())
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => debouncedFetch())
       .subscribe();
 
     return () => {
+      // [NEW] Hapus listener saat komponen unmount
+      window.removeEventListener('st_data_changed', handleLocalRefresh);
       if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
       supabase.removeChannel(channel);
     };

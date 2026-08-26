@@ -10,6 +10,35 @@ import {
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
 import ActivityReport from './ActivityReport';
+import { store } from '../../store/dataStore';
+import { ImageIcon } from 'lucide-react';
+
+const LazyPhotoThumbnail = ({ actId }: { actId: string }) => {
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  
+  if (photo) return <img src={photo} alt="Bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onClick={() => {
+    // Open in modal logic if needed, for now just show thumbnail
+    window.open(photo, '_blank'); // Simple fallback to open image
+  }} />;
+  
+  return (
+    <div 
+      onClick={async () => {
+        if (loading) return;
+        setLoading(true);
+        const p = await store.fetchActivityPhoto(actId);
+        if (p) setPhoto(p);
+        else setError(true);
+        setLoading(false);
+      }}
+      style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', cursor: 'pointer' }}
+    >
+      {loading ? <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #cbd5e1', borderTopColor: '#3b82f6', borderRadius: '50%' }} /> : error ? <X size={14} color="#ef4444" /> : <ImageIcon size={16} color="#64748b" />}
+    </div>
+  );
+};
 
 export default function ActivityHistory() {
   const navigate = useNavigate();
@@ -203,9 +232,9 @@ export default function ActivityHistory() {
                                    <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>{format(new Date(act.timestamp), 'HH:mm')}</div>
                                 </div>
                               </div>
-                              {act.geotagging?.photo && (
+                              {(act.tipe_aksi === 'Visit' || act.tipe_aksi === 'Order') && (
                                 <div style={{ width: '48px', height: '48px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                  <img src={act.geotagging.photo} alt="Bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                  <LazyPhotoThumbnail actId={act.id} />
                                 </div>
                               )}
                             </div>

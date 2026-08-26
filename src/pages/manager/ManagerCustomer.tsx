@@ -318,6 +318,24 @@ export default function ManagerCustomer() {
   });
 
   const [selectedImage, setSelectedImage] = useState<{ url: string, sales: string, store: string, timestamp: string, note: string } | null>(null);
+  const [isLoadingPhoto, setIsLoadingPhoto] = useState<string | null>(null);
+
+  const handleViewPhoto = async (act: any, sName: string, storeName: string) => {
+    setIsLoadingPhoto(act.id);
+    const photo = await store.fetchActivityPhoto(act.id);
+    setIsLoadingPhoto(null);
+    if (photo) {
+      setSelectedImage({
+        url: photo,
+        sales: sName,
+        store: storeName,
+        timestamp: act.timestamp,
+        note: act.catatan_hasil
+      });
+    } else {
+      alert('Foto tidak tersedia untuk aktivitas ini.');
+    }
+  };
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('setMgrTitle', { 
@@ -742,23 +760,18 @@ export default function ManagerCustomer() {
                     </td>
                     <td style={{ padding: '16px 20px', verticalAlign: 'middle', textAlign: 'center' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-                        {lastAct?.geotagging?.photo ? (
-                           <div 
-                             style={{ width: '32px', height: '32px', borderRadius: '8px', overflow: 'hidden', background: '#f1f5f9', cursor: 'pointer', border: '1px solid #e2e8f0', transition: 'all 0.2s' }} 
-                             onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                             onClick={() => lastAct?.geotagging?.photo && setSelectedImage({
-                               url: lastAct.geotagging.photo,
-                               sales: sName,
-                               store: c.nama_toko,
-                               timestamp: lastAct.timestamp,
-                               note: lastAct.catatan_hasil
-                             })}
-                           >
-                             <img src={lastAct.geotagging.photo} alt="bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                           </div>
+                        {lastAct ? (
+                          <div 
+                            style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f8fafc', cursor: 'pointer', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', transition: 'all 0.2s' }} 
+                            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                            onClick={() => handleViewPhoto(lastAct, sName, c.nama_toko)}
+                            title="Lihat Foto"
+                          >
+                            {isLoadingPhoto === lastAct.id ? <div className="animate-spin" style={{ width: '14px', height: '14px', border: '2px solid #cbd5e1', borderTopColor: '#3b82f6', borderRadius: '50%' }} /> : <ImageIcon size={16} color={lastAct.tipe_aksi === 'Visit' || lastAct.tipe_aksi === 'Order' ? '#3b82f6' : '#cbd5e1'} />}
+                          </div>
                         ) : (
-                          <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
+                          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}>
                             <ImageIcon size={16} />
                           </div>
                         )}
