@@ -122,7 +122,7 @@ export default function Leaderboard() {
 
   const PodCard = ({ data, rank }: { data: any, rank: number }) => {
     // Light Luxury Theme matching Shopee Orange
-    const accent = rank === 1 ? '#EE4D2D' : rank === 2 ? '#64748b' : '#d97706';
+    const accent = rank === 1 ? '#2563EB' : rank === 2 ? '#64748b' : '#d97706';
     const medalColor = rank === 1 ? '#f59e0b' : rank === 2 ? '#94a3b8' : '#b45309';
 
     return (
@@ -258,7 +258,7 @@ export default function Leaderboard() {
               const rankBg = idx < 3 ? rankColors[idx] : '#e2e8f0';
               const rankTextColor = idx < 3 ? '#fff' : '#64748b';
               const isTop = idx === 0;
-              const progressColor = s.percent >= 100 ? '#10b981' : s.percent >= 70 ? '#EE4D2D' : '#f59e0b';
+              const progressColor = s.percent >= 100 ? '#10b981' : s.percent >= 70 ? '#2563EB' : '#f59e0b';
 
               return (
                 <tr

@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, useNavigate } from 'react-router-dom';
-import { Activity, BarChart2, Users, Menu, X, Settings, Trophy, Database, LogOut, Mail, MessageCircle, MessageSquare, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Activity, BarChart2, Users, Menu, X, Settings, Database, LogOut, Mail, MessageCircle, MessageSquare, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import LiveActivityFeed from './LiveActivityFeed';
 import PerformanceAnalytics from './PerformanceAnalytics';
 import ManagerProspek from './ManagerProspek';
 import ManagerCustomer from './ManagerCustomer';
 import ManagerInbox from './ManagerInbox';
-import Leaderboard from './Leaderboard';
 import ManagerSettings from './ManagerSettings';
 import MasterDataSettings from './MasterDataSettings';
 import ManagerChat from './ManagerChat';
@@ -22,6 +21,17 @@ export default function ManagerShell() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  useEffect(() => {
+    const handleCollapseSidebar = (e: any) => {
+      if (e.detail !== undefined) {
+        setSidebarCollapsed(e.detail);
+      }
+    };
+    window.addEventListener('collapseSidebar', handleCollapseSidebar);
+    return () => {
+      window.removeEventListener('collapseSidebar', handleCollapseSidebar);
+    };
+  }, []);
 
   const handleLogout = (e: any) => {
     e.preventDefault();
@@ -42,29 +52,16 @@ export default function ManagerShell() {
 
   const menuCategories = [
     {
-      category: 'Main Menu',
+      category: 'Menu Utama',
       items: [
-        { to: '/manager/activity', icon: <Activity size={18} />, label: 'Activity' },
-        { to: '/manager/prospek', icon: <Users size={18} />, label: 'Data Prospek' },
+        { to: '/manager/analytics', icon: <BarChart2 size={18} />, label: 'Dashbord' },
         { to: '/manager/customer', icon: <Users size={18} />, label: 'Data Customer' },
-        { to: '/manager/inbox', icon: <Mail size={18} />, label: 'Info Tim' },
+        { to: '/manager/prospek', icon: <Users size={18} />, label: 'Data Prospek' },
+        { to: '/manager/activity', icon: <Activity size={18} />, label: 'Data Activity' },
         { to: '/manager/chat', icon: <MessageCircle size={18} />, label: 'Inbox' },
-        { to: '/manager/negotiations', icon: <ShoppingBag size={18} />, label: 'Marketplace' },
-      ]
-    },
-    {
-      category: 'Analytic',
-      items: [
-        { to: '/manager/analytics', icon: <BarChart2 size={18} />, label: 'Analytics' },
-        { to: '/manager/leaderboard', icon: <Trophy size={18} />, label: 'Leaderboard' },
-      ]
-    },
-    {
-      category: 'Menu Setting',
-      items: [
+        { to: '/manager/inbox', icon: <Mail size={18} />, label: 'Info Tim' },
         { to: '/manager/settings', icon: <Settings size={18} />, label: 'Setting' },
         ...(isAdmin ? [{ to: '/manager/data', icon: <Database size={18} />, label: 'Data Management' }] : []),
-        { to: 'logout', icon: <LogOut size={18} />, label: 'Logout', action: true },
       ]
     }
   ];
@@ -96,14 +93,14 @@ export default function ManagerShell() {
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             style={{ 
               marginLeft: sidebarCollapsed ? '0' : 'auto', 
-              background: 'rgba(0,0,0,0.05)', 
+              background: 'rgba(255,255,255,0.1)', 
               borderRadius: '8px', 
               width: '28px', 
               height: '28px', 
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center',
-              color: '#111827',
+              color: '#fff',
               transition: 'all 0.3s'
             }}
           >
@@ -114,12 +111,8 @@ export default function ManagerShell() {
         <nav className="sidebar-nav">
           {menuCategories.map((cat, idx) => (
             <div key={idx} style={{ marginBottom: '12px' }}>
-              {!sidebarCollapsed && <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(17,24,39,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 6px 16px' }}>{cat.category}</div>}
-              {cat.items.map(item => item.action ? (
-                <a key={item.to} href="#" className="sidebar-link" onClick={handleLogout} style={{ color: '#EE4D2D', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
-                  {item.icon} {!sidebarCollapsed && <span style={{ color: '#EE4D2D' }}>{item.label}</span>}
-                </a>
-              ) : (
+              {!sidebarCollapsed && <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '8px 0 6px 16px' }}>{cat.category}</div>}
+              {cat.items.map(item => (
                 <NavLink key={item.to} to={item.to} className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={() => setSidebarOpen(false)} style={{ position: 'relative', justifyContent: sidebarCollapsed ? 'center' : 'flex-start', padding: sidebarCollapsed ? '14px 0' : '14px 16px' }}>
                   {item.icon} {!sidebarCollapsed && <span>{item.label}</span>}
                   {item.label === 'Inbox' && chatUnread > 0 && (
@@ -127,7 +120,7 @@ export default function ManagerShell() {
                       position: 'absolute', 
                       top: sidebarCollapsed ? '8px' : '12px', 
                       right: sidebarCollapsed ? '12px' : '16px', 
-                      background: '#EE4D2D', color: '#fff', fontSize: '10px', 
+                      background: '#EF4444', color: '#fff', fontSize: '10px', 
                       fontWeight: 900, minWidth: '18px', height: '18px', 
                       borderRadius: '50%', display: 'flex', alignItems: 'center', 
                       justifyContent: 'center', border: '2px solid #fff' 
@@ -141,11 +134,8 @@ export default function ManagerShell() {
           ))}
         </nav>
 
-
-
-
         {!sidebarCollapsed && (
-          <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+          <div style={{ marginTop: 'auto', padding: '24px 20px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
             <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 800, letterSpacing: '0.05em', opacity: 0.8 }}>
               v1.5.0-Shopee-Premium (08-05-26)
             </div>
@@ -156,33 +146,36 @@ export default function ManagerShell() {
       {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
 
       {/* Main */}
-      <div className="manager-main">
-        <header className="manager-header manager-topbar">
-          <button className="hamburger" onClick={() => setSidebarOpen(o => !o)}>
-            {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+      <div className="manager-main" style={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+        
+        {/* NEW TOPBAR WITH PROFILE */}
+        <header style={{ padding: '0 32px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '70px', flexShrink: 0, borderBottom: '1px solid #f1f5f9' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <button className="hamburger" onClick={() => setSidebarOpen(o => !o)} style={{ display: 'flex' }}>
+              {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+            <div style={{ fontWeight: 900, color: '#1e293b', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              PT. Industri Keluarga Timur
+            </div>
+          </div>
           
-          <div id="mgr-topbar-center" style={{ flex: 1, display: 'flex', alignItems: 'center', marginLeft: '16px', marginRight: 'auto' }} />
-
-          <nav className="topbar-nav">
-            {menuCategories.flatMap(c => c.items).filter(i => !i.action).map(item => (
-              <NavLink key={item.to} to={item.to} className={({ isActive }) => `topbar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
-                {item.icon} <span>{item.label}</span>
-                {item.label === 'Inbox' && chatUnread > 0 && (
-                  <span style={{ 
-                    position: 'absolute', top: '-4px', right: '-4px', 
-                    background: '#EE4D2D', color: '#fff', fontSize: '10px', 
-                    fontWeight: 900, minWidth: '18px', height: '18px', 
-                    borderRadius: '50%', display: 'flex', alignItems: 'center', 
-                    justifyContent: 'center', border: '2px solid #fff' 
-                  }}>
-                    {chatUnread > 9 ? '9+' : chatUnread}
-                  </span>
-                )}
-              </NavLink>
-            ))}
-          </nav>
-
+          <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+             {/* Profile Info */}
+             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+               <div style={{ textAlign: 'right' }}>
+                 <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{user.nama}</div>
+                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase' }}>Login sebagai: {user.role}</div>
+               </div>
+               <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', fontWeight: 900, fontSize: '16px', border: '2px solid #fff', boxShadow: '0 4px 10px rgba(37, 99, 235, 0.1)' }}>
+                 {user.nama.charAt(0).toUpperCase()}
+               </div>
+             </div>
+             
+             {/* Logout Button */}
+             <button onClick={handleLogout} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 20px', background: '#fef2f2', color: '#ef4444', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 800, fontSize: '13px', transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.background = '#fee2e2'} onMouseOut={e => e.currentTarget.style.background = '#fef2f2'}>
+               <LogOut size={16} /> Keluar
+             </button>
+          </div>
         </header>
 
         {/* NOTIFICATION TOAST (New Message) */}
@@ -199,12 +192,12 @@ export default function ManagerShell() {
               cursor: 'pointer', width: '380px'
             }}
           >
-            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#EE4D2D', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#2563EB', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <MessageSquare size={24} color="#fff" />
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                <div style={{ fontSize: '11px', fontWeight: 900, color: '#EE4D2D', letterSpacing: '0.1em' }}>PESAN BARU</div>
+                <div style={{ fontSize: '11px', fontWeight: 900, color: '#60A5FA', letterSpacing: '0.1em' }}>PESAN BARU</div>
                 <div style={{ fontSize: '10px', opacity: 0.5, fontWeight: 700 }}>BARU SAJA</div>
               </div>
               <div style={{ fontSize: '15px', fontWeight: 800, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{newMsg.sender_name || 'Tim'}: {newMsg.text}</div>
@@ -218,7 +211,7 @@ export default function ManagerShell() {
           </div>
         )}
 
-        <main className="manager-content">
+        <main className="manager-content" style={{ flex: 1, overflowY: 'auto' }}>
           <Routes>
             <Route index element={<LiveActivityFeed />} />
             <Route path="activity" element={<LiveActivityFeed />} />
@@ -227,7 +220,6 @@ export default function ManagerShell() {
             <Route path="customer" element={<ManagerCustomer />} />
             <Route path="inbox" element={<ManagerInbox />} />
             <Route path="chat" element={<ManagerChat />} />
-            <Route path="leaderboard" element={<Leaderboard />} />
             <Route path="settings" element={<ManagerSettings />} />
             <Route path="data" element={<MasterDataSettings />} />
             <Route path="negotiations" element={<NegotiationsDashboard />} />

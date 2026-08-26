@@ -498,7 +498,7 @@ export default function Homepage({ salesId }: Props) {
                   </div>
                   <div style={{ flex: 1 }}>
                      <h4 style={{ fontSize: '14px', fontWeight: 950, color: '#111827', margin: 0 }}>Warning Prospek</h4>
-                     <p style={{ fontSize: '11px', color: '#f97316', fontWeight: 700, marginTop: '2px' }}>{overdueProspek} Butuh kunjungan ulang</p>
+                     <p style={{ fontSize: '11px', color: '#3B82F6', fontWeight: 700, marginTop: '2px' }}>{overdueProspek} Butuh kunjungan ulang</p>
                   </div>
                </div>
              )}

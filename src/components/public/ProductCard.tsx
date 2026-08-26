@@ -75,8 +75,8 @@ export default function ProductCard({ product, onClick }: Props) {
         {/* Price Section */}
         <div style={{ marginTop: 'auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-             <span style={{ fontSize: '10px', fontWeight: 700, color: '#ee4d2d' }}>Rp</span>
-             <span style={{ fontSize: '16px', fontWeight: 800, color: '#ee4d2d' }}>
+             <span style={{ fontSize: '10px', fontWeight: 700, color: '#2563EB' }}>Rp</span>
+             <span style={{ fontSize: '16px', fontWeight: 800, color: '#2563EB' }}>
                {product.price.toLocaleString('id-ID')}
              </span>
           </div>
@@ -86,7 +86,7 @@ export default function ProductCard({ product, onClick }: Props) {
               <span style={{ fontSize: '10px', color: '#94a3b8', textDecoration: 'line-through' }}>
                 Rp{originalPrice.toLocaleString('id-ID')}
               </span>
-              <div style={{ fontSize: '9px', padding: '1px 4px', background: '#feeeea', color: '#ee4d2d', fontWeight: 900, borderRadius: '2px' }}>
+              <div style={{ fontSize: '9px', padding: '1px 4px', background: '#feeeea', color: '#2563EB', fontWeight: 900, borderRadius: '2px' }}>
                 -{product.discount_percent}%
               </div>
             </div>

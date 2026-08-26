@@ -283,7 +283,7 @@ export default function MasterDataSettings() {
   if (isLoading) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: '20px', background: '#f8fafc' }}>
-        <Loader2 size={48} className="animate-spin" color="#EE4D2D" />
+        <Loader2 size={48} className="animate-spin" color="#2563EB" />
         <div style={{ fontSize: '16px', fontWeight: 800, color: '#64748b', letterSpacing: '1px' }}>MENYIAPKAN DATA MANAGEMENT...</div>
       </div>
     );
@@ -299,9 +299,9 @@ export default function MasterDataSettings() {
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             return (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ padding: '14px 20px', borderRadius: '4px', border: 'none', background: isActive ? 'rgba(238, 77, 45, 0.1)' : 'transparent', color: isActive ? '#EE4D2D' : '#475569', fontWeight: 800, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', transition: 'all 0.3s', transform: isActive ? 'translateX(10px)' : 'none' }}>
+              <button key={tab.id} onClick={() => setActiveTab(tab.id as any)} style={{ padding: '14px 20px', borderRadius: '4px', border: 'none', background: isActive ? 'rgba(238, 77, 45, 0.1)' : 'transparent', color: isActive ? '#2563EB' : '#475569', fontWeight: 800, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', transition: 'all 0.3s', transform: isActive ? 'translateX(10px)' : 'none' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '8px', background: isActive ? 'rgba(238, 77, 45, 0.2)' : 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5, color: isActive ? '#EE4D2D' : '#475569' })}
+                  {React.cloneElement(tab.icon as React.ReactElement<any>, { size: 18, strokeWidth: 2.5, color: isActive ? '#2563EB' : '#475569' })}
                 </div>
                 {tab.label}
               </button>
@@ -322,7 +322,7 @@ export default function MasterDataSettings() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {data.roles.map((u: any) => (
                     <div key={u.id} style={{ background: '#fff', borderRadius: '24px', padding: '24px 32px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={24} color="#EE4D2D" /></div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.role}</h4><div style={{ color: '#64748b', fontSize: '13px' }}>{u.akses}</div></div></div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}><div style={{ width: '56px', height: '56px', borderRadius: '18px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Shield size={24} color="#2563EB" /></div><div><h4 style={{ margin: 0, fontWeight: 900 }}>{u.role}</h4><div style={{ color: '#64748b', fontSize: '13px' }}>{u.akses}</div></div></div>
                       <div style={{ display: 'flex', gap: '12px' }}><button onClick={() => openRoleModal(u)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', border: 'none', cursor: 'pointer' }}><Edit2 size={16} color="#3b82f6" /></button><button onClick={() => handleDeleteRole(u.id)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#fef2f2', border: 'none', cursor: 'pointer' }}><Trash2 size={16} color="#ef4444" /></button></div>
                     </div>
                   ))}
@@ -351,7 +351,7 @@ export default function MasterDataSettings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div style={{ background: '#fff', padding: '32px', borderRadius: '32px', boxShadow: '0 10px 40px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div><h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0 }}>Target & Bobot Poin</h3><p style={{ color: '#94a3b8', fontSize: '12px', fontWeight: 700 }}>KONFIGURASI INDIKATOR KINERJA</p></div>
-                  {saveSuccess && <div style={{ background: '#fff7ed', color: '#EE4D2D', padding: '12px 24px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, border: '1px solid #ffedd5' }}>✅ Berhasil Disimpan!</div>}
+                  {saveSuccess && <div style={{ background: '#fff7ed', color: '#2563EB', padding: '12px 24px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, border: '1px solid #ffedd5' }}>✅ Berhasil Disimpan!</div>}
                 </div>
                 <form onSubmit={handleSaveTargets} style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
@@ -398,7 +398,7 @@ export default function MasterDataSettings() {
                     <div key={m.id} style={{ background: '#fff', borderRadius: '24px', padding: '20px 24px', border: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          {activeTab === 'product_category' ? <ShoppingCart size={20} color="#EE4D2D" /> : <MapPin size={20} color="#EE4D2D" />}
+                          {activeTab === 'product_category' ? <ShoppingCart size={20} color="#2563EB" /> : <MapPin size={20} color="#2563EB" />}
                         </div>
                         <div><div style={{ fontWeight: 900, color: '#1e293b' }}>{m.name}</div><div style={{ fontSize: '10px', color: '#94a3b8' }}>ID: {m.id}</div></div>
                       </div>

@@ -86,6 +86,7 @@ export interface SystemTargets {
   b_maint: number;
   b_order: number;
   b_chat: number;
+  target_tonase?: number;
 }
 
 export interface ChatMessage {

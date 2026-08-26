@@ -1,71 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, Filter, UserCheck, Phone, MapPin, X, ChevronRight } from 'lucide-react';
+import { Search, ShieldAlert, CheckCircle2, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id } from 'date-fns/locale';
 
 
-const StatCard = ({ label, value, icon, gradient, change = '+0%' }: { label: string, value: number, icon: React.ReactNode, gradient: string, change?: string }) => (
-  <div style={{
-    background: gradient,
-    borderRadius: '24px',
-    padding: '24px',
-    color: 'white',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '20px',
-    position: 'relative',
-    overflow: 'hidden',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-    minHeight: '120px'
-  }}>
-    {/* Subtle Decorative Circle */}
-    <div style={{
-      position: 'absolute',
-      right: '-20px',
-      top: '-20px',
-      width: '100px',
-      height: '100px',
-      borderRadius: '50%',
-      background: 'rgba(255,255,255,0.1)',
-      pointerEvents: 'none'
-    }} />
 
-    <div style={{
-      width: '56px',
-      height: '56px',
-      borderRadius: '16px',
-      background: 'rgba(255,255,255,0.2)',
-      backdropFilter: 'blur(4px)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-      flexShrink: 0
-    }}>
-      {icon}
-    </div>
-
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '32px', fontWeight: 950, lineHeight: 1 }}>{value}</span>
-        <div style={{
-          background: 'rgba(255,255,255,0.2)',
-          padding: '2px 8px',
-          borderRadius: '100px',
-          fontSize: '10px',
-          fontWeight: 900,
-          border: '1px solid rgba(255,255,255,0.3)',
-          letterSpacing: '0.5px'
-        }}>
-          {change} ↑
-        </div>
-      </div>
-      <span style={{ fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.9 }}>{label}</span>
-    </div>
-  </div>
-);
 
 
 export default function ManagerProspek() {
@@ -231,7 +172,6 @@ export default function ManagerProspek() {
   const syncClosingCount = filteredC.length;
   const syncActiveCount = filteredP.length;
   const syncTotalCount = syncClosingCount + syncActiveCount;
-  const syncOverdueCount = filteredP.filter(p => p.ageMs > thirtyDaysMs).length;
 
   const sortedFiltered = filteredP;
   const pagedProspek = useMemo(() => {
@@ -348,38 +288,6 @@ export default function ManagerProspek() {
         </div>
       </div>
 
-      {/* B. KPI GRID (SYNCHRONIZED) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '24px',
-        marginBottom: '32px'
-      }}>
-        <StatCard
-          label="Total Prospek"
-          value={syncTotalCount}
-          gradient="linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)"
-          icon={<ShieldAlert size={26} color="white" />}
-        />
-        <StatCard
-          label="Prospek Overdue"
-          value={syncOverdueCount}
-          gradient="linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)"
-          icon={<Filter size={26} color="white" />}
-        />
-        <StatCard
-          label="Belum Closing"
-          value={syncActiveCount}
-          gradient="linear-gradient(135deg, #EE4D2D 0%, #ea580c 100%)"
-          icon={<User size={26} color="white" />}
-        />
-        <StatCard
-          label="Total Closing"
-          value={syncClosingCount}
-          gradient="linear-gradient(135deg, #22c55e 0%, #16a34a 100%)"
-          icon={<CheckCircle2 size={26} color="white" />}
-        />
-      </div>
 
       <div className="chart-card" style={{ background: 'linear-gradient(135deg, #ffffff 0%, #f9fafb 100%)', boxShadow: '0 15px 45px -10px rgba(0,0,0,0.1)' }}>
 
@@ -400,7 +308,7 @@ export default function ManagerProspek() {
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'all' ? '#EE4D2D' : '#f1f5f9',
+                background: filterType === 'all' ? '#2563EB' : '#f1f5f9',
                 color: filterType === 'all' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -414,7 +322,7 @@ export default function ManagerProspek() {
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'nocontact' ? '#EE4D2D' : '#f1f5f9',
+                background: filterType === 'nocontact' ? '#2563EB' : '#f1f5f9',
                 color: filterType === 'nocontact' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -428,7 +336,7 @@ export default function ManagerProspek() {
             <button
               style={{
                 padding: '10px 18px', borderRadius: '12px', border: 'none',
-                background: filterType === 'old30' ? '#EE4D2D' : '#f1f5f9',
+                background: filterType === 'old30' ? '#2563EB' : '#f1f5f9',
                 color: filterType === 'old30' ? '#fff' : '#64748b',
                 fontWeight: 800,
                 fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -549,7 +457,7 @@ export default function ManagerProspek() {
                         fontSize: '11px',
                         fontWeight: 900,
                         background: getStatusName(p.status) === 'Hot' ? '#fef2f2' : getStatusName(p.status) === 'Warm' ? 'rgba(238, 77, 45, 0.05)' : '#f0f9ff',
-                        color: getStatusName(p.status) === 'Hot' ? '#ef4444' : getStatusName(p.status) === 'Warm' ? '#EE4D2D' : '#0ea5e9',
+                        color: getStatusName(p.status) === 'Hot' ? '#ef4444' : getStatusName(p.status) === 'Warm' ? '#2563EB' : '#0ea5e9',
                         border: `1px solid ${getStatusName(p.status) === 'Hot' ? '#fee2e2' : getStatusName(p.status) === 'Warm' ? 'rgba(238, 77, 45, 0.1)' : '#e0f2fe'}`
                       }}>
                         {getStatusName(p.status).toUpperCase()}
@@ -682,7 +590,7 @@ export default function ManagerProspek() {
                   <div style={{ fontSize: '11px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>Log Aktivitas Prospek</div>
                   <h3 style={{ fontSize: '24px', fontWeight: 950, color: '#1e293b', margin: 0, letterSpacing: '-0.5px' }}>{selectedImage.store}</h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#EE4D2D', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '10px', background: '#2563EB', color: '#fff', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <User size={16} />
                     </div>
                     <div>

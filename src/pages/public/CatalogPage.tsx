@@ -221,7 +221,7 @@ export default function CatalogPage() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <button onClick={() => navigate(-1)} style={{ background: 'transparent', border: 'none', padding: 0 }}>
-            <ChevronLeft size={24} color="#ee4d2d" />
+            <ChevronLeft size={24} color="#2563EB" />
           </button>
           
           <div style={{ 
@@ -310,7 +310,7 @@ export default function CatalogPage() {
             style={{ 
               flex: 1, padding: '14px 0', border: 'none', 
               background: 'transparent', fontSize: '14px', 
-              color: activeTab === tab ? '#ee4d2d' : '#757575',
+              color: activeTab === tab ? '#2563EB' : '#757575',
               fontWeight: activeTab === tab ? 700 : 500,
               position: 'relative'
             }}
@@ -319,7 +319,7 @@ export default function CatalogPage() {
             {activeTab === tab && (
               <div style={{ 
                 position: 'absolute', bottom: 0, left: '20%', right: '20%', 
-                height: '2px', background: '#ee4d2d' 
+                height: '2px', background: '#2563EB' 
               }} />
             )}
           </button>
@@ -338,12 +338,12 @@ export default function CatalogPage() {
             onClick={() => setActiveFilter(f)}
             style={{ 
               background: 'transparent', border: 'none', padding: 0,
-              fontSize: '14px', color: activeFilter === f ? '#ee4d2d' : '#757575',
+              fontSize: '14px', color: activeFilter === f ? '#2563EB' : '#757575',
               fontWeight: activeFilter === f ? 600 : 500,
               display: 'flex', alignItems: 'center', gap: '2px'
             }}
           >
-            {f} {f === 'Terbaru' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#ee4d2d' }} />}
+            {f} {f === 'Terbaru' && <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#2563EB' }} />}
           </button>
         ))}
         <button 
@@ -357,13 +357,13 @@ export default function CatalogPage() {
           }}
           style={{ 
             background: 'transparent', border: 'none', padding: 0,
-            fontSize: '14px', color: activeFilter === 'Harga' ? '#ee4d2d' : '#757575', fontWeight: activeFilter === 'Harga' ? 600 : 500,
+            fontSize: '14px', color: activeFilter === 'Harga' ? '#2563EB' : '#757575', fontWeight: activeFilter === 'Harga' ? 600 : 500,
             marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px'
           }}
         >
           Harga <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-             <ChevronDown size={10} style={{ transform: 'rotate(180deg)', color: (activeFilter === 'Harga' && priceSort === 'asc') ? '#ee4d2d' : '#757575' }} />
-             <ChevronDown size={10} style={{ color: (activeFilter === 'Harga' && priceSort === 'desc') ? '#ee4d2d' : '#757575' }} />
+             <ChevronDown size={10} style={{ transform: 'rotate(180deg)', color: (activeFilter === 'Harga' && priceSort === 'asc') ? '#2563EB' : '#757575' }} />
+             <ChevronDown size={10} style={{ color: (activeFilter === 'Harga' && priceSort === 'desc') ? '#2563EB' : '#757575' }} />
           </div>
         </button>
       </div>
@@ -372,7 +372,7 @@ export default function CatalogPage() {
       <div style={{ padding: '8px' }}>
         {loading ? (
           <div style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
-            <Loader2 className="animate-spin" size={32} color="#ee4d2d" />
+            <Loader2 className="animate-spin" size={32} color="#2563EB" />
           </div>
         ) : activeTab === 'Kategori' && !selectedCategory ? (
           /* Categories Selection View */
@@ -457,7 +457,7 @@ export default function CatalogPage() {
                  style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #f1f1f1' }}
                />
                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-                 <div style={{ fontSize: '18px', fontWeight: 700, color: '#ee4d2d' }}>
+                 <div style={{ fontSize: '18px', fontWeight: 700, color: '#2563EB' }}>
                    Rp{selectedProduct.price.toLocaleString('id-ID')}
                  </div>
                  <div style={{ fontSize: '12px', color: '#757575', marginTop: '4px' }}>
@@ -555,7 +555,7 @@ export default function CatalogPage() {
                       <input 
                         type="number" 
                         placeholder="Harga yang Anda tawarkan"
-                        style={{ width: '100%', padding: '14px 16px 14px 40px', borderRadius: '4px', border: '1px solid #ee4d2d', fontSize: '14px', fontWeight: 700, outline: 'none' }}
+                        style={{ width: '100%', padding: '14px 16px 14px 40px', borderRadius: '4px', border: '1px solid #2563EB', fontSize: '14px', fontWeight: 700, outline: 'none' }}
                         value={negoForm.offered_price || ''}
                         onChange={(e) => {
                           const val = parseInt(e.target.value.replace(/^0+/, ''));
@@ -571,8 +571,8 @@ export default function CatalogPage() {
                     onClick={() => addToCart(false)}
                     style={{ 
                       flex: 1, padding: '14px', borderRadius: '4px', 
-                      background: '#fff', color: '#ee4d2d', 
-                      border: '1px solid #ee4d2d', fontWeight: 600, fontSize: '13px',
+                      background: '#fff', color: '#2563EB', 
+                      border: '1px solid #2563EB', fontWeight: 600, fontSize: '13px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px'
                     }}
                   >
@@ -582,7 +582,7 @@ export default function CatalogPage() {
                     onClick={() => addToCart(true)}
                     style={{ 
                       flex: 1.5, padding: '14px', borderRadius: '4px', 
-                      background: '#ee4d2d', color: '#fff', 
+                      background: '#2563EB', color: '#fff', 
                       border: 'none', fontWeight: 700, fontSize: '14px',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
                     }}
@@ -602,7 +602,7 @@ export default function CatalogPage() {
           onClick={() => setCartModalOpen(true)}
           style={{ 
             position: 'fixed', bottom: '24px', left: '16px', right: '16px', 
-            background: '#ee4d2d', color: '#fff', border: 'none', borderRadius: '8px',
+            background: '#2563EB', color: '#fff', border: 'none', borderRadius: '8px',
             padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             boxShadow: '0 4px 20px rgba(238, 77, 45, 0.4)', zIndex: 900
           }}
@@ -610,7 +610,7 @@ export default function CatalogPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div style={{ position: 'relative' }}>
               <ShoppingCart size={24} />
-              <div style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#fff', color: '#ee4d2d', width: '18px', height: '18px', borderRadius: '50%', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #ee4d2d' }}>{cart.length}</div>
+              <div style={{ position: 'absolute', top: '-8px', right: '-8px', background: '#fff', color: '#2563EB', width: '18px', height: '18px', borderRadius: '50%', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #2563EB' }}>{cart.length}</div>
             </div>
             <span style={{ fontWeight: 700 }}>Lihat Keranjang</span>
           </div>
@@ -653,7 +653,7 @@ export default function CatalogPage() {
                         <img src={item.product.image_url} style={{ width: '60px', height: '60px', borderRadius: '8px', objectFit: 'cover' }} />
                         <div style={{ flex: 1 }}>
                            <div style={{ fontSize: '14px', fontWeight: 700 }}>{item.product.name}</div>
-                           <div style={{ fontSize: '14px', color: '#ee4d2d', fontWeight: 800, marginTop: '2px' }}>Rp{item.offered_price.toLocaleString('id-ID')}</div>
+                           <div style={{ fontSize: '14px', color: '#2563EB', fontWeight: 800, marginTop: '2px' }}>Rp{item.offered_price.toLocaleString('id-ID')}</div>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                            <button onClick={() => updateCartQty(item.product.id, -1)} style={{ width: '28px', height: '28px', borderRadius: '50%', border: '1px solid #ddd', background: '#fff' }}>-</button>
@@ -683,7 +683,7 @@ export default function CatalogPage() {
 
                  <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontWeight: 700, color: '#64748b' }}>Total Pesanan</span>
-                    <span style={{ fontSize: '18px', fontWeight: 900, color: '#ee4d2d' }}>Rp{cart.reduce((acc, item) => acc + (item.offered_price * item.qty), 0).toLocaleString('id-ID')}</span>
+                    <span style={{ fontSize: '18px', fontWeight: 900, color: '#2563EB' }}>Rp{cart.reduce((acc, item) => acc + (item.offered_price * item.qty), 0).toLocaleString('id-ID')}</span>
                  </div>
 
                  <button 
@@ -691,7 +691,7 @@ export default function CatalogPage() {
                    disabled={isSubmitting || !negoForm.customer_name || !negoForm.customer_wa}
                    style={{ 
                      width: '100%', padding: '18px', borderRadius: '12px', 
-                     background: isSubmitting ? '#ccc' : '#ee4d2d', color: '#fff', 
+                     background: isSubmitting ? '#ccc' : '#2563EB', color: '#fff', 
                      border: 'none', fontWeight: 800, fontSize: '16px' 
                    }}
                  >

@@ -1,294 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, ShoppingCart, TrendingUp, Target, Layers, Layout } from 'lucide-react';
+import { Search, ShieldAlert, User, Image as ImageIcon, UserCheck, Phone, MapPin, X, ChevronRight, ShoppingCart } from 'lucide-react';
 import { store } from '../../store/dataStore';
 import { formatDistanceToNow } from 'date-fns';
 import { id as dateFnsId } from 'date-fns/locale';
 
-const CustomerOverviewCharts = ({ customers, salesData, masterCategories = [] }: { customers: any[], salesData: any[], masterCategories: any[] }) => {
-  // 1. Chart: Customer By Sales (Pill Design)
-  const salesStats = useMemo(() => {
-    return salesData.map(s => {
-      const count = customers.filter(c => c.sales_pic === s.id).length;
-      return {
-        id: s.id,
-        nama: s.nama.split(' ')[0].toUpperCase(),
-        count
-      };
-    }).sort((a, b) => b.count - a.count).slice(0, 5); // top 5
-  }, [customers, salesData]);
-
-  const maxSales = Math.max(1, ...salesStats.map(s => s.count));
-
-  // 2. Data Aktif vs Non Aktif (Berdasarkan Order Terakhir)
-  const activeCount = customers.filter(c => {
-    if (!c.last_order_date) return false;
-    const diffDays = (new Date().getTime() - new Date(c.last_order_date).getTime()) / (1000 * 3600 * 24);
-    return diffDays <= 14;
-  }).length;
-  const activePercent = customers.length > 0 ? Math.round((activeCount / customers.length) * 100) : 0;
-
-  // 3. Data Customer Per Area
-  const areaStats = useMemo(() => {
-    const counts: Record<string, number> = {};
-    customers.forEach(c => {
-      const a = c.area || 'Unknown';
-      counts[a] = (counts[a] || 0) + 1;
-    });
-    return Object.entries(counts).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5);
-  }, [customers]);
-
-  // 4. Data Customer Per Kategori
-  const catStats = useMemo(() => {
-    const counts: Record<string, number> = {};
-    customers.forEach(c => {
-      const k = c.kategori || 'Uncategorized';
-      counts[k] = (counts[k] || 0) + 1;
-    });
-    return Object.entries(counts).map(([id, count]) => {
-      const cat = masterCategories.find(mc => mc.id == id || (Number(mc.id) === Number(id) && id !== ''));
-      return { name: cat ? cat.name : id, count };
-    }).sort((a, b) => b.count - a.count).slice(0, 4);
-  }, [customers, masterCategories]);
-
-  const maxArea = Math.max(1, ...areaStats.map(s => s.count));
-
-  const cardStyle = { 
-    background: 'rgba(255, 255, 255, 0.7)', 
-    backdropFilter: 'blur(20px)',
-    borderRadius: '32px', 
-    padding: '30px', 
-    boxShadow: '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)', 
-    display: 'flex', 
-    flexDirection: 'column' as const, 
-    minHeight: '380px', 
-    border: 'none',
-    transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
-    cursor: 'default'
-  };
-  const titleStyle = { fontSize: '20px', fontWeight: 950, color: '#1e293b', textAlign: 'left' as const, margin: 0, letterSpacing: '-0.5px' };
-  const subTitleStyle = { fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' as const, letterSpacing: '1px', marginTop: '4px' };
-
-  return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', marginBottom: '32px' }}>
-      
-      {/* Chart 1: Customer By Sales (Modern Pill Design) */}
-      <div 
-        style={cardStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
-      >
-        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)' }}>
-            <TrendingUp size={20} color="#fff" />
-          </div>
-          <div>
-            <h3 style={titleStyle}>Customer By Sales</h3>
-            <div style={subTitleStyle}>SEBARAN PER SALESMAN</div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '16px', paddingBottom: '10px' }}>
-          {salesStats.map((s, idx) => {
-            const heightPercent = (s.count / maxSales) * 100;
-            const gradients = [
-              'linear-gradient(180deg, #6366f1 0%, #444ce7 100%)',
-              'linear-gradient(180deg, #a855f7 0%, #9333ea 100%)',
-              'linear-gradient(180deg, #3b82f6 0%, #2563eb 100%)',
-              'linear-gradient(180deg, #EE4D2D 0%, #ea580c 100%)',
-              'linear-gradient(180deg, #10b981 0%, #059669 100%)'
-            ];
-            
-            return (
-              <div key={s.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', minWidth: '40px' }}>
-                <div style={{ fontSize: '12px', fontWeight: 950, color: '#1e293b' }}>{s.count}</div>
-                <div style={{ 
-                  width: '24px', 
-                  height: '140px', 
-                  background: '#f1f5f9', 
-                  borderRadius: '100px', 
-                  position: 'relative', 
-                  overflow: 'hidden',
-                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)'
-                }}>
-                  <div style={{ 
-                    position: 'absolute', 
-                    bottom: 0, 
-                    left: 0, 
-                    right: 0, 
-                    height: `${heightPercent}%`, 
-                    background: gradients[idx % gradients.length], 
-                    borderRadius: '100px',
-                    boxShadow: '0 -4px 10px rgba(0,0,0,0.1), inset 0 2px 4px rgba(255,255,255,0.3)',
-                    transition: 'height 1s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                  }} />
-                </div>
-                <div style={{ 
-                  background: '#f8fafc', 
-                  padding: '4px 10px', 
-                  borderRadius: '8px', 
-                  fontSize: '9px', 
-                  fontWeight: 900, 
-                  color: '#64748b',
-                  border: '1px solid #e2e8f0',
-                  whiteSpace: 'nowrap'
-                }}>
-                  {s.nama}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Chart 2: Retention Status (Premium Donut) */}
-      <div 
-        style={cardStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
-      >
-        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(16, 185, 129, 0.2)' }}>
-            <Target size={20} color="#fff" />
-          </div>
-          <div>
-            <h3 style={titleStyle}>Retention Status</h3>
-            <div style={subTitleStyle}>KESEHATAN DATABASE</div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-            <svg viewBox="0 0 100 100" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-              <defs>
-                <linearGradient id="activeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#10b981" />
-                  <stop offset="100%" stopColor="#059669" />
-                </linearGradient>
-                <filter id="glow">
-                  <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
-                  <feMerge>
-                    <feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/>
-                  </feMerge>
-                </filter>
-              </defs>
-              <circle cx="50" cy="50" r="42" fill="none" stroke="#f1f5f9" strokeWidth="12" />
-              <circle 
-                cx="50" cy="50" r="42" fill="none" 
-                stroke="url(#activeGrad)" strokeWidth="12" 
-                strokeDasharray={`${(activePercent / 100) * 263.8} 263.8`} 
-                strokeLinecap="round"
-                filter="url(#glow)"
-                style={{ transition: 'stroke-dasharray 1.5s ease-out' }}
-              />
-            </svg>
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-              <span style={{ fontSize: '38px', fontWeight: 950, color: '#1e293b', lineHeight: '1', letterSpacing: '-1px' }}>{customers.length}</span>
-              <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>TOTAL TOKO</span>
-            </div>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', width: '100%', marginTop: '30px' }}>
-             <div style={{ background: '#f0fdf4', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #dcfce7' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px rgba(16,185,129,0.5)' }} />
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{activePercent}%</div>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#166534', textTransform: 'uppercase' }}>Aktif</div>
-                </div>
-             </div>
-             <div style={{ background: '#fef2f2', padding: '12px', borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '10px', border: '1px solid #fee2e2' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ef4444' }} />
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b' }}>{100 - activePercent}%</div>
-                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#991b1b', textTransform: 'uppercase' }}>Low</div>
-                </div>
-             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Chart 3: Customer By Area (Horizontal Progress) */}
-      <div 
-        style={cardStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
-      >
-        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#EE4D2D', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(238, 77, 45, 0.2)' }}>
-            <Layers size={20} color="#fff" />
-          </div>
-          <div>
-            <h3 style={titleStyle}>Customer By Area</h3>
-            <div style={subTitleStyle}>DOMINASI WILAYAH</div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', justifyContent: 'center' }}>
-          {areaStats.map((a, idx) => {
-             const widthPercent = (a.count / maxArea) * 100;
-             const colors = ['#6366f1', '#a855f7', '#EE4D2D', '#3b82f6', '#10b981'];
-             return (
-                <div key={idx}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{a.name}</span>
-                    <span style={{ fontSize: '12px', fontWeight: 950, color: colors[idx % colors.length] }}>{a.count} <small style={{fontSize: '9px', opacity: 0.6}}>TOKO</small></span>
-                  </div>
-                  <div style={{ width: '100%', height: '10px', background: '#f1f5f9', borderRadius: '100px', position: 'relative' }}>
-                    <div style={{ 
-                      height: '100%', width: `${widthPercent}%`, 
-                      background: colors[idx % colors.length], 
-                      borderRadius: '100px',
-                      boxShadow: `0 4px 10px ${colors[idx % colors.length]}44`,
-                      transition: 'width 1s ease-out'
-                    }} />
-                  </div>
-                </div>
-             )
-          })}
-        </div>
-      </div>
-
-      {/* Chart 4: By Category (Layout Design) */}
-      <div 
-        style={cardStyle}
-        onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.boxShadow = '0 30px 60px rgba(0,0,0,0.12)'; }}
-        onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 20px 50px rgba(0,0,0,0.05), inset 0 0 0 1px rgba(255,255,255,0.8)'; }}
-      >
-        <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#ec4899', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(236, 72, 153, 0.2)' }}>
-            <Layout size={20} color="#fff" />
-          </div>
-          <div>
-            <h3 style={titleStyle}>Segmentasi Toko</h3>
-            <div style={subTitleStyle}>BERDASARKAN KATEGORI</div>
-          </div>
-        </div>
-
-        <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', alignItems: 'center' }}>
-          {catStats.map((c, idx) => {
-            const colors = ['#EE4D2D', '#a855f7', '#ec4899', '#6366f1'];
-            return (
-              <div key={idx} style={{ 
-                background: '#f8fafc', 
-                padding: '16px', 
-                borderRadius: '20px', 
-                border: '1px solid #f1f5f9',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                transition: 'all 0.2s ease'
-              }}>
-                <div style={{ fontSize: '24px', fontWeight: 950, color: colors[idx % colors.length] }}>{c.count}</div>
-                <div style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{c.name}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-    </div>
-  );
-};
 
 export default function ManagerCustomer() {
   const { customers: rawCustomers, sales, allSales, activities, masterAreas, masterCategories, refresh } = useSalesData();
@@ -521,11 +237,6 @@ export default function ManagerCustomer() {
         </div>
       </div>
 
-      <CustomerOverviewCharts 
-        customers={filteredCustomers} 
-        salesData={sales} 
-        masterCategories={masterCategories}
-      />
 
       {/* TABLE SECTION */}
       <div style={{ background: '#fff', borderRadius: '32px', padding: '32px', boxShadow: '0 20px 40px rgba(0,0,0,0.03)', border: '1px solid #f8fafc' }}>
@@ -546,7 +257,7 @@ export default function ManagerCustomer() {
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'All' ? '#EE4D2D' : '#f1f5f9', 
+                 background: filterRetention === 'All' ? '#2563EB' : '#f1f5f9', 
                  color: filterRetention === 'All' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -560,7 +271,7 @@ export default function ManagerCustomer() {
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'Non-Aktif' ? '#EE4D2D' : '#f1f5f9', 
+                 background: filterRetention === 'Non-Aktif' ? '#2563EB' : '#f1f5f9', 
                  color: filterRetention === 'Non-Aktif' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -574,7 +285,7 @@ export default function ManagerCustomer() {
             <button 
                style={{ 
                  padding: '10px 18px', borderRadius: '12px', border: 'none', 
-                 background: filterRetention === 'Aktif' ? '#EE4D2D' : '#f1f5f9', 
+                 background: filterRetention === 'Aktif' ? '#2563EB' : '#f1f5f9', 
                  color: filterRetention === 'Aktif' ? '#fff' : '#64748b',
                  fontWeight: 800,
                  fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px',
@@ -682,7 +393,7 @@ export default function ManagerCustomer() {
                           <span style={{ 
                             fontSize: '11px', 
                             fontWeight: 950, 
-                            color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#059669' : '#EE4D2D'
+                            color: (((c as any).total_order_volume || 0) / ((c as any).target_volume || 1) >= 1) ? '#059669' : '#2563EB'
                           }}>
                             {Math.round((((c as any).total_order_volume || 0) / ((c as any).target_volume || 1)) * 100)}%
                           </span>
