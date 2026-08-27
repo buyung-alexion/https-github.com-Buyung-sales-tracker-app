@@ -39,7 +39,8 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
   });
 
   const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-  const salesTargetKg = currentSales?.target_penjualan || 50000;
+  const myCustomersList = customers.filter(c => c.sales_pic === salesId);
+  const salesTargetKg = myCustomersList.reduce((sum, c) => sum + ((c as any).target_volume || 1000), 0) || currentSales?.target_penjualan || 50000;
   const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
   const pointsTarget = 2000;

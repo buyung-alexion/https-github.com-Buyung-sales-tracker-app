@@ -38,6 +38,8 @@ export default function CustomerMaintenance({ salesId }: Props) {
   });
 
   const [addModal, setAddModal] = useState(false);
+  const [targetModal, setTargetModal] = useState<any>(null);
+  const [targetVal, setTargetVal] = useState(0);
 
   const [addForm, setAddForm] = useState<{
     nama_toko: string; nama_pic: string; no_wa: string; area: string; link_map: string; kategori: string; rating: number; foto_profil: string;
@@ -222,7 +224,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingTop: 0 }}>
       {/* Header with zIndex fix to ensure interactivity - More Compact GrabFood Style */}
-      <div className="gojek-bg-top" style={{ position: 'relative', overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', zIndex: 50 }}>
+      <div className="gojek-bg-top" style={{ position: 'relative', overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', margin: '0 -20px 0 -20px', zIndex: 50 }}>
         {/* Decorative elements with pointer-events: none */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
@@ -306,7 +308,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     {new Date(c.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
-                    <span onClick={(e) => { e.stopPropagation(); setEditForm({ ...c, target_volume: (c as any).target_volume || 1000 } as any); setEditModal(c); }} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>{((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={12} style={{marginLeft: '4px', color: '#00AA13'}} /></span>
+                    <span onClick={(e) => { e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>{((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={12} style={{marginLeft: '4px', color: '#00AA13'}} /></span>
                   </div>
                 </div>
 
@@ -332,9 +334,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         {isFollowedUp ? (
                           <span style={{ fontSize: '12px', fontWeight: 700, color: '#00AA13', background: '#E6F6EC', padding: '2px 8px', borderRadius: '12px' }}>Followed Up</span>
-                        ) : overdue ? (
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', background: '#FEE2E2', padding: '2px 8px', borderRadius: '12px' }}>Needs Contact</span>
-                        ) : (
+                        ) : overdue ? ( <></> ) : (
                           <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981', background: '#F0FDF4', padding: '2px 8px', borderRadius: '12px' }}>Active</span>
                         )}
                       </div>
@@ -719,7 +719,34 @@ export default function CustomerMaintenance({ salesId }: Props) {
           </div>
         </div>
       )}
+
+      {targetModal && (
+        <div className="modal-overlay" onClick={() => setTargetModal(null)} style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '24px', padding: '24px', width: '100%', maxWidth: '400px' }}>
+            <h3 style={{ margin: '0 0 16px', fontSize: '18px', fontWeight: 800 }}>Edit Target Volume</h3>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ fontSize: '12px', fontWeight: 700, color: '#64748B', display: 'block', marginBottom: '8px' }}>Target (Kg)</label>
+              <input type="number" className="form-input" style={{ width: '100%', borderRadius: '12px', border: '1px solid #E2E8F0', padding: '12px', fontSize: '16px', fontWeight: 600 }} value={targetVal} onChange={e => setTargetVal(Number(e.target.value))} />
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button onClick={() => setTargetModal(null)} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0', background: '#fff', fontWeight: 700 }}>Batal</button>
+              <button onClick={async () => {
+                setIsSubmitting(true);
+                const { error } = await store.supabase.from('customers').update({ target_volume: targetVal }).eq('id', targetModal.id);
+                if (!error) {
+                  await refresh();
+                  setTargetModal(null);
+                } else {
+                  alert('Gagal update target');
+                }
+                setIsSubmitting(false);
+              }} style={{ flex: 1, padding: '12px', borderRadius: '12px', border: 'none', background: '#00AA13', color: '#fff', fontWeight: 700 }} disabled={isSubmitting}>
+                {isSubmitting ? 'Menyimpan...' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
