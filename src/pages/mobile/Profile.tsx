@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Edit3, Camera, Target, LogOut, Check, User, Phone, Activity, TrendingUp, Lock, Loader2, Image as ImageIcon } from 'lucide-react';

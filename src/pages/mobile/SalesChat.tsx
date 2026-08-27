@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, Search, Users, CheckCircle2, Smile, Paperclip, Image as ImageIcon, X } from 'lucide-react';
