@@ -197,15 +197,15 @@ export default function SalesChat({ salesId }: Props) {
     return (
       <div className="page-content" style={{ background: '#fff', height: '100%', display: 'flex', flexDirection: 'column', padding: '0', overflow: 'hidden' }}>
         {/* Header - Fixed & Opaque */}
-        <div className="hero-compact" style={{ flexShrink: 0, padding: 'calc(16px + env(safe-area-inset-top)) 20px 20px', position: 'relative', overflow: 'hidden',   background: 'var(--brand-primary)', zIndex: 100 }}>
+        <div className="gojek-bg-top" style={{ flexShrink: 0, padding: 'calc(16px + env(safe-area-inset-top)) 20px 20px', position: 'relative', overflow: 'hidden', zIndex: 100 }}>
           {/* Decorative elements */}
           <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 106 }}>
-            <button onClick={() => navigate('/mobile/home')} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={20} color="#111827" strokeWidth={3} /></button>
+            <button onClick={() => navigate('/mobile/home')} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={20} color="#fff" strokeWidth={3} /></button>
             <div>
-              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0, color: '#111827' }}>Live Chat</h2>
-              <div className="hero-premium-subtitle" style={{ color: '#111827', opacity: 0.7 }}>Sales Communication & Support</div>
+              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0, color: '#fff' }}>Live Chat</h2>
+              <div className="hero-premium-subtitle" style={{ color: '#fff', opacity: 0.7 }}>Sales Communication & Support</div>
             </div>
           </div>
         </div>
@@ -241,7 +241,7 @@ export default function SalesChat({ salesId }: Props) {
                </div>
                <div style={{ flex: 1 }}>
                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                   <span style={{ fontWeight: 800, fontSize: '15px', color: '#111827' }}>{c.name}</span>
+                   <span style={{ fontWeight: 800, fontSize: '15px', color: '#fff' }}>{c.name}</span>
                    <span style={{ fontSize: '11px', color: c.unreadCount > 0 ? '#EF4444' : '#94a3b8', fontWeight: c.unreadCount > 0 ? 800 : 500 }}>{c.lastMessageTime}</span>
                  </div>
                  <div style={{ fontSize: '13px', color: c.unreadCount > 0 ? '#111827' : '#64748b', fontWeight: c.unreadCount > 0 ? 700 : 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px' }}>
@@ -261,13 +261,13 @@ export default function SalesChat({ salesId }: Props) {
     <div className="page-content" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0, background: '#f0f2f5', overflow: 'hidden', position: 'relative' }}>
       {/* Header (Sticky) */}
        <div className="hero-compact" style={{ flexShrink: 0, background: 'var(--brand-primary)', padding: 'calc(12px + env(safe-area-inset-top)) 20px 12px', display: 'flex', alignItems: 'center', gap: '12px',   zIndex: 10, boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-        <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#111827" strokeWidth={3} /></button>
+        <button onClick={() => { setActiveChatId(null); setSelectedContact(null); }} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={18} color="#fff" strokeWidth={3} /></button>
         <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#fff', border: '2px solid rgba(255,255,255,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: selectedContact?.id === 'Group-1' ? '#6366f1' : (selectedContact?.id === 'Manager-1' ? '#F59E0B' : '#0ea5e9'), fontSize: '16px', fontWeight: 800, overflow: 'hidden' }}>
           {selectedContact?.type === 'group' ? <Users size={20} /> : (selectedContact?.avatar ? <img src={selectedContact.avatar} alt={selectedContact.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selectedContact?.name.charAt(0))}
         </div>
         <div style={{ flex: 1 }}>
-          <div style={{ fontSize: '15px', fontWeight: 900, color: '#111827' }}>{selectedContact?.name}</div>
-          <div style={{ fontSize: '11px', color: '#111827', opacity: 0.6, fontWeight: 700 }}>{selectedContact?.type === 'group' ? `${contacts.length} Members` : 'Online'}</div>
+          <div style={{ fontSize: '15px', fontWeight: 900, color: '#fff' }}>{selectedContact?.name}</div>
+          <div style={{ fontSize: '11px', color: '#fff', opacity: 0.6, fontWeight: 700 }}>{selectedContact?.type === 'group' ? `${contacts.length} Members` : 'Online'}</div>
         </div>
         {selectedContact?.type === 'group' && (
           <button 
@@ -299,7 +299,7 @@ export default function SalesChat({ salesId }: Props) {
                 onClick={() => { if (isMe) setSelectedMessage(m); }}
                 style={{ 
                   background: isMe ? 'var(--brand-primary)' : '#fff', 
-                  color: '#111827',
+                  color: '#fff',
                   padding: '10px 14px', 
                   borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                   maxWidth: '80%',
@@ -433,7 +433,7 @@ export default function SalesChat({ salesId }: Props) {
                 value={inputText}
                 onChange={e => setInputText(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSend(); }}
-                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '16px', fontWeight: 600, color: '#111827', padding: '10px 4px', minWidth: 0 }}
+                style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontSize: '16px', fontWeight: 600, color: '#fff', padding: '10px 4px', minWidth: 0 }}
              />
 
              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '4px', flexShrink: 0 }}>
@@ -458,7 +458,7 @@ export default function SalesChat({ salesId }: Props) {
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
-              color: '#111827', 
+              color: '#fff', 
               boxShadow: '0 4px 15px rgba(255, 193, 7, 0.4)', 
               cursor: 'pointer',
               padding: 0,

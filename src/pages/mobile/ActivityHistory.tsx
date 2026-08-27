@@ -73,44 +73,18 @@ export default function ActivityHistory() {
 
   return (
     <>
+    
     <div className="page-content" style={{ background: '#F5F6F8', minHeight: '100vh', paddingBottom: '120px', paddingTop: 0 }}>
-      {/* Header - White Gojek Style */}
-      <div style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid #E8E8E8' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(16px + env(safe-area-inset-top)) 20px 16px' }}>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#1C1C1C' }}>Aktivitas</h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F5F6F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <HelpCircle size={18} color="#1C1C1C" />
-            </div>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F5F6F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Download size={18} color="#1C1C1C" />
-            </div>
+      {/* Header */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, margin: '0 -16px 0 -16px' }}>
+        <div className="gojek-bg-top" style={{ position: 'relative', overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 6, width: '100%' }}>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#fff', textAlign: 'center' }}>Aktivitas</h1>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div style={{ display: 'flex', padding: '0 20px', gap: '24px', overflowX: 'auto', borderBottom: '1px solid #E8E8E8' }} className="hide-scrollbar">
-          {['Riwayat', 'Dalam proses', 'Terjadwal', 'Draf'].map(tab => (
-            <div 
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{ 
-                padding: '12px 0', 
-                fontSize: '14px', 
-                fontWeight: activeTab === tab ? 800 : 600,
-                color: activeTab === tab ? '#1C1C1C' : '#727272',
-                borderBottom: activeTab === tab ? '3px solid #00AA13' : '3px solid transparent',
-                whiteSpace: 'nowrap',
-                cursor: 'pointer'
-              }}
-            >
-              {tab}
-            </div>
-          ))}
-        </div>
-
         {/* Filter Chips */}
-        <div style={{ display: 'flex', padding: '16px 20px', gap: '10px', overflowX: 'auto', background: '#fff' }} className="hide-scrollbar">
+        <div style={{ display: 'flex', padding: '16px 20px', gap: '10px', overflowX: 'auto', background: '#fff', borderBottom: '1px solid #E8E8E8' }} className="hide-scrollbar">
           {['Semua', 'Visit', 'WA', 'Call', 'Order'].map(filter => (
             <div 
               key={filter}
