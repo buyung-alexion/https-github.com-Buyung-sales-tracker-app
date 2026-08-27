@@ -1,0 +1,251 @@
+/* ─── PURE GOJEK STYLE CSS ─── */
+:root {
+  --brand-primary: #00AA13;
+  --brand-accent: #00AA13;
+  --brand-bg: #F5F6F8;
+  --brand-text-dark: #1C1C1C;
+  --brand-text-gray: #727272;
+}
+
+body.wallet-theme {
+  background: var(--brand-bg);
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--brand-text-dark);
+}
+
+/* Header / Hero Area */
+.brand-hero {
+  background: var(--brand-primary);
+  padding: calc(16px + env(safe-area-inset-top)) 20px 80px;
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+}
+
+.brand-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.brand-search-bar {
+  flex: 1;
+  background: #fff;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.brand-search-bar input {
+  background: transparent;
+  border: none;
+  color: var(--brand-text-dark);
+  font-size: 14px;
+  font-weight: 500;
+  width: 100%;
+  outline: none;
+}
+
+.brand-search-bar input::placeholder {
+  color: var(--brand-text-gray);
+}
+
+.brand-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  overflow: hidden;
+  background: #fff;
+}
+
+.brand-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Wallet Card (like GoPay) */
+.brand-wallet-card {
+  background: #fff;
+  border-radius: 20px;
+  margin: -50px 20px 20px;
+  padding: 20px;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brand-wallet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-wallet-balance-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--brand-text-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-wallet-balance-amount {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--brand-text-dark);
+}
+
+.brand-wallet-actions {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid #E8E8E8;
+  padding-top: 16px;
+}
+
+.brand-wallet-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.brand-wallet-action-btn:active {
+  opacity: 0.6;
+}
+.brand-wallet-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--brand-primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-wallet-action-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand-text-dark);
+}
+
+/* Service Grid */
+.brand-services-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px 12px;
+  padding: 0 20px 24px;
+}
+
+.brand-service-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  position: relative;
+}
+
+.brand-service-circle {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px; /* Squircle */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.2s;
+}
+
+/* Distinct Gojek Service Colors */
+.service-color-1 { background: #00AA13; } /* GoRide green */
+.service-color-2 { background: #EE2737; } /* GoFood red */
+.service-color-3 { background: #00AED6; } /* GoBluebird blue */
+.service-color-4 { background: #93328E; } /* GoSend purple */
+.service-color-5 { background: #DF1995; } /* GoTix magenta */
+.service-color-6 { background: #00AA13; }
+.service-color-7 { background: #E9651D; } /* Orange */
+
+.brand-service-item:active .brand-service-circle {
+  transform: scale(0.92);
+}
+
+.brand-service-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--brand-text-dark);
+  text-align: center;
+}
+
+.brand-badge {
+  position: absolute;
+  top: -4px;
+  right: 4px;
+  background: #EE2737;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* Generic Header for Inner Pages */
+.brand-inner-header {
+  background: var(--brand-primary);
+  padding: calc(12px + env(safe-area-inset-top)) 20px 24px;
+  color: #fff;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-inner-header-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+
+.brand-inner-back-btn {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+/* Generic Card layout for inner pages */
+.brand-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+  margin-bottom: 12px;
+}

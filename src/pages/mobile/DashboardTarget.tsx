@@ -1,458 +1,313 @@
-import { useMemo, useState, useEffect } from 'react';
-import { format } from 'date-fns';
-import { id as localeId } from 'date-fns/locale';
+import { useState, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Cell, LabelList } from 'recharts';
-import { AlertCircle, Users, Star } from 'lucide-react';
-import { calculateSalesPoints } from '../../utils/points';
-import type { FilterType } from '../../utils/points';
+import { useAuth } from '../../hooks/useAuth';
+import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
+import { Bell, Search, MapPin, Target, MessageSquare, ShoppingCart, BarChart3, Users, Trophy, Menu, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import '../../brand-style.css'; 
 
-interface Props { salesId: string; }
+interface Props { salesId: string; setSidebarOpen?: (open: boolean) => void; }
 
-export default function DashboardTarget({ salesId }: Props) {
-  const { activities, prospek, customers, systemTargets } = useSalesData();
-  
-  const [filterType, setFilterType] = useState<FilterType>('month');
+export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
+  const { user } = useAuth();
+  const { activities = [], prospek = [], customers = [], sales = [], orders = [] } = useSalesData() || {};
+  const currentSales = sales.find(s => s.id === salesId) || (user as any);
+  const navigate = useNavigate();
 
-  const { totalActual, rating, breakdown, filteredActs } = useMemo(() => 
-    calculateSalesPoints(salesId, activities, prospek, systemTargets, filterType),
-    [salesId, activities, prospek, systemTargets, filterType]
+  const now = new Date();
+  const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Filter current month activities
+  const thisMonthActivities = activities.filter(a => 
+    a.id_sales === salesId && new Date(a.timestamp) >= currentMonthStart
   );
 
-  // Live date tracking for midnight transitions
-  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
+  // Filter current month orders
+  const thisMonthOrders = orders.filter(o => 
+    o.sales_id === salesId && new Date(o.created_at) >= currentMonthStart
+  );
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = format(new Date(), 'yyyy-MM-dd');
-      if (current !== todayStr) setTodayStr(current);
-    }, 10000);
-    return () => clearInterval(interval);
-  }, [todayStr]);
+  // Calculate Points
+  let currentMonthPoints = 0;
+  thisMonthActivities.forEach(a => {
+    if (a.tipe_aksi === 'Visit') currentMonthPoints += 10;
+    else if (a.tipe_aksi === 'Call') currentMonthPoints += 5;
+    else if (a.tipe_aksi === 'WA' || a.tipe_aksi === 'Email') currentMonthPoints += 2;
+  });
+  thisMonthOrders.forEach(() => {
+    currentMonthPoints += 50;
+  });
 
-  const {
-    followup: followupCount,
-    order: soCount,
-    visitProspek: visitCount,
-    visitCustomer: maintCount,
-    closing: closingCount,
-    newProspek: prospekCount
-  } = breakdown;
+  // Calculate Sales Performance (Kg)
+  const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.volume || o.amount || 0), 0);
+  const salesTargetKg = currentSales?.target_penjualan || 50000; // default 50.000 kg
+  const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
-  const activityTrendData = useMemo(() => {
-    const data: any[] = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const comparisonStr = format(d, 'yyyy-MM-dd');
-      const dayStr = format(d, 'iii d', { locale: localeId });
-      
-      const actsForDay = filteredActs.filter((a: any) => {
-        return format(new Date(a.timestamp), 'yyyy-MM-dd') === comparisonStr;
-      });
-      data.push({ name: dayStr, Aktivitas: actsForDay.length });
+  // Target Poin
+  const pointsTarget = 2000; // Example target poin
+  const pointsAchievedPct = Math.min(100, (currentMonthPoints / pointsTarget) * 100);
+
+  // Data for Sales Activity Chart (Gambar 2)
+  // Get last 7 days
+  const last7Days = Array.from({length: 7}).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d;
+  });
+
+  const activityData = last7Days.map(date => {
+    const dayStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+    const dayActs = thisMonthActivities.filter(a => new Date(a.timestamp).toDateString() === date.toDateString());
+    const dayOrders = thisMonthOrders.filter(o => new Date(o.created_at).toDateString() === date.toDateString());
+    return {
+      name: dayStr,
+      Order: dayOrders.length,
+      Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
+      Closing: dayOrders.length // Simplification
+    };
+  });
+
+  // Data for Performance Overview (Gambar 3)
+  const myProspek = prospek.filter(p => p.sales_owner === salesId).length;
+  const myCustomers = customers.filter(c => c.sales_pic === salesId).length;
+  const myOrderan = thisMonthOrders.length;
+  const totalData = myProspek + myCustomers + myOrderan;
+  
+  const pieData = [
+    { name: 'Prospek', value: myProspek, color: '#3B82F6' },
+    { name: 'Customer', value: myCustomers, color: '#F59E0B' },
+    { name: 'Orderan', value: myOrderan, color: '#F43F5E' }
+  ];
+
+  // Data for Top Customers (Gambar 4)
+  const customerVolumes: Record<string, number> = {};
+  thisMonthOrders.forEach(o => {
+    if(o.customer_id) {
+       customerVolumes[o.customer_id] = (customerVolumes[o.customer_id] || 0) + (o.volume || o.amount || 0);
     }
-    return data;
-  }, [filteredActs, todayStr]);
-
-  const totalTarget = systemTargets?.ind_poin ?? 150;
-  const overallPct = Math.min(100, totalTarget > 0 ? Math.round((totalActual / totalTarget) * 100) : 0);
-
-  // ─── Donut Ring ────────────────────────────────────────────────
-  const r = 70; const cx = 90; const cy = 90;
-  const circumference = 2 * Math.PI * r;
-  const dash = (overallPct / 100) * circumference;
-
-  // ─── Progress Performance (5 indicators, inline in JSX) ────────
-  // ─── Informasi Data ───────────────────────────────────────────
-  // Prospek Outstanding > 14 hari (belum ada aktivitas selama 14+ hari)
-  const now14 = new Date();
-  const day14Ms = 14 * 24 * 60 * 60 * 1000;
-  const myProspek = prospek.filter(p => p.sales_owner === salesId);
-
-  const prospekOutstanding = myProspek.filter(p => {
-    // Find last activity for this prospek
-    const lastAct = activities
-      .filter(a => a.target_id === p.id)
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-    const lastContact = lastAct ? new Date(lastAct.timestamp) : new Date(p.created_at);
-    return (now14.getTime() - lastContact.getTime()) > day14Ms;
   });
+  
+  const topCustomers = Object.entries(customerVolumes)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([id, vol], idx) => {
+      const c = customers.find(c => c.id === id);
+      return {
+        id,
+        name: c?.nama_toko || 'Unknown Customer',
+        vol,
+        rank: idx + 1
+      };
+    });
 
-  // Customer Aktif vs Tidak Aktif (aktif = order dalam 30 hari terakhir)
-  const myCustomers = customers.filter(c => c.sales_pic === salesId);
-  const day30Ms = 30 * 24 * 60 * 60 * 1000;
-  const customerAktif = myCustomers.filter(c => {
-    const lastOrder = activities
-      .filter(a => a.target_id === c.id && a.tipe_aksi === 'Order')
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-    if (!lastOrder) return false;
-    return (now14.getTime() - new Date(lastOrder.timestamp).getTime()) <= day30Ms;
-  });
-  const customerTidakAktif = myCustomers.filter(c => {
-    const lastOrder = activities
-      .filter(a => a.target_id === c.id && a.tipe_aksi === 'Order')
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0];
-    if (!lastOrder) return true; // Belum pernah order
-    return (now14.getTime() - new Date(lastOrder.timestamp).getTime()) > day30Ms;
-  });
+  const maxTopVol = topCustomers.length > 0 ? topCustomers[0].vol : 1;
 
-  const topActiveCustomers = useMemo(() => {
-    return myCustomers
-      .map(c => {
-        const orderCount = filteredActs.filter(
-          (a: any) => a.target_id === c.id && a.tipe_aksi === 'Order'
-        ).length;
-        return { ...c, orderCount };
-      })
-      .filter(c => c.orderCount > 0)
-      .sort((a, b) => b.orderCount - a.orderCount)
-      .slice(0, 5);
-  }, [myCustomers, filteredActs]);
-
-  const maxOrderCount = topActiveCustomers[0]?.orderCount ?? 1;
+  const monthStr = now.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+  const dayRange = `1 ${now.toLocaleDateString('id-ID', { month: 'short' })} - ${now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
   return (
-    <div className="page-content" style={{ paddingBottom: '100px', position: 'relative' }}>
-      
-      {/* Top Header - Premium Grab Style */}
-      <div className="yellow-bg-top" style={{ 
-        padding: '0 24px 20px', 
-        height: '280px',
-        position: 'relative',
+    <div className="page-content" style={{ padding: 0, background: '#F4F7F6', minHeight: '100vh', paddingBottom: '100px' }}>
+      {/* Header - Full Margin */}
+      <div className="gojek-bg-top" style={{ 
+        padding: 'calc(16px + env(safe-area-inset-top)) 20px 24px', 
+        position: 'relative', 
         overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        zIndex: 50,
-        marginBottom: '-60px'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        zIndex: 50
       }}>
         {/* Decorative elements */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
-        <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
-        <div style={{ position: 'relative', zIndex: 6 }}>
-        <div className="page-title-row" style={{ marginBottom: '16px', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'relative', zIndex: 6, marginBottom: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Analytics</h2>
-              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Star size={10} fill="#FFCC00" strokeWidth={3} /> {rating.toFixed(1)} STARS
-              </div>
+              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0, color: '#FFFFFF' }}>Analisis</h2>
             </div>
-            <div className="hero-premium-subtitle">Performance & Goals</div>
+            <div className="hero-premium-subtitle" style={{ color: '#FFFFFF', opacity: 0.9 }}>Performance Overview</div>
           </div>
-        </div>
-
-        {/* Date Filter Chips - More Compact Integrated Style */}
-        <div style={{ display: 'flex', gap: '8px', padding: '0 20px', overflowX: 'auto', paddingBottom: '10px' }}>
-          {(['today', 'week', 'month', 'all'] as const).map(opt => (
-            <button 
-              key={opt}
-              onClick={() => setFilterType(opt)}
-              style={{ 
-                padding: '8px 16px', borderRadius: '14px', fontSize: '12px', fontWeight: 800, border: 'none', 
-                background: filterType === opt ? '#111827' : 'rgba(255,255,255,0.4)', 
-                color: filterType === opt ? '#FFCC00' : '#111827', 
-                boxShadow: filterType === opt ? '0 4px 12px rgba(0,0,0,0.1)' : 'none',
-                whiteSpace: 'nowrap', transition: 'all 0.2s' 
-              }}>
-              {opt === 'today' ? 'Hari Ini' : opt === 'week' ? 'Minggu Ini' : opt === 'month' ? 'Bulan Ini' : 'Semua'}
+          {setSidebarOpen && (
+            <button onClick={() => setSidebarOpen(true)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+              <Menu size={24} />
             </button>
-          ))}
-        </div>
-        </div>
-      </div>
-
-      <div style={{ position: 'relative', zIndex: 60, marginTop: '20px' }}>
-        {/* Donut Ring - Optimized for maximum number clearance */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          width: '100%', 
-          padding: '0 8px',
-          marginTop: '10px',
-          gap: '4px'
-        }}>
-          {/* Aktual Column */}
-          <div style={{ textAlign: 'center', color: '#111827', flex: '1', minWidth: 0 }}>
-            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Aktual</div>
-            <div style={{ fontSize: '17px', fontWeight: 950, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{totalActual.toLocaleString('id-ID')}</div>
-          </div>
-
-          {/* Center Donut - Shrunk for side space */}
-          <div style={{ 
-            position: 'relative', width: '165px', height: '165px', background: '#fff', 
-            borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-            boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
-            flexShrink: 0
-          }}>
-            <svg width="145" height="145" viewBox="0 0 180 180" style={{ position: 'absolute' }}>
-              <defs>
-                <linearGradient id="solidYellow" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#F59E0B" />
-                  <stop offset="100%" stopColor="#F59E0B" />
-                </linearGradient>
-              </defs>
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f8fafc" strokeWidth="15" />
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="url(#solidYellow)" strokeWidth="15"
-                strokeDasharray={`${dash} ${circumference}`}
-                strokeLinecap="round" transform="rotate(-90 90 90)"
-                style={{ transition: 'stroke-dasharray 1s cubic-bezier(0.4, 0, 0.2, 1)' }}
-              />
-            </svg>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ fontSize: '9px', fontWeight: 800, color: '#10B981', letterSpacing: '1px', marginBottom: '-2px' }}>CAPAIAN</span>
-              <span style={{ fontSize: '36px', fontWeight: 950, color: '#0f172a', letterSpacing: '-2px', margin: '1px 0' }}>{overallPct}%</span>
-              <span style={{ fontSize: '8px', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.5px', textTransform: 'uppercase' }}>Performance</span>
-            </div>
-          </div>
-
-          {/* Target Column */}
-          <div style={{ textAlign: 'center', color: '#111827', flex: '1', minWidth: 0 }}>
-            <div style={{ fontSize: '9px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.8px', opacity: 0.6, marginBottom: '2px' }}>Poin Minimal</div>
-            <div style={{ fontSize: '17px', fontWeight: 950, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{totalTarget.toLocaleString('id-ID')}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── INFORMASI DATA ─────────────────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', paddingLeft: '4px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', margin: 0 }}>Informasi Data</h3>
-          <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', background: '#f1f5f9', padding: '2px 8px', borderRadius: '8px' }}>Butuh Perhatian</span>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-          {/* Prospek Outstanding > 14 Hari */}
-          <div style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: prospekOutstanding.length > 0 ? '1.5px solid #FECACA' : '1.5px solid #DCFCE7' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: prospekOutstanding.length > 0 ? '16px' : '0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: prospekOutstanding.length > 0 ? '#FEF2F2' : '#F0FDF4', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <AlertCircle size={22} color={prospekOutstanding.length > 0 ? '#EF4444' : '#22C55E'} />
-                </div>
-                <div>
-                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827' }}>Prospek Tidak Aktif</div>
-                  <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Belum disentuh lebih dari 14 hari</div>
-                </div>
-              </div>
-              <div style={{ 
-                fontSize: '22px', fontWeight: 900, 
-                color: prospekOutstanding.length > 0 ? '#EF4444' : '#22C55E',
-                background: prospekOutstanding.length > 0 ? '#FEF2F2' : '#F0FDF4',
-                width: '48px', height: '48px', borderRadius: '14px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}>
-                {prospekOutstanding.length}
-              </div>
-            </div>
-            {prospekOutstanding.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {prospekOutstanding.slice(0, 3).map(p => (
-                  <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#FFF7F7', borderRadius: '12px', border: '1px solid #FEE2E2' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', fontWeight: 800, color: '#111827' }}>{p.nama_toko}</div>
-                      <div style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{p.area} · {p.status}</div>
-                    </div>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#EF4444', background: '#FEE2E2', padding: '3px 8px', borderRadius: '8px' }}>
-                      &gt;14 hari
-                    </span>
-                  </div>
-                ))}
-                {prospekOutstanding.length > 3 && (
-                  <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 700, textAlign: 'center', padding: '4px' }}>
-                    +{prospekOutstanding.length - 3} prospek lainnya
-                  </div>
-                )}
-              </div>
-            )}
-            {prospekOutstanding.length === 0 && (
-              <div style={{ fontSize: '12px', color: '#22C55E', fontWeight: 700, marginTop: '4px', paddingLeft: '56px' }}>
-                Semua prospek terpantau dengan baik ✓
-              </div>
-            )}
-          </div>
-
-          {/* Customer Aktif vs Tidak Aktif */}
-          <div style={{ background: '#fff', borderRadius: '20px', padding: '20px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: '1.5px solid #E0F2FE' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-              <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Users size={22} color="#3B82F6" />
-              </div>
-              <div>
-                <div style={{ fontSize: '14px', fontWeight: 800, color: '#111827' }}>Status Customer</div>
-                <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Total {myCustomers.length} customer terdaftar</div>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              {/* Aktif */}
-              <div style={{ background: '#F0FDF4', borderRadius: '16px', padding: '16px', border: '1.5px solid #DCFCE7', textAlign: 'center' }}>
-                <div style={{ fontSize: '30px', fontWeight: 900, color: '#22C55E', lineHeight: 1 }}>{customerAktif.length}</div>
-                <div style={{ fontSize: '12px', fontWeight: 800, color: '#15803D', marginTop: '6px' }}>✓ Aktif</div>
-                <div style={{ fontSize: '11px', color: '#86EFAC', fontWeight: 600, marginTop: '2px' }}>Order &lt;30 hari</div>
-              </div>
-              {/* Tidak Aktif */}
-              <div style={{ background: '#FFF7F7', borderRadius: '16px', padding: '16px', border: '1.5px solid #FECACA', textAlign: 'center' }}>
-                <div style={{ fontSize: '30px', fontWeight: 900, color: '#EF4444', lineHeight: 1 }}>{customerTidakAktif.length}</div>
-                <div style={{ fontSize: '12px', fontWeight: 800, color: '#DC2626', marginTop: '6px' }}>✗ Tidak Aktif</div>
-                <div style={{ fontSize: '11px', color: '#FCA5A5', fontWeight: 600, marginTop: '2px' }}>Belum/habis order</div>
-              </div>
-            </div>
-
-            {/* Progress bar aktif */}
-            {myCustomers.length > 0 && (
-              <div style={{ marginTop: '14px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' }}>
-                  <span>Tingkat Aktivitas Customer</span>
-                  <span>{Math.round((customerAktif.length / myCustomers.length) * 100)}%</span>
-                </div>
-                <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ height: '100%', width: `${Math.round((customerAktif.length / myCustomers.length) * 100)}%`, background: 'linear-gradient(90deg, #22C55E, #16A34A)', borderRadius: '4px', transition: 'width 1s ease' }} />
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ─── TOP ACTIVE CUSTOMER ────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <div>
-            <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', margin: 0 }}>Top Customer Aktif</h3>
-            <p style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, margin: '2px 0 0 0' }}>Berdasarkan frekuensi order terbanyak</p>
-          </div>
-          {topActiveCustomers.length > 0 && (
-            <span style={{ fontSize: '11px', fontWeight: 800, color: '#8B5CF6', background: '#F5F3FF', padding: '3px 10px', borderRadius: '10px' }}>
-              Top {topActiveCustomers.length}
-            </span>
-          )}
-        </div>
-
-        <div style={{ background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' }}>
-          {topActiveCustomers.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '28px 16px', color: '#94a3b8' }}>
-              <div style={{ fontSize: '32px', marginBottom: '8px' }}>📦</div>
-              <div style={{ fontSize: '13px', fontWeight: 700 }}>Belum ada data order</div>
-              <div style={{ fontSize: '11px', marginTop: '4px', fontWeight: 600 }}>Tekan tombol Order saat kunjungan customer</div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {topActiveCustomers.map((c, idx) => {
-                const rankColors = ['#F59E0B', '#94a3b8', '#CD7F32', '#6366f1', '#10B981'];
-                const rankBg    = ['#FFFBEB', '#F8FAFC', '#FFF7ED', '#EEF2FF', '#ECFDF5'];
-                const barWidth  = Math.round((c.orderCount / maxOrderCount) * 100);
-                const barColor  = ['#F59E0B','#8B5CF6','#3B82F6','#10B981','#EC4899'][idx];
-                return (
-                  <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    {/* Rank badge */}
-                    <div style={{
-                      width: '34px', height: '34px', flexShrink: 0,
-                      borderRadius: '12px', background: rankBg[idx],
-                      border: `1.5px solid ${rankColors[idx]}30`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '14px', fontWeight: 900, color: rankColors[idx]
-                    }}>
-                      {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
-                    </div>
-
-                    {/* Info */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>
-                          {c.nama_toko}
-                        </span>
-                        <span style={{ fontSize: '12px', fontWeight: 900, color: barColor, flexShrink: 0 }}>
-                          {c.orderCount}× order
-                        </span>
-                      </div>
-                      {/* frequency bar */}
-                      <div style={{ height: '5px', background: '#f1f5f9', borderRadius: '4px', overflow: 'hidden' }}>
-                        <div style={{ height: '100%', width: `${barWidth}%`, background: barColor, borderRadius: '4px', transition: 'width 1s ease' }} />
-                      </div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600, marginTop: '3px' }}>{c.area}</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           )}
         </div>
       </div>
 
-      {/* ─── PROGRESS PERFORMANCE (Bar Chart) ─────────────────── */}
-      <div style={{ position: 'relative', zIndex: 10, margin: '24px 16px 0' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '12px', paddingLeft: '4px' }}>Progress Performance</h3>
-        <div style={{ background: '#fff', borderRadius: '20px', padding: '16px 12px 10px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart
-              data={[
-                { name: 'Followup', poin: followupCount * (systemTargets?.b_chat ?? 1), color: '#EC4899' },
-                { name: 'SO', poin: soCount * (systemTargets?.b_order ?? 5), color: '#8B5CF6' },
-                { name: 'Visit', poin: (visitCount + maintCount) * (systemTargets?.b_visit ?? 5), color: '#F59E0B' },
-                { name: 'Closing', poin: closingCount * (systemTargets?.b_closing ?? 20), color: '#10B981' },
-                { name: 'Prospek', poin: prospekCount * (systemTargets?.b_prospek ?? 5), color: '#3B82F6' },
-              ]}
-              margin={{ top: 20, right: 8, left: -24, bottom: 0 }}
-              barCategoryGap="28%"
-            >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-              <XAxis
-                dataKey="name"
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 11, fontWeight: 700, fill: '#64748B' }}
-              />
-              <YAxis
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 10, fill: '#94a3b8' }}
-                allowDecimals={false}
-              />
-              <Tooltip
-                cursor={{ fill: 'rgba(0,0,0,0.04)' }}
-                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.12)', fontSize: '12px', fontWeight: 700 }}
-              />
-              <Bar dataKey="poin" radius={[8, 8, 0, 0]} maxBarSize={48}>
-                {[
-                  '#EC4899', '#8B5CF6', '#F59E0B', '#10B981', '#3B82F6'
-                ].map((color, idx) => (
-                  <Cell key={idx} fill={color} />
-                ))}
-                <LabelList
-                  dataKey="poin"
-                  position="top"
-                  style={{ fontSize: '11px', fontWeight: 800, fill: '#334155' }}
-                />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-
+      <div style={{ padding: '0 16px', marginTop: '-12px', position: 'relative', zIndex: 60, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        
+        {/* 1. Target VS Realisasi (Penjualan Kg & Target Poin) - Gambar 1 */}
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8' }}>
+          {/* Date Range Header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+             <div style={{ fontWeight: 700, color: '#1C1C1C', fontSize: '13px' }}>Target vs Realisasi</div>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#00AA13', fontWeight: 700 }}>
+               <ChevronLeft size={14} /> {dayRange} <ChevronRight size={14} />
+             </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '16px' }}>
+             {/* Left Col - Penjualan Kg */}
+             <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', color: '#1C1C1C', fontWeight: 800, marginBottom: '8px' }}>Penjualan (Kg)</div>
+                <div style={{ fontSize: '18px', fontWeight: 900, color: '#1C1C1C', marginBottom: '12px' }}>{totalSalesKg.toLocaleString('id-ID')} Kg</div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#727272', marginBottom: '4px' }}>
+                  <span>Target: {salesTargetKg.toLocaleString('id-ID')}</span>
+                  <span>Sisa: {Math.max(0, salesTargetKg - totalSalesKg).toLocaleString('id-ID')}</span>
+                </div>
+                
+                <div style={{ width: '100%', height: '16px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                   <div style={{ width: `${salesAchievedPct}%`, height: '100%', background: '#00AA13' }}></div>
+                   <div style={{ width: `${100 - salesAchievedPct}%`, height: '100%', background: '#FCD34D' }}></div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginTop: '4px', fontWeight: 700 }}>
+                   <span style={{ color: '#00AA13' }}>{salesAchievedPct.toFixed(1)}%</span>
+                   <span style={{ color: '#F59E0B' }}>{(100 - salesAchievedPct).toFixed(1)}%</span>
+                </div>
+             </div>
+             
+             {/* Divider */}
+             <div style={{ width: '1px', background: '#F1F5F9' }}></div>
+             
+             {/* Right Col - Target Poin */}
+             <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '13px', color: '#1C1C1C', fontWeight: 800, marginBottom: '8px' }}>Target Poin</div>
+                <div style={{ fontSize: '18px', fontWeight: 900, color: '#1C1C1C', marginBottom: '12px' }}>{currentMonthPoints.toLocaleString('id-ID')} Pts</div>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: '#727272', marginBottom: '4px' }}>
+                  <span>Target: {pointsTarget.toLocaleString('id-ID')}</span>
+                  <span>Sisa: {Math.max(0, pointsTarget - currentMonthPoints).toLocaleString('id-ID')}</span>
+                </div>
+                
+                <div style={{ width: '100%', height: '16px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden', display: 'flex' }}>
+                   <div style={{ width: `${pointsAchievedPct}%`, height: '100%', background: '#3B82F6' }}></div>
+                   <div style={{ width: `${100 - pointsAchievedPct}%`, height: '100%', background: '#EF4444' }}></div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', marginTop: '4px', fontWeight: 700 }}>
+                   <span style={{ color: '#3B82F6' }}>{pointsAchievedPct.toFixed(1)}%</span>
+                   <span style={{ color: '#EF4444' }}>{(100 - pointsAchievedPct).toFixed(1)}%</span>
+                </div>
+             </div>
+          </div>
         </div>
-      </div>
 
-      {/* ─── ACTIVITY GRAPHIC ────────────────────────────────────── */}
-      <div style={{ position: 'relative', zIndex: 10, margin: '20px 16px 0' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#111827', marginBottom: '12px', paddingLeft: '4px' }}>Tren Aktivitas (7 Hari)</h3>
-        <div style={{ background: '#fff', borderRadius: '20px', padding: '16px 12px 10px', boxShadow: '0 4px 15px rgba(0,0,0,0.04)' }}>
-          <ResponsiveContainer width="100%" height={180}>
-            <AreaChart data={activityTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorAct" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748B' }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748B' }} />
-              <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }} />
-              <Area type="monotone" dataKey="Aktivitas" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorAct)" />
-            </AreaChart>
-          </ResponsiveContainer>
+        {/* 2. Grafik Aktivitas Sales (Order, Visit, Closing) - Gambar 2 */}
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+             <div style={{ fontWeight: 700, color: '#1C1C1C', fontSize: '13px' }}>Aktivitas Sales (7 Hari)</div>
+             <Clock size={16} color="#727272" />
+          </div>
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={activityData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8E8E8" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#727272' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#727272' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Bar dataKey="Visit" fill="#A7F3D0" barSize={20} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Order" fill="#FCA5A5" barSize={20} radius={[4, 4, 0, 0]} />
+                <Line type="monotone" dataKey="Closing" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </div>
+
+        {/* 3. Grafik Performance Overview - Gambar 3 */}
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+             <div style={{ fontWeight: 700, color: '#1C1C1C', fontSize: '13px' }}>Performance Overview</div>
+             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: '#00AA13', fontWeight: 700 }}>
+               <ChevronLeft size={14} /> {dayRange} <ChevronRight size={14} />
+             </div>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '120px', height: '120px', position: 'relative' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={35} outerRadius={55} paddingAngle={2} dataKey="value" stroke="none">
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: '11px', color: '#727272', fontWeight: 600 }}>Total</span>
+                <span style={{ fontSize: '18px', color: '#00AA13', fontWeight: 900 }}>{totalData}</span>
+              </div>
+            </div>
+            
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
+               {pieData.map(item => {
+                 const pct = totalData > 0 ? Math.round((item.value / totalData) * 100) : 0;
+                 return (
+                   <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                       <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: item.color }}></div>
+                       <span style={{ fontSize: '12px', color: '#1C1C1C', fontWeight: 600 }}>{item.name}</span>
+                     </div>
+                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                       <span style={{ fontSize: '13px', fontWeight: 800, color: '#1C1C1C' }}>{item.value}</span>
+                       <span style={{ fontSize: '10px', background: `${item.color}20`, color: item.color, padding: '2px 6px', borderRadius: '12px', fontWeight: 800, minWidth: '36px', textAlign: 'center' }}>
+                         {pct}%
+                       </span>
+                     </div>
+                   </div>
+                 );
+               })}
+            </div>
+          </div>
+          <div style={{ textAlign: 'right', fontSize: '10px', color: '#727272', marginTop: '12px' }}>
+            <Clock size={10} style={{ display: 'inline', marginRight: '4px', verticalAlign: 'middle' }}/> 
+            Data per hari ini
+          </div>
+        </div>
+
+        {/* 4. Grafik Top Customer Order - Gambar 4 */}
+        <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+             <div style={{ fontWeight: 700, color: '#1C1C1C', fontSize: '13px' }}>Penjualan Pelanggan (Top 5)</div>
+             <Trophy size={16} color="#F59E0B" />
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {topCustomers.length > 0 ? topCustomers.map(tc => {
+              const pct = Math.round((tc.vol / maxTopVol) * 100);
+              let medalColor = '#E8E8E8';
+              let txtColor = '#727272';
+              if (tc.rank === 1) { medalColor = '#FBBF24'; txtColor = '#fff'; } // Gold
+              else if (tc.rank === 2) { medalColor = '#9CA3AF'; txtColor = '#fff'; } // Silver
+              else if (tc.rank === 3) { medalColor = '#D97706'; txtColor = '#fff'; } // Bronze
+              
+              return (
+                <div key={tc.id} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                  <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: medalColor, color: txtColor, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 900, flexShrink: 0 }}>
+                    {tc.rank}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '6px' }}>
+                       <div style={{ fontSize: '12px', fontWeight: 700, color: '#1C1C1C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                         {tc.name}
+                       </div>
+                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         <span style={{ fontSize: '12px', fontWeight: 800, color: '#1C1C1C' }}>{tc.vol.toLocaleString('id-ID')} Kg</span>
+                       </div>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: '#F1F5F9', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: tc.rank === 1 ? '#00AA13' : tc.rank === 2 ? '#FBBF24' : '#3B82F6', borderRadius: '4px' }}></div>
+                    </div>
+                  </div>
+                </div>
+              );
+            }) : (
+              <div style={{ textAlign: 'center', padding: '20px', color: '#727272', fontSize: '12px' }}>Belum ada data penjualan pelanggan.</div>
+            )}
+          </div>
+        </div>
+        
       </div>
     </div>
   );

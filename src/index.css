@@ -70,10 +70,10 @@ input, textarea, select { font-family: inherit; }
   background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--r-md);
   color: var(--text); font-size: 16px; font-weight: 600; transition: all 0.2s;
 }
-.login-btn:hover { background: var(--bg-glass-hover); border-color: var(--brand-yellow); transform: translateX(4px); }
+.login-btn:hover { background: var(--bg-glass-hover); border-color: var(--brand-primary); transform: translateX(4px); }
 .login-name { font-size: 18px; color: var(--text); }
 
-.mobile-shell { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; }
+.mobile-shell { display: flex; flex-direction: column; height: 100dvh; width: 100%; position: relative; }
 .mobile-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 18px; background: #FFFFFF; border-bottom: 1px solid var(--border);
@@ -261,7 +261,7 @@ body.chat-active .mobile-main {
 .stat-lbl { font-size: 11px; color: var(--text-sub); }
 .icon-glow {
   width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  margin-bottom: 4px; background: var(--brand-yellow); color: #111827; box-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
+  margin-bottom: 4px; background: var(--brand-primary); color: #111827; box-shadow: 0 4px 10px rgba(255, 204, 0, 0.3);
 }
 .stat-icon { font-size: 20px; }
 
@@ -281,7 +281,7 @@ body.chat-active .mobile-main {
 .route-card {
   min-width: 140px; background: #fff; border: 1px solid var(--border); border-radius: var(--r-md); 
   padding: 12px; scroll-snap-align: start; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-  transition: all 0.3s ease; border-left: 3px solid var(--brand-yellow);
+  transition: all 0.3s ease; border-left: 3px solid var(--brand-primary);
 }
 .route-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
 .route-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
@@ -304,13 +304,13 @@ body.chat-active .mobile-main {
   border: 1px solid var(--border); border-radius: 30px; padding: 10px 16px;
   transition: border-color 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); color: var(--text-sub);
 }
-.search-bar:focus-within { border-color: var(--brand-yellow); box-shadow: 0 4px 15px rgba(255, 204, 0, 0.2); }
+.search-bar:focus-within { border-color: var(--brand-primary); box-shadow: 0 4px 15px rgba(255, 204, 0, 0.2); }
 .search-bar input { background: none; border: none; outline: none; color: var(--text); flex: 1; font-size: 14px; }
 .search-bar.compact { padding: 8px 12px; font-size: 13px; }
 .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--text-sub); }
 .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; border: 1px solid var(--border); background: #f1f5f9; color: var(--text-sub); transition: all 0.15s; font-weight: 600; }
-.filter-chip:hover { border-color: var(--brand-yellow); }
-.filter-chip.active { background: var(--brand-yellow); border-color: var(--brand-yellow); color: #111827; }
+.filter-chip:hover { border-color: var(--brand-primary); }
+.filter-chip.active { background: var(--brand-primary); border-color: var(--brand-primary); color: #111827; }
 .divider { color: var(--border); }
 
 /* ─── PROSPECT CARDS ─────────────────────────────────────── */
@@ -330,23 +330,23 @@ body.chat-active .mobile-main {
 .btn-wa {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 9px 14px; border-radius: 30px; font-size: 13px; font-weight: 600;
-  background: #fff; color: #111827; border: 2px solid var(--brand-yellow); transition: all 0.2s;
+  background: #fff; color: #111827; border: 2px solid var(--brand-primary); transition: all 0.2s;
 }
-.btn-wa:hover { background: var(--brand-yellow); }
+.btn-wa:hover { background: var(--brand-primary); }
 
 .btn-closing {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 9px 14px; border-radius: 30px; font-size: 13px; font-weight: 600;
-  background: var(--brand-yellow); color: #111827; transition: all 0.2s; border: 2px solid var(--brand-yellow);
+  background: var(--brand-primary); color: #111827; transition: all 0.2s; border: 2px solid var(--brand-primary);
 }
 .btn-closing:hover { transform: translateY(-1px); box-shadow: 0 4px 15px rgba(255, 204, 0, 0.35); }
 
 .btn-call {
   flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
   padding: 9px 14px; border-radius: 30px; font-size: 13px; font-weight: 600;
-  background: #fff; color: #111827; border: 2px solid var(--brand-yellow); transition: all 0.2s;
+  background: #fff; color: #111827; border: 2px solid var(--brand-primary); transition: all 0.2s;
 }
-.btn-call:hover { background: var(--brand-yellow); }
+.btn-call:hover { background: var(--brand-primary); }
 
 .btn-note {
   padding: 9px 12px; border-radius: 30px; font-size: 13px; font-weight: 600;
@@ -381,12 +381,12 @@ body.chat-active .mobile-main {
 
 /* ─── STATUS BADGES ──────────────────────────────────────── */
 .status-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-.status-hot { background: var(--brand-yellow); color: #111827; }
+.status-hot { background: var(--brand-primary); color: #111827; }
 .status-warm { background: #E2E8F0; color: #111827; }
 .status-cold { background: #f1f5f9; color: var(--text-sub); }
 
 /* Gradient Status Badges (Replacing with soft solid colors for light mode) */
-.status-hot-grad { background: var(--brand-yellow); color: #111827; font-weight: bold; }
+.status-hot-grad { background: var(--brand-primary); color: #111827; font-weight: bold; }
 .status-warm-grad { background: #FDE68A; color: #111827; font-weight: bold;}
 .status-cold-grad { background: #E0F2FE; color: #0369A1; font-weight: bold;}
 
@@ -421,7 +421,7 @@ body.chat-active .mobile-main {
 .btn-checkin {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   padding: 14px; border-radius: 30px; font-size: 15px; font-weight: 700;
-  background: var(--brand-yellow); color: #111827; transition: all 0.2s;
+  background: var(--brand-primary); color: #111827; transition: all 0.2s;
 }
 .btn-checkin:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,204,0,0.3); }
 .today-visits { display: flex; flex-direction: column; gap: 8px; }
@@ -551,7 +551,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .mgr-header-stats { display: flex; align-items: center; gap: 12px; }
 .mgr-stat-pill { display: flex; flex-direction: column; align-items: flex-start; background: #ffffff; border: none; border-radius: 20px; padding: 16px 20px; font-size: 12px; color: #64748b; font-weight: 600; box-shadow: 0 8px 30px rgba(0,0,0,0.03); transition: transform 0.2s; }
 .mgr-stat-pill:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(0,0,0,0.05); }
-.mgr-stat-pill.accent { border-left: 4px solid var(--brand-yellow); }
+.mgr-stat-pill.accent { border-left: 4px solid var(--brand-primary); }
 .stat-num-sm { font-size: 26px; font-weight: 900; color: #111827; margin-top: 2px; }
 .auto-refresh-btn { padding: 12px 20px; border-radius: 20px; font-size: 13px; font-weight: 700; background: #ffffff; border: none; box-shadow: 0 8px 30px rgba(0,0,0,0.03); color: #111827; transition: all 0.2s; cursor: pointer; }
 .auto-refresh-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 35px rgba(0,0,0,0.05); }
@@ -666,9 +666,9 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 }
 
 /* ─── LIGHT THEME OVERLAPS & NEW CARDS ─── */
-.yellow-bg-top {
+.gojek-bg-top {
   position: absolute; top: 0; left: 0; right: 0; height: 160px;
-  background: var(--brand-yellow); z-index: -1;
+  background: var(--brand-primary); z-index: -1;
 }
 .page-content { position: relative; padding: 20px 16px 24px; display: flex; flex-direction: column; gap: 16px; overflow-x: hidden; }
 
@@ -692,11 +692,11 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .quick-actions-row { display: flex; gap: 10px; justify-content: space-between; margin-top: 8px; }
 .q-action-btn {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  background: var(--brand-yellow); border-radius: 16px; padding: 12px 8px;
+  background: var(--brand-primary); border-radius: 16px; padding: 12px 8px;
   color: #111827; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255,204,0,0.2);
 }
 .q-action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,204,0,0.3); }
-.q-icon { font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #111827; color: var(--brand-yellow); border-radius: 50%; }
+.q-icon { font-size: 20px; font-weight: 800; display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: #111827; color: var(--brand-primary); border-radius: 50%; }
 .q-lbl { font-size: 11px; font-weight: 700; }
 
 .black-kpis { display: flex; gap: 12px; margin-top: 8px; }
@@ -706,7 +706,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 .bk-lbl { font-size: 12px; color: #D1D5DB; }
-.bk-val { font-size: 24px; font-weight: 800; color: var(--brand-yellow); }
+.bk-val { font-size: 24px; font-weight: 800; color: var(--brand-primary); }
 
 /* ─── CUSTOM DASHBOARD GRID (DRIBBBLE CLONE) ─── */
 .db-top-metrics {
@@ -799,7 +799,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 
 /* ─── WALLET APP STYLE ─── */
 .wallet-hero {
-  background: var(--brand-yellow);
+  background: var(--brand-primary);
   padding: calc(16px + env(safe-area-inset-top)) 24px 80px;
   border-bottom-left-radius: 40px;
   border-bottom-right-radius: 40px;
@@ -856,7 +856,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
   border-radius: 14px;
   border: 2px solid #111827;
   background: #111827;
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
   font-weight: 800;
   font-size: 14px;
   transition: all 0.2s;
@@ -937,7 +937,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 .wallet-recent-seeall {
   font-size: 13px;
   font-weight: 800;
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
 }
 
 /* Dark Bottom Nav for Wallet Theme */
@@ -978,11 +978,11 @@ textarea.form-input { resize: vertical; min-height: 100px; }
 }
 
 .wallet-nav-dark .nav-item.active .nav-icon-svg {
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
 }
 
 .wallet-nav-dark .nav-item.active .nav-label {
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
   font-weight: 800;
 }
 
@@ -1001,7 +1001,7 @@ textarea.form-input { resize: vertical; min-height: 100px; }
   top: -24px;
   width: 60px;
   height: 60px;
-  background: var(--brand-yellow);
+  background: var(--brand-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1364,7 +1364,7 @@ body.wallet-theme {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: #FFCC00;
+  background: var(--brand-primary);
   border-radius: 6px;
   transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -1382,21 +1382,19 @@ body.wallet-theme {
 }
 
 /* Premium Mobile Headers & Utility Styles */
-.yellow-bg-top, .hero-compact {
-  background: var(--brand-yellow);
+.gojek-bg-top, .hero-compact {
+  background: var(--brand-primary);
   border-bottom-left-radius: 32px;
   border-bottom-right-radius: 32px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
-.hero-premium-title {
-  color: #111827;
+.hero-premium-title { color: #FFFFFF;
   font-weight: 950;
   letter-spacing: -0.5px;
 }
 
-.hero-premium-subtitle {
-  color: #111827;
+.hero-premium-subtitle { color: #FFFFFF;
   opacity: 0.6;
   font-size: 11px;
   font-weight: 700;
@@ -1458,7 +1456,7 @@ body.wallet-theme {
 
 /* ─── WALLET APP STYLE ─── */
 .wallet-hero {
-  background: var(--brand-yellow);
+  background: var(--brand-primary);
   padding: calc(16px + env(safe-area-inset-top)) 24px 80px;
   border-bottom-left-radius: 40px;
   border-bottom-right-radius: 40px;
@@ -1515,7 +1513,7 @@ body.wallet-theme {
   border-radius: 14px;
   border: 2px solid #111827;
   background: #111827;
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
   font-weight: 800;
   font-size: 14px;
   transition: all 0.2s;
@@ -1597,7 +1595,7 @@ body.wallet-theme {
 .wallet-recent-seeall {
   font-size: 13px;
   font-weight: 800;
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
 }
 
 /* Dark Bottom Nav for Wallet Theme */
@@ -1638,11 +1636,11 @@ body.wallet-theme {
 }
 
 .wallet-nav-dark .nav-item.active .nav-icon-svg {
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
 }
 
 .wallet-nav-dark .nav-item.active .nav-label {
-  color: var(--brand-yellow);
+  color: var(--brand-primary);
   font-weight: 800;
 }
 
@@ -1661,7 +1659,7 @@ body.wallet-theme {
   top: -24px;
   width: 60px;
   height: 60px;
-  background: var(--brand-yellow);
+  background: var(--brand-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1684,3 +1682,4 @@ body.wallet-theme {
 body.wallet-theme {
   background: #F8FAFC;
 }
+

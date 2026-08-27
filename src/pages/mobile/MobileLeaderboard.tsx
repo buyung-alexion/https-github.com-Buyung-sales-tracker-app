@@ -31,16 +31,7 @@ export default function MobileLeaderboard() {
     <div className="page-content" style={{ paddingBottom: '30px', background: 'var(--bg-deep)', minHeight: '100vh' }}>
       
       {/* Top Header - Premium Grab Style */}
-      <div className="yellow-bg-top" style={{ 
-        height: '180px', 
-        position: 'relative',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        padding: '0 24px 20px',
-        zIndex: 100
-      }}>
+      <div style={{ background: '#00AA13', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 'calc(16px + env(safe-area-inset-top)) 16px 20px', zIndex: 100 }}>
         {/* Decorative elements */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
@@ -59,14 +50,13 @@ export default function MobileLeaderboard() {
               boxShadow: '0 8px 32px rgba(0,0,0,0.03)'
             }}
           >
-            <ChevronLeft size={24} color="#111827" strokeWidth={3} />
+            <ChevronLeft size={24} color="#FFFFFF" strokeWidth={3} />
           </button>
-          <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Leaderboard</h2>
+          <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0, color: '#FFFFFF' }}>Leaderboard</h2>
         </div>
-      </div>
-
-      {/* Podium Background */}
-      <div className="hero-gradient" style={{ padding: '40px 20px 80px', position: 'relative' }}>
+        
+        {/* Podium Background (Merged into Header) */}
+        <div style={{ position: 'relative', marginTop: '10px', paddingBottom: '40px' }}>
          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to bottom, transparent 0%, var(--bg-deep) 100%)' }} />
          
          {/* Filter Pilihan Waktu */}
@@ -78,7 +68,7 @@ export default function MobileLeaderboard() {
                style={{ 
                  flex: 1, padding: '10px 0', borderRadius: '12px', border: 'none', 
                  fontSize: '13px', fontWeight: 800, textTransform: 'capitalize',
-                 background: filterDate === opt ? '#111827' : 'transparent',
+                 background: filterDate === opt ? '#00AA13' : 'transparent',
                  color: filterDate === opt ? '#fff' : '#111827',
                  transition: 'all 0.3s'
                }}
@@ -98,7 +88,7 @@ export default function MobileLeaderboard() {
                   <img src="/assets/image/Rank 2.png" alt="Rank 2" style={{ width: '76px', height: '76px', objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.1))' }} />
                   <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', background: '#94a3b8', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', fontSize: '13px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2.5px solid #fff', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>2</div>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px' }}>{top3[1].nama}</div>
+                <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px', margin: '0 auto' }}>{top3[1].nama}</div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginTop: '4px' }}>
                   {[1,2,3,4,5].map(st => <Star key={st} size={8} fill={st <= top3[1].rating ? '#94a3b8' : 'transparent'} color="#94a3b8" />)}
                 </div>
@@ -128,7 +118,7 @@ export default function MobileLeaderboard() {
                   <img src="/assets/image/Rank 3.png" alt="Rank 3" style={{ width: '76px', height: '76px', objectFit: 'contain', filter: 'drop-shadow(0 8px 16px rgba(0,0,0,0.1))' }} />
                   <div style={{ position: 'absolute', bottom: -6, left: '50%', transform: 'translateX(-50%)', background: '#b45309', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', fontSize: '13px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2.5px solid #fff', boxShadow: '0 4px 8px rgba(0,0,0,0.1)' }}>3</div>
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px' }}>{top3[2].nama}</div>
+                <div style={{ fontSize: '14px', fontWeight: 900, color: '#1e293b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '90px', margin: '0 auto' }}>{top3[2].nama}</div>
                 <div style={{ display: 'flex', justifyContent: 'center', gap: '2px', marginTop: '4px' }}>
                   {[1,2,3,4,5].map(st => <Star key={st} size={8} fill={st <= top3[2].rating ? '#b45309' : 'transparent'} color="#b45309" />)}
                 </div>
@@ -137,9 +127,10 @@ export default function MobileLeaderboard() {
            )}
          </div>
       </div>
+      </div>
 
       {/* REST OF THE LIST */}
-      <div style={{ padding: '30px 20px', position: 'relative', zIndex: 10, marginTop: '-40px' }}>
+      <div style={{ padding: '24px 16px', position: 'relative', zIndex: 10, marginTop: '-40px' }}>
          <div className="shadow-premium" style={{ background: '#fff', borderRadius: '30px', padding: '16px', border: '1px solid rgba(0,0,0,0.02)' }}>
             <h3 style={{ fontSize: '14px', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '10px 10px 20px' }}>Other Rankings</h3>
             
