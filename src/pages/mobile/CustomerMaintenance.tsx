@@ -34,7 +34,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
   const [editForm, setEditForm] = useState({
     id: '',
-    nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' 
+    nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '', target_volume: 1000 
   });
 
   const [addModal, setAddModal] = useState(false);
@@ -112,9 +112,9 @@ export default function CustomerMaintenance({ salesId }: Props) {
         canvas.getContext('2d')?.drawImage(img, 0, 0, canvas.width, canvas.height);
         const base64 = canvas.toDataURL('image/jpeg', 0.6);
         if (isEdit) {
-           setEditForm(prev => ({ ...prev, foto_profil: base64 }));
+           setEditForm(prev => ({ ...prev, foto_profil: base64, target_volume: 1000 }));
         } else {
-           setAddForm(prev => ({ ...prev, foto_profil: base64 }));
+           setAddForm(prev => ({ ...prev, foto_profil: base64, target_volume: 1000 }));
         }
       };
       img.src = result;
@@ -156,6 +156,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
         kategori: editForm.kategori,
         rating: editForm.rating,
         foto_profil: editForm.foto_profil,
+        target_volume: (editForm as any).target_volume,
       });
 
       if (error) {
@@ -221,7 +222,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingTop: 0 }}>
       {/* Header with zIndex fix to ensure interactivity - More Compact GrabFood Style */}
-      <div className="gojek-bg-top" style={{ height: '180px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 20px 20px', zIndex: 50 }}>
+      <div className="gojek-bg-top" style={{ position: 'relative', overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', zIndex: 50 }}>
         {/* Decorative elements with pointer-events: none */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
@@ -230,13 +231,15 @@ export default function CustomerMaintenance({ salesId }: Props) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <h2 className="hero-premium-title" style={{ fontSize: '20px', margin: 0, color: '#fff' }}>Customer Maintenance</h2>
-              <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myCustomers.length} TOKO</div>
+              
             </div>
             <div className="hero-premium-subtitle">Management & Retention</div>
           </div>
       </div>
 
-        {/* Integrated Search & Filter (Glassmorphism) */}
+        </div>
+
+      {/* Integrated Search & Filter (Glassmorphism) */}
         <div style={{ display: 'flex', gap: '10px', position: 'relative', zIndex: 10 }}>
           <div className="search-bar" style={{ 
             flex: 1, marginBottom: 0, 
@@ -278,7 +281,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
             <Filter size={20} strokeWidth={2.5} />
           </button>
         </div>
-      </div>
 
       <div style={{ padding: '24px 20px 0', position: 'relative' }}>
         <div className="customer-list">
@@ -304,7 +306,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     {new Date(c.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
-                    {((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg
+                    <span onClick={(e) => { e.stopPropagation(); setEditForm({ ...c, target_volume: (c as any).target_volume || 1000 } as any); setEditModal(c); }} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>{((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={12} style={{marginLeft: '4px', color: '#00AA13'}} /></span>
                   </div>
                 </div>
 

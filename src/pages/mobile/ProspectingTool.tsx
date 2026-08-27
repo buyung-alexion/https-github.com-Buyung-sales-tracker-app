@@ -138,8 +138,7 @@ export default function ProspectingTool({ salesId }: Props) {
       setIsSubmitting(false);
     }
   };
-
-  const handleSaveEdit = async () => {
+const handleSaveEdit = async () => {
     if (isSubmitting || !editModal) return;
     setIsSubmitting(true);
     setSaveError(null);
@@ -243,7 +242,7 @@ export default function ProspectingTool({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingTop: 0 }}>
       {/* Header - Premium Grab Style */}
-      <div className="hero-compact" style={{ 
+      <div className="gojek-bg-top" style={{ 
         padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
         position: 'relative', 
         overflow: 'hidden',
@@ -259,7 +258,7 @@ export default function ProspectingTool({ salesId }: Props) {
         <div style={{ position: 'relative', zIndex: 6 }}>
            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Prospecting</h2>
-             <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myProspek.length} TOKO</div>
+             
            </div>
            <div className="hero-premium-subtitle">Lead Generation & Acquisition</div>
         </div>
