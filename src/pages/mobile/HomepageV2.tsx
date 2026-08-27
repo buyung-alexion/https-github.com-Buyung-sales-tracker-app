@@ -209,7 +209,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
       {/* Overlapping Stats Card */}
       <div className="wallet-overlap-card">
         <div>
-          <div style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 700, marginBottom: '4px' }}>Sales Status</div>
+          <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.8)', fontWeight: 700, marginBottom: '4px' }}>Sales Status</div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10B981', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>Aktif</span>
             <span style={{ background: 'rgba(255, 255, 255, 0.1)', color: '#fff', padding: '4px 10px', borderRadius: '12px', fontSize: '11px', fontWeight: 800 }}>Sisa {daysRemaining} Hari</span>
@@ -303,10 +303,10 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                       <span style={{ fontSize: '14px', fontWeight: 900, color: '#111827' }}>+5 Pts</span>
                    </div>
                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <p style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, margin: 0 }}>
+                      <p style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 600, margin: 0 }}>
                         {act.catatan_hasil.length > 30 ? act.catatan_hasil.substring(0, 30) + '...' : act.catatan_hasil}
                       </p>
-                      <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(255, 255, 255, 0.8)', fontWeight: 600 }}>
                         {act.timestamp ? (() => {
                           try { return formatDistanceToNow(new Date(act.timestamp), { addSuffix: true }); }
                           catch(e) { return 'Baru saja'; }
@@ -335,7 +335,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                 </div>
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px' }}>Marketplace IKT</h3>
               </div>
-              <button className="tap-active" onClick={() => setMarketplaceModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+              <button className="tap-active" onClick={() => setMarketplaceModalOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -347,7 +347,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#0ea5e9', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><ShoppingBag size={24} /></div>
                  <div style={{ flex: 1 }}>
                    <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Buka Katalog</div>
-                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Lihat semua produk IKT sekarang</div>
+                   <div style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 700 }}>Lihat semua produk IKT sekarang</div>
                  </div>
                  <ChevronRight size={18} color="#cbd5e1" />
                </button>
@@ -360,7 +360,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><Share size={24} /></div>
                  <div style={{ flex: 1 }}>
                    <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Bagikan Link Sales</div>
-                   <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Kirim link personal ke konsumen</div>
+                   <div style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 700 }}>Kirim link personal ke konsumen</div>
                  </div>
                  <ChevronRight size={18} color="#cbd5e1" />
                </button>
@@ -373,7 +373,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: '#fff', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}><List size={24} /></div>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 900, fontSize: '15px', color: '#111827' }}>Pesanan Masuk</div>
-                    <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
+                    <div style={{ fontSize: '12px', color: '#FFFFFF', fontWeight: 700 }}>{myNegotiations.filter(n => n.status === 'pending').length} Pesanan baru butuh proses</div>
                   </div>
                   {myNegotiations.filter(n => n.status === 'pending').length > 0 && (
                     <div style={{ background: '#EF4444', color: '#fff', fontSize: '10px', fontWeight: 900, padding: '4px 8px', borderRadius: '10px' }}>
@@ -394,12 +394,12 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
             <div style={{ width: '40px', height: '5px', background: '#e2e8f0', borderRadius: '10px', margin: '-10px auto 20px' }}></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
               <h3 style={{ margin: 0, fontWeight: 900 }}>🔔 Notifikasi</h3>
-              <button className="tap-active" onClick={() => setNotificationsModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+              <button className="tap-active" onClick={() => setNotificationsModalOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #f1f5f9' }}>
                   <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 800 }}>Update Sistem</h4>
-                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Tampilan baru telah aktif!</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#FFFFFF', fontWeight: 600 }}>Tampilan baru telah aktif!</p>
                </div>
             </div>
           </div>
@@ -422,7 +422,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                 </div>
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#111827', letterSpacing: '-0.5px' }}>Pesanan Marketplace</h3>
               </div>
-              <button className="tap-active" onClick={() => setIncomingOrdersModalOpen(false)} style={{ background: '#f1f5f9', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
+              <button className="tap-active" onClick={() => setIncomingOrdersModalOpen(false)} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', borderRadius: '12px', padding: '8px' }}><X size={20} /></button>
             </div>
 
             {/* Tab Switcher */}
@@ -457,7 +457,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
               {loadingNego ? (
                 <div style={{ textAlign: 'center', padding: '40px' }}><Loader2 className="animate-spin" /></div>
               ) : myNegotiations.filter(n => n.status === negoTab).length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
+                <div style={{ textAlign: 'center', padding: '60px 0', color: 'rgba(255, 255, 255, 0.8)' }}>
                   <ShoppingBag size={48} style={{ opacity: 0.2, marginBottom: '16px' }} />
                   <div style={{ fontSize: '14px', fontWeight: 800 }}>Belum ada data</div>
                   <div style={{ fontSize: '12px', fontWeight: 600 }}>Semua pesanan di tab ini kosong.</div>
@@ -466,7 +466,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                 myNegotiations.filter(n => n.status === negoTab).map(nego => (
                   <div key={nego.id} style={{ background: '#F8FAFC', borderRadius: '24px', padding: '20px', border: '1px solid #f1f5f9' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                      <span style={{ fontSize: '10px', fontWeight: 900, color: '#94a3b8' }}>{new Date(nego.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                      <span style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255, 255, 255, 0.8)' }}>{new Date(nego.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                       <span style={{ 
                         fontSize: '10px', fontWeight: 900, padding: '2px 8px', borderRadius: '6px',
                         background: nego.status === 'pending' ? '#FFFBEB' : '#F0FDF4',
@@ -480,13 +480,13 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: '14px', fontWeight: 950, color: '#111827' }}>{nego.customer_name}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 700 }}>{nego.products?.name} • {nego.requested_qty} Kg</div>
+                        <div style={{ fontSize: '11px', color: '#FFFFFF', fontWeight: 700 }}>{nego.products?.name} • {nego.requested_qty} Kg</div>
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px dashed #e2e8f0' }}>
                       <div>
-                        <div style={{ fontSize: '9px', fontWeight: 900, color: '#94a3b8', letterSpacing: '0.05em' }}>OFFERED PRICE</div>
+                        <div style={{ fontSize: '9px', fontWeight: 900, color: 'rgba(255, 255, 255, 0.8)', letterSpacing: '0.05em' }}>OFFERED PRICE</div>
                         <div style={{ fontSize: '15px', fontWeight: 950, color: '#111827' }}>Rp {nego.offered_price?.toLocaleString('id-ID')}</div>
                       </div>
                       
@@ -497,7 +497,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                           style={{ 
                             background: 'var(--gojek-green)', color: '#111827', border: 'none',
                             padding: '8px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 950,
-                            boxShadow: '0 4px 12px rgba(255, 204, 0, 0.3)'
+                            boxShadow: '0 4px 12px rgba(0, 170, 19, 0.3)'
                           }}
                         >
                           PROSES
