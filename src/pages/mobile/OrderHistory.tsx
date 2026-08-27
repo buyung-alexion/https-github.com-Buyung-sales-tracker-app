@@ -98,9 +98,9 @@ export default function OrderHistory() {
     <>
     <div className="page-content" style={{ background: '#F5F6F8', minHeight: '100vh', paddingBottom: '120px', paddingTop: 0 }}>
       {/* Header - White Gojek Style */}
-      <div className="gojek-bg-top" style={{ position: 'sticky', top: 0, overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 16px', margin: '0 -16px 0 -16px', zIndex: 50 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 6, width: '100%' }}>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#fff', textAlign: 'center' }}>Pesanan</h1>
+      <div style={{ position: 'sticky', top: 0, zIndex: 50, margin: '0 -16px 0 -16px' }}>
+        <div style={{ background: '#00AA13', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#fff' }}>Pesanan</h1>
         </div>
       </div>
 

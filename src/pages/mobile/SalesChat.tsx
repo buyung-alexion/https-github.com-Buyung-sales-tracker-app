@@ -197,18 +197,17 @@ export default function SalesChat({ salesId }: Props) {
     return (
       <div className="page-content" style={{ background: '#fff', height: '100%', display: 'flex', flexDirection: 'column', padding: '0', overflow: 'hidden' }}>
         {/* Header - Fixed & Opaque */}
-        <div className="gojek-bg-top" style={{ flexShrink: 0, padding: 'calc(16px + env(safe-area-inset-top)) 20px 20px', position: 'relative', overflow: 'hidden', zIndex: 100 }}>
-          {/* Decorative elements */}
-          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 106 }}>
-            <button onClick={() => navigate('/mobile/home')} style={{ background: 'rgba(255,255,255,0.45)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '12px', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}><ArrowLeft size={20} color="#fff" strokeWidth={3} /></button>
-            <div>
-              <h2 className="hero-premium-title" style={{ fontSize: '22px', margin: 0, color: '#fff' }}>Live Chat</h2>
-              <div className="hero-premium-subtitle" style={{ color: '#fff', opacity: 0.7 }}>Sales Communication & Support</div>
-            </div>
+        <div style={{ position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ background: '#00AA13', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px', color: '#fff' }}>
+          <button onClick={() => navigate('/mobile/home')} style={{ background: 'none', border: 'none', color: '#fff', padding: 0, display: 'flex', alignItems: 'center' }}>
+            <ArrowLeft size={24} />
+          </button>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#fff' }}>Live Chat</h1>
+            <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '12px' }}>Sales Communication & Support</div>
           </div>
         </div>
+      </div>
 
         {/* Search Bar - Fixed Height */}
         <div style={{ flexShrink: 0, padding: '16px 20px' }}>

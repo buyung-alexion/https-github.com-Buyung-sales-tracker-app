@@ -30,30 +30,15 @@ export default function MobileLeaderboard() {
   return (
     <div className="page-content" style={{ paddingBottom: '30px', background: 'var(--bg-deep)', minHeight: '100vh' }}>
       
-      {/* Top Header - Premium Grab Style */}
-      <div style={{ background: '#00AA13', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: 'calc(16px + env(safe-area-inset-top)) 16px 20px', zIndex: 100 }}>
-        {/* Decorative elements */}
-        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
-        <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
-        
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative', zIndex: 6 }}>
-          <button 
-            className="tap-active" 
-            onClick={() => navigate(-1)} 
-            style={{ 
-              background: 'rgba(255,255,255,0.45)', 
-              border: '1px solid rgba(255,255,255,0.3)', 
-              borderRadius: '16px', 
-              width: '46px', height: '46px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              backdropFilter: 'blur(10px)',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.03)'
-            }}
-          >
-            <ChevronLeft size={24} color="#FFFFFF" strokeWidth={3} />
+      {/* Header */}
+      <div style={{ position: 'sticky', top: 0, zIndex: 100, margin: '0 -20px 0 -20px' }}>
+        <div style={{ background: '#00AA13', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', color: '#fff', padding: 0, display: 'flex', alignItems: 'center' }}>
+            <ChevronLeft size={24} />
           </button>
-          <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0, color: '#FFFFFF' }}>Leaderboard</h2>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#fff' }}>Leaderboard</h1>
         </div>
+      </div>
         
         {/* Podium Background (Merged into Header) */}
         <div style={{ position: 'relative', marginTop: '10px', paddingBottom: '40px' }}>
@@ -126,7 +111,6 @@ export default function MobileLeaderboard() {
              </div>
            )}
          </div>
-      </div>
       </div>
 
       {/* REST OF THE LIST */}

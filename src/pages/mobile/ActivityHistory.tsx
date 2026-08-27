@@ -77,10 +77,8 @@ export default function ActivityHistory() {
     <div className="page-content" style={{ background: '#F5F6F8', minHeight: '100vh', paddingBottom: '120px', paddingTop: 0 }}>
       {/* Header */}
       <div style={{ position: 'sticky', top: 0, zIndex: 50, margin: '0 -16px 0 -16px' }}>
-        <div className="gojek-bg-top" style={{ position: 'relative', overflow: 'hidden', padding: 'calc(16px + env(safe-area-inset-top)) 20px 16px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 6, width: '100%' }}>
-            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#fff', textAlign: 'center' }}>Aktivitas</h1>
-          </div>
+        <div style={{ background: '#00AA13', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff' }}>
+          <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: '#fff' }}>Aktivitas</h1>
         </div>
 
         {/* Filter Chips */}
