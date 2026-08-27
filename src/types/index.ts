@@ -59,7 +59,9 @@ export interface Sales {
   id: string;
   nama: string;
   no_wa?: string;
-  target_maintenance?: number; // kept as optional just in case, but unused
+  target_maintenance?: number;
+  target_kunjungan?: number;
+  target_penjualan?: number; // kept as optional just in case, but unused
   username?: string;
   password?: string;
   role?: string;

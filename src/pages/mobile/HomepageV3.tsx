@@ -43,7 +43,7 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
   const salesTargetKg = myCustomersList.reduce((sum, c) => sum + ((c as any).target_volume || 0), 0) || currentSales?.target_penjualan || 50000;
   const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
-  const pointsTarget = 2000;
+  const pointsTarget = currentSales?.target_kunjungan || 2000;
   const pointsAchievedPct = Math.min(100, (currentMonthPoints / pointsTarget) * 100);
 
   const myProspek = prospek.filter(p => p.sales_owner === salesId).length;

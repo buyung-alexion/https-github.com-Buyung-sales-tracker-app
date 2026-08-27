@@ -40,11 +40,12 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
 
   // Calculate Sales Performance (Kg)
   const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-  const salesTargetKg = currentSales?.target_penjualan || 50000; // default 50.000 kg
+  const myCustomersList = customers.filter(c => c.sales_pic === salesId);
+  const salesTargetKg = myCustomersList.reduce((sum, c) => sum + ((c as any).target_volume || 0), 0) || currentSales?.target_penjualan || 50000;
   const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
   // Target Poin
-  const pointsTarget = 2000; // Example target poin
+  const pointsTarget = currentSales?.target_kunjungan || 2000;
   const pointsAchievedPct = Math.min(100, (currentMonthPoints / pointsTarget) * 100);
 
   // Data for Sales Activity Chart (Gambar 2)
