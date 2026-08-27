@@ -243,24 +243,20 @@ const handleSaveEdit = async () => {
     <div className="page-content" style={{ paddingTop: 0 }}>
       {/* Header - Premium Grab Style */}
       <div className="gojek-bg-top" style={{ 
-        padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
+        padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', margin: '0 -20px 0 -20px',
         position: 'relative', 
         overflow: 'hidden',
         background: 'var(--brand-primary)',
-        
-        
         boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
         zIndex: 50
       }}>
-        {/* Decorative elements */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         
-        <div style={{ position: 'relative', zIndex: 6 }}>
-           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-             <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Prospecting</h2>
-             
-           </div>
-           <div className="hero-premium-subtitle">Lead Generation & Acquisition</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 6, marginBottom: '20px', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px', width: '100%' }}>
+              <h2 className="hero-premium-title" style={{ fontSize: '20px', margin: 0, color: '#fff', textAlign: 'center' }}>Prospecting</h2>
+            </div>
+            <div className="hero-premium-subtitle" style={{ textAlign: 'center', color: 'rgba(255,255,255,0.9)' }}>Lead Generation & Acquisition</div>
         </div>
       </div>
 
@@ -328,9 +324,7 @@ const handleSaveEdit = async () => {
                   <div style={{ fontSize: '13px', color: '#727272', fontWeight: 600 }}>
                     {new Date(p.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
-                  <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
-                    Rp{(5000000).toLocaleString('id-ID')}
-                  </div>
+                  
                 </div>
 
                 <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
@@ -340,38 +334,30 @@ const handleSaveEdit = async () => {
                   </div>
                   
                   {/* Content */}
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'calc(100vw - 110px)' }}>
                       {p.nama_toko}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {p.no_wa || '-'}
-                    </div>
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
-                      {p.kategori || 'Uncategorized'}
-                    </div>
                     
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#1C1C1C', background: `${accent}18`, padding: '2px 8px', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', flexWrap: 'wrap', gap: '6px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#1C1C1C', background: `${accent}18`, padding: '4px 10px', borderRadius: '12px' }}>
                           {getStatusName(p.status)}
                         </span>
-                        {isFollowedUp && <span style={{ fontSize: '12px', fontWeight: 700, color: '#00AA13', background: '#E6F6EC', padding: '2px 8px', borderRadius: '12px' }}>Followed Up</span>}
-                      </div>
-                      
-                      {/* Action Button (Setting) */}
-                      <button style={{ 
-                        background: '#00AA13', 
-                        color: '#fff', 
-                        border: 'none', 
-                        borderRadius: '20px', 
-                        padding: '6px 16px', 
-                        fontSize: '12px', 
-                        fontWeight: 800,
-                        cursor: 'pointer'
-                      }} onClick={(e) => { e.stopPropagation(); setEditModal(p); setEditForm({...p, }); }}>
-                        Setting
-                      </button>
+                        <button style={{ 
+                          background: '#E6F6EC', color: '#00AA13', border: '1px solid #00AA13', borderRadius: '12px', padding: '4px 10px', fontSize: '11px', fontWeight: 800, cursor: 'pointer'
+                        }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWA(p); }}>
+                          Followup
+                        </button>
+                        <button style={{ 
+                          background: '#111827', color: '#fff', border: 'none', borderRadius: '12px', padding: '4px 10px', fontSize: '11px', fontWeight: 800, cursor: 'pointer'
+                        }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); setClosingModal(p); }}>
+                          Closing
+                        </button>
+                        <button style={{ 
+                          background: '#00AA13', color: '#fff', border: 'none', borderRadius: '12px', padding: '4px 10px', fontSize: '11px', fontWeight: 800, cursor: 'pointer'
+                        }} onClick={(e) => { e.stopPropagation(); setEditModal(p); setEditForm({...p}); }}>
+                          Setting
+                        </button>
                     </div>
                   </div>
                 </div>
@@ -379,6 +365,8 @@ const handleSaveEdit = async () => {
                 <div style={{ 
                   maxHeight: isExpanded ? '400px' : '0', 
                   opacity: isExpanded ? 1 : 0,
+                  overflow: 'hidden',
+                  pointerEvents: isExpanded ? 'auto' : 'none',
                   marginTop: isExpanded ? '16px' : '0',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   paddingTop: isExpanded ? '16px' : '0',

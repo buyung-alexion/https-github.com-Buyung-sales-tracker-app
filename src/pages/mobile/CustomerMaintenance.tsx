@@ -330,25 +330,14 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     
                     
                     
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {isFollowedUp ? (
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#00AA13', background: '#E6F6EC', padding: '2px 8px', borderRadius: '12px' }}>Followed Up</span>
-                        ) : overdue ? ( <></> ) : (
-                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981', background: '#F0FDF4', padding: '2px 8px', borderRadius: '12px' }}>Active</span>
-                        )}
-                      </div>
-                      
-                      {/* Action Button (Setting) */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
                       <button style={{ 
-                        background: '#00AA13', 
-                        color: '#fff', 
-                        border: 'none', 
-                        borderRadius: '20px', 
-                        padding: '6px 16px', 
-                        fontSize: '12px', 
-                        fontWeight: 800,
-                        cursor: 'pointer'
+                        background: '#E6F6EC', color: '#00AA13', border: '1px solid #00AA13', borderRadius: '20px', padding: '6px 16px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
+                      }} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleWA(c); }}>
+                        Followup
+                      </button>
+                      <button style={{ 
+                        background: '#00AA13', color: '#fff', border: 'none', borderRadius: '20px', padding: '6px 16px', fontSize: '12px', fontWeight: 800, cursor: 'pointer'
                       }} onClick={(e) => { e.stopPropagation(); setEditModal(c); setEditForm({ ...c,...c, rating: c.rating || 0}); }}>
                         Setting
                       </button>
