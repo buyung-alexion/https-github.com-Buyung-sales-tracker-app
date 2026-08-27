@@ -229,14 +229,11 @@ export default function CustomerMaintenance({ salesId }: Props) {
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
         
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 6, marginBottom: '20px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h2 className="hero-premium-title" style={{ fontSize: '20px', margin: 0, color: '#fff' }}>Customer Maintenance</h2>
-              
-            </div>
-            <div className="hero-premium-subtitle">Management & Retention</div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 6, marginBottom: '20px', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px', width: '100%' }}>
+            <h2 className="hero-premium-title" style={{ fontSize: '20px', margin: 0, color: '#fff', textAlign: 'center' }}>Customer Maintenance</h2>
           </div>
+          <div className="hero-premium-subtitle" style={{ textAlign: 'center' }}>Management & Retention</div>
       </div>
 
         </div>
@@ -308,7 +305,14 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     {new Date(c.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
-                    <span onClick={(e) => { e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>{((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={12} style={{marginLeft: '4px', color: '#00AA13'}} /></span>
+                    <span 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }} 
+                      onTouchStart={(e) => { e.stopPropagation(); }}
+                      onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }}
+                      style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '8px', margin: '-8px', background: 'rgba(0,170,19,0.05)', borderRadius: '8px' }}
+                    >
+                      {((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={14} style={{marginLeft: '6px', color: '#00AA13'}} />
+                    </span>
                   </div>
                 </div>
 
@@ -320,12 +324,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   
                   {/* Content */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'calc(100vw - 130px)' }}>
                       {c.nama_toko}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {c.no_wa || '-'}
-                    </div>
+                    
                     <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
                       {c.kategori || 'Uncategorized'}
                     </div>
