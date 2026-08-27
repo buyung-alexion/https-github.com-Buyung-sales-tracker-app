@@ -89,9 +89,9 @@ return (
       {/* Header */}
       <div className="brand-hero">
         <div className="brand-hero-top">
-          <div className="brand-search-bar" onClick={() => navigate('/mobile/prospek')} style={{ cursor: 'pointer' }}>
-            <Search size={18} color="var(--brand-text-gray)" />
-            <input type="text" placeholder="Cari pelanggan, prospek..." readOnly style={{ cursor: 'pointer' }} />
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ fontSize: '14px', color: '#fff', opacity: 0.9 }}>Selamat Datang,</div>
+            <div style={{ fontSize: '18px', fontWeight: 900, color: '#fff', lineHeight: 1.2 }}>{user?.nama || 'Sales Team'}</div>
           </div>
           <div className="brand-avatar" onClick={() => setSidebarOpen?.(true)}>
             <img 
