@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import '../../brand-style.css';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
