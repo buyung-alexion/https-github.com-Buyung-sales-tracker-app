@@ -416,10 +416,10 @@ export default function ActivityReport({ salesId, onSuccess, onClose }: Props) {
           disabled={lockCheckIn || isSubmitting} 
           style={{ 
             width: '100%', height: '56px', 
-            background: lockCheckIn ? '#E2E8F0' : (isSubmitting ? '#CBD5E1' : 'var(--brand-yellow)'), 
-            color: '#111827', borderRadius: '16px', fontWeight: 950, fontSize: '16px', border: 'none', 
+            background: lockCheckIn ? '#E2E8F0' : (isSubmitting ? '#CBD5E1' : '#00AA13'), 
+            color: '#fff', borderRadius: '16px', fontWeight: 950, fontSize: '16px', border: 'none', 
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-            boxShadow: lockCheckIn ? 'none' : '0 8px 20px rgba(255, 193, 7, 0.3)'
+            boxShadow: lockCheckIn ? 'none' : '0 8px 20px rgba(0, 170, 19, 0.3)'
           }}
         >
           {isSubmitting ? <Loader2 size={24} className="animate-spin" /> : 'Kirim Laporan'}
