@@ -127,8 +127,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
-
+  
   const getAccentColor = (kategoriId: string = '') => {
     // Generate distinct colors based on ID if not matched to specific known ones
     const colors: Record<string, string> = {
@@ -169,7 +168,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
       setTimeout(() => {
         setEditModal(null);
         setSaveSuccess(false);
-        setEditForm({ id: '', nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
+        setEditForm({ ...c, id: '', nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
       }, 1500);
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
@@ -293,146 +292,67 @@ export default function CustomerMaintenance({ salesId }: Props) {
             );
 
             return (
-              <div 
-                key={c.id} 
+              <div key={c.id}>
+                <div 
                 className="tap-active"
                 onClick={() => setExpandedId(isExpanded ? null : c.id)}
-                style={{ 
-                  background: '#fff', 
-                  borderRadius: '16px', 
-                  padding: '16px', 
-                  marginBottom: '12px', 
-                  position: 'relative', 
-                  border: '1px solid rgba(0,0,0,0.02)',
-                  borderLeft: `5px solid ${accent}`,
-                  boxShadow: `0 10px 25px ${accent}15`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  overflow: 'hidden'
-                }}
+                style={{ background: '#fff', borderRadius: '20px', padding: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8' }}
               >
-                {/* Header Card Style - Accurate inspired */}
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                  {/* Initials Avatar */}
-                  <div style={{ 
-                    width: '48px', height: '48px', borderRadius: '14px', 
-                    background: `${accent}15`, color: accent,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '15px', fontWeight: 900, flexShrink: 0,
-                    border: `1.5px solid ${accent}30`
-                  }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#727272', fontWeight: 600 }}>
+                    {new Date(c.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                  </div>
+                  <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
+                    Rp{((c as any).target_penjualan || 5000000).toLocaleString('id-ID')}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Thumbnail */}
+                  <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: `${accent}15`, color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 900, flexShrink: 0 }}>
                     {getInitials(c.nama_toko)}
                   </div>
-
+                  
+                  {/* Content */}
                   <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '15.5px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.3px', flex: 1 }}>{c.nama_toko}</h3>
-                        {c.link_map && (
-                          <button 
-                            className="tap-active"
-                            onClick={(e) => { e.stopPropagation(); window.open(c.link_map, '_blank'); }}
-                            style={{ 
-                              background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '10px', 
-                              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)', flexShrink: 0, marginLeft: '8px' 
-                            }}
-                          >
-                            <Map size={16} strokeWidth={2.5} />
-                          </button>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
+                      {c.nama_toko}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4 }}>
+                      {c.no_wa || '-'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
+                      {c.kategori || 'Uncategorized'}
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {isFollowedUp ? (
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#00AA13', background: '#E6F6EC', padding: '2px 8px', borderRadius: '12px' }}>Followed Up</span>
+                        ) : overdue ? (
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#ef4444', background: '#FEE2E2', padding: '2px 8px', borderRadius: '12px' }}>Needs Contact</span>
+                        ) : (
+                          <span style={{ fontSize: '12px', fontWeight: 700, color: '#10b981', background: '#F0FDF4', padding: '2px 8px', borderRadius: '12px' }}>Active</span>
                         )}
                       </div>
                       
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                        <span style={{ fontSize: '8.5px', fontWeight: 900, color: overdue ? '#ef4444' : '#10b981', background: overdue ? '#FEE2E2' : '#F0FDF4', padding: '1.5px 6px', borderRadius: '5px', border: overdue ? '1px solid #FECACA' : '1px solid #DCFCE7', textTransform: 'uppercase' }}>
-                          {overdue ? `OVERDUE` : 'ACTIVE'}
-                        </span>
-                        {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCheck size={9} strokeWidth={3.5} /> FOLLOW UP
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <Phone size={10} color="#94a3b8" strokeWidth={2.5} />
-                            <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{c.no_wa}</span>
-                          </div>
-                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <MapPin size={10} color="#94a3b8" />
-                            <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(c.area)}</div>
-                          </div>
-                        </div>
-                        {c.nama_pic && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <Users size={10} color="#6366F1" strokeWidth={2.5} />
-                            <div style={{ fontSize: '10.5px', fontWeight: 700, color: '#6366F1' }}>{c.nama_pic}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Sales Plan Metrics */}
-                <div style={{ 
-                  marginTop: '12px', 
-                  background: '#f8fafc', 
-                  borderRadius: '12px', 
-                  padding: '10px 12px', 
-                  border: '1px solid #e2e8f0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <div>
-                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Target</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{c.target_volume || 0} Vol</div>
-                      <button 
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          const targetStr = prompt(`Masukkan Target Volume baru untuk ${c.nama_toko}:`);
-                          if (!targetStr) return;
-                          const targetVal = parseFloat(targetStr.replace(/[^0-9]/g, ''));
-                          if (isNaN(targetVal) || targetVal < 0) return alert('Target tidak valid.');
-                          
-                          const now = new Date();
-                          const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-                          const statusString = `TARGET_${currentMonthStr}:${targetVal}`;
-                          
-                          await store.updateCustomer(c.id, { status: statusString });
-                          alert('Target berhasil disimpan.');
-                          window.location.reload();
-                        }}
-                        style={{ border: 'none', background: '#eff6ff', color: '#3b82f6', fontSize: '9px', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', cursor: 'pointer' }}
-                      >
-                        SET
+                      {/* Action Button (Setting) */}
+                      <button style={{ 
+                        background: '#00AA13', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '20px', 
+                        padding: '6px 16px', 
+                        fontSize: '12px', 
+                        fontWeight: 800,
+                        cursor: 'pointer'
+                      }} onClick={(e) => { e.stopPropagation(); setEditModal(c); setEditForm({ ...c,...c, rating: c.rating || 0}); }}>
+                        Setting
                       </button>
                     </div>
                   </div>
-                  <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }}></div>
-                  <div>
-                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Actual</div>
-                    <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{c.total_order_volume || 0} Vol</div>
-                  </div>
-                  <div style={{ width: '1px', height: '20px', background: '#e2e8f0' }}></div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Progress</div>
-                    <div style={{ 
-                      fontSize: '13px', 
-                      fontWeight: 900, 
-                      color: ((c.total_order_volume || 0) / (c.target_volume || 1) >= 1) ? '#10b981' : '#f59e0b' 
-                    }}>
-                      {Math.round(((c.total_order_volume || 0) / (c.target_volume || 1)) * 100)}%
-                    </div>
-                  </div>
                 </div>
-
-
-                {/* Expanded Action Panel */}
+              </div>
                 <div style={{ 
                   maxHeight: isExpanded ? '300px' : '0', 
                   opacity: isExpanded ? 1 : 0,
@@ -480,7 +400,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                         onClick={(e) => { 
                           e.stopPropagation(); 
                           setEditModal(c); 
-                          setEditForm({ 
+                          setEditForm({ ...c, 
                             id: c.id,
                             nama_toko: c.nama_toko, 
                             nama_pic: c.nama_pic || '',
@@ -515,7 +435,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
           width: '60px', 
           height: '60px', 
           borderRadius: '50%', 
-          background: 'var(--brand-yellow)', 
+          background: 'var(--brand-primary)', 
           color: '#111827', 
           display: 'flex', 
           alignItems: 'center', 
@@ -543,10 +463,10 @@ export default function CustomerMaintenance({ salesId }: Props) {
             </div>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Store Name *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_toko} onChange={e => setEditForm({...editForm, nama_toko: e.target.value})} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC Name</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_pic} onChange={e => setEditForm({...editForm, nama_pic: e.target.value})} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>WA Number *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.no_wa} onChange={e => setEditForm({...editForm, no_wa: e.target.value})} /></div>
-              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={editForm.link_map} onChange={e => setEditForm({...editForm, link_map: e.target.value})} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Store Name *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_toko} onChange={e => setEditForm({ ...c,...editForm, nama_toko: e.target.value})} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>PIC Name</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.nama_pic} onChange={e => setEditForm({ ...c,...editForm, nama_pic: e.target.value})} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>WA Number *</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.no_wa} onChange={e => setEditForm({ ...c,...editForm, no_wa: e.target.value})} /></div>
+              <div className="form-group"><label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Map Link (Google Maps)</label><input className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} placeholder="https://maps.google.com/..." value={editForm.link_map} onChange={e => setEditForm({ ...c,...editForm, link_map: e.target.value})} /></div>
               
               <div className="form-group">
                 <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', cursor: 'pointer', padding: '12px', background: editForm.foto_profil ? '#ecfdf5' : '#f8fafc', color: editForm.foto_profil ? '#059669' : '#475569', border: '1px solid #e2e8f0', borderRadius: '12px', fontWeight: 800, fontSize: '13px' }}>
@@ -558,7 +478,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
               
               <div className="form-group">
                 <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Area</label>
-                <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.area} onChange={e => setEditForm({ ...editForm, area: e.target.value })}>
+                <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.area} onChange={e => setEditForm({ ...c, ...editForm, area: e.target.value })}>
                   <option value="">-- Pilih Area --</option>
                   {masterAreas.map(a => <option key={a.id} value={a.id}>{a.name}</option>)}
                 </select>
@@ -567,19 +487,19 @@ export default function CustomerMaintenance({ salesId }: Props) {
               <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Category</label>
-                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.kategori} onChange={e => setEditForm({ ...editForm, kategori: e.target.value })}>
+                  <select className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.kategori} onChange={e => setEditForm({ ...c, ...editForm, kategori: e.target.value })}>
                     <option value="">-- Pilih Kategori --</option>
                     {masterCategories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
                   <label style={{ fontSize: '11px', fontWeight: 800, color: '#64748b', marginBottom: '4px', display: 'block', textTransform: 'uppercase' }}>Rating (0-5)</label>
-                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.rating} onChange={e => setEditForm({ ...editForm, rating: parseInt(e.target.value) || 0 })} />
+                  <input type="number" min="0" max="5" className="form-input" style={{ width: '100%', borderRadius: '14px', border: '2px solid #f1f5f9', padding: '12px', fontWeight: 700, fontSize: '14px' }} value={editForm.rating} onChange={e => setEditForm({ ...c, ...editForm, rating: parseInt(e.target.value) || 0 })} />
                 </div>
               </div>
               <div className="modal-actions" style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
                 <button className="btn-secondary" style={{ flex: 1, height: '52px', borderRadius: '18px', fontWeight: 800, border: '1px solid #e2e8f0', background: '#fff' }} onClick={() => setEditModal(null)} disabled={isSubmitting}>Batal</button>
-                <button className="btn-primary" style={{ flex: 2, height: '52px', borderRadius: '18px', fontWeight: 900, background: saveSuccess ? '#10B981' : 'var(--brand-yellow)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleSaveEdit} disabled={!editForm.nama_toko || !editForm.no_wa || isSubmitting}>
+                <button className="btn-primary" style={{ flex: 2, height: '52px', borderRadius: '18px', fontWeight: 900, background: saveSuccess ? '#10B981' : 'var(--brand-primary)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleSaveEdit} disabled={!editForm.nama_toko || !editForm.no_wa || isSubmitting}>
                   {isSubmitting ? <Loader2 size={20} className="animate-spin" /> : saveSuccess ? <CheckCircle size={20} /> : 'Simpan Perubahan'}
                 </button>
               </div>
@@ -646,7 +566,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
             <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', gap: '12px', width: '100%' }}>
               <button className="btn-secondary" style={{ flex: 1, height: '48px', borderRadius: '16px', fontWeight: 800 }} onClick={() => setAddModal(false)} disabled={isSubmitting}>Batal</button>
-              <button className="btn-primary" style={{ flex: 2, height: '48px', borderRadius: '16px', fontWeight: 950, background: saveSuccess ? '#10B981' : 'var(--brand-yellow)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleAddCustomer} disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}>
+              <button className="btn-primary" style={{ flex: 2, height: '48px', borderRadius: '16px', fontWeight: 950, background: saveSuccess ? '#10B981' : 'var(--brand-primary)', color: saveSuccess ? '#fff' : '#111827', border: 'none', boxShadow: '0 8px 16px rgba(255, 204, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} onClick={handleAddCustomer} disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}>
                 {isSubmitting ? <Loader2 size={18} className="animate-spin" /> : saveSuccess ? <CheckCircle size={18} /> : 'Simpan'}
               </button>
             </div>
@@ -784,7 +704,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   borderRadius: '16px', 
                   fontSize: '15px', 
                   fontWeight: 950, 
-                  background: 'var(--brand-yellow)', 
+                  background: 'var(--brand-primary)', 
                   color: '#111827',
                   border: 'none',
                   boxShadow: '0 8px 20px rgba(255, 204, 0, 0.25)'
@@ -799,3 +719,4 @@ export default function CustomerMaintenance({ salesId }: Props) {
     </div>
   );
 }
+

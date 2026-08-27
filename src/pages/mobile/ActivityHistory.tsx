@@ -1,11 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { 
-  ArrowLeft, Search, Plus, X, MapPin, 
-  ChevronDown, ChevronRight, 
-  MessageSquare, Clock, History
+  Plus, X, MapPin, 
+  MessageSquare, Clock, History, HelpCircle, Download, CheckCircle2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id as localeId } from 'date-fns/locale';
@@ -19,8 +18,7 @@ const LazyPhotoThumbnail = ({ actId }: { actId: string }) => {
   const [error, setError] = useState(false);
   
   if (photo) return <img src={photo} alt="Bukti" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onClick={() => {
-    // Open in modal logic if needed, for now just show thumbnail
-    window.open(photo, '_blank'); // Simple fallback to open image
+    window.open(photo, '_blank'); 
   }} />;
   
   return (
@@ -41,252 +39,200 @@ const LazyPhotoThumbnail = ({ actId }: { actId: string }) => {
 };
 
 export default function ActivityHistory() {
-  const navigate = useNavigate();
+  
   const { user } = useAuth();
   const { activities = [] } = useSalesData();
-  const [searchTerm, setSearchTerm] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [expandedDates, setExpandedDates] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState('Riwayat');
+  const [activeFilter, setActiveFilter] = useState('Semua');
 
   if (!user) return null;
 
-  // Live date tracking for midnight transitions
-  const [todayStr, setTodayStr] = useState(() => format(new Date(), 'yyyy-MM-dd'));
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = format(new Date(), 'yyyy-MM-dd');
-      if (current !== todayStr) setTodayStr(current);
-    }, 10000); // Check every 10s for better responsiveness
-    return () => clearInterval(interval);
-  }, [todayStr]);
-
-  const yesterdayStr = useMemo(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    return format(d, 'yyyy-MM-dd');
-  }, [todayStr]);
-
   // Filter activities for this sales only
   const myActivities = useMemo(() => 
-    activities.filter(a => a.id_sales === user.id), 
+    activities.filter(a => a.id_sales === user.id)
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()), 
     [activities, user.id]
   );
 
-  // Grouping logic by local date
-  const groupedActivities = useMemo(() => {
-    const groups: Record<string, typeof myActivities> = {};
-    myActivities.forEach(act => {
-      const date = format(new Date(act.timestamp), 'yyyy-MM-dd');
-      if (!groups[date]) groups[date] = [];
-      groups[date].push(act);
-    });
-    return groups;
-  }, [myActivities, todayStr]);
-
-  const sortedDates = useMemo(() => 
-    Object.keys(groupedActivities).sort((a, b) => b.localeCompare(a)), 
-    [groupedActivities]
-  );
-
-  // Expand today by default
-  useMemo(() => {
-    if (sortedDates.includes(todayStr) && expandedDates.length === 0) {
-      setExpandedDates([todayStr]);
-    }
-  }, [sortedDates, todayStr]);
-
-  const formatGroupName = (dateStr: string) => {
-    if (dateStr === todayStr) return 'Hari ini';
-    if (dateStr === yesterdayStr) return 'Kemarin';
-    return format(new Date(dateStr), 'dd MMM yyyy', { locale: localeId });
-  };
-
-  const toggleExpand = (date: string) => {
-    setExpandedDates(prev => 
-      prev.includes(date) ? prev.filter(d => d !== date) : [...prev, date]
-    );
-  };
+  const filteredActivities = useMemo(() => {
+    if (activeFilter === 'Semua') return myActivities;
+    return myActivities.filter(a => a.tipe_aksi === activeFilter);
+  }, [myActivities, activeFilter]);
 
   const getAksiColor = (type: string) => {
     switch (type) {
-      case 'Visit': return { bg: '#ECFDF5', text: '#059669', icon: <MapPin size={14} /> };
-      case 'WA': return { bg: '#EFF6FF', text: '#2563EB', icon: <MessageSquare size={14} /> };
-      case 'Order': return { bg: '#FFF7ED', text: '#EA580C', icon: <History size={14} /> };
-      default: return { bg: '#F8FAFC', text: '#64748B', icon: <Clock size={14} /> };
+      case 'Visit': return { bg: '#E6F6EC', text: '#00AA13', icon: <MapPin size={24} color="#00AA13" /> };
+      case 'WA': return { bg: '#E6F6EC', text: '#00AA13', icon: <MessageSquare size={24} color="#00AA13" /> };
+      case 'Order': return { bg: '#E6F6EC', text: '#00AA13', icon: <History size={24} color="#00AA13" /> };
+      case 'Call': return { bg: '#E6F6EC', text: '#00AA13', icon: <Clock size={24} color="#00AA13" /> };
+      default: return { bg: '#F5F6F8', text: '#1C1C1C', icon: <Clock size={24} color="#727272" /> };
     }
   };
 
   return (
     <>
-    <div className="page-content" style={{ background: '#f8fafc', minHeight: '100vh', paddingBottom: '120px' }}>
-      {/* Header Branding Yellow Style */}
-      <div style={{ background: 'var(--brand-yellow)', padding: 'calc(20px + env(safe-area-inset-top)) 20px 40px', borderBottomLeftRadius: '32px', borderBottomRightRadius: '32px', boxShadow: '0 10px 30px rgba(255, 193, 7, 0.2)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <button onClick={() => navigate(-1)} style={{ background: 'rgba(0,0,0,0.1)', border: 'none', width: '40px', height: '40px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <ArrowLeft size={20} color="#000" />
-          </button>
-          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 950, color: '#000', letterSpacing: '-0.5px' }}>Riwayat Aktivitas</h1>
+    <div className="page-content" style={{ background: '#F5F6F8', minHeight: '100vh', paddingBottom: '120px', paddingTop: 0 }}>
+      {/* Header - White Gojek Style */}
+      <div style={{ background: '#fff', position: 'sticky', top: 0, zIndex: 50, borderBottom: '1px solid #E8E8E8' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'calc(16px + env(safe-area-inset-top)) 20px 16px' }}>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 800, color: '#1C1C1C' }}>Aktivitas</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F5F6F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <HelpCircle size={18} color="#1C1C1C" />
+            </div>
+            <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#F5F6F8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Download size={18} color="#1C1C1C" />
+            </div>
+          </div>
         </div>
 
-        {/* Summary Row */}
-        <div style={{ marginTop: '24px', display: 'flex', gap: '12px' }}>
-           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <MapPin size={14} color="#2563eb" />
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Aktivitas</div>
-              </div>
-              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>
-                {myActivities.length} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Aksi</span>
-              </div>
-           </div>
-           
-           <div style={{ flex: 1, background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 8px 25px rgba(0,0,0,0.08)', border: '1px solid rgba(255,255,255,0.8)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <div style={{ width: '28px', height: '28px', borderRadius: '10px', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <History size={14} color="#d97706" />
-                </div>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hari Ini</div>
-              </div>
-              <div style={{ fontSize: '20px', fontWeight: 950, color: '#1e293b' }}>
-                {groupedActivities[todayStr]?.length || 0} <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 700 }}>Aksi</span>
-              </div>
-           </div>
+        {/* Tabs */}
+        <div style={{ display: 'flex', padding: '0 20px', gap: '24px', overflowX: 'auto', borderBottom: '1px solid #E8E8E8' }} className="hide-scrollbar">
+          {['Riwayat', 'Dalam proses', 'Terjadwal', 'Draf'].map(tab => (
+            <div 
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{ 
+                padding: '12px 0', 
+                fontSize: '14px', 
+                fontWeight: activeTab === tab ? 800 : 600,
+                color: activeTab === tab ? '#1C1C1C' : '#727272',
+                borderBottom: activeTab === tab ? '3px solid #00AA13' : '3px solid transparent',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer'
+              }}
+            >
+              {tab}
+            </div>
+          ))}
         </div>
-      </div>
 
-      {/* Filter / Search Bar */}
-      <div style={{ padding: '0 20px', marginTop: '-20px' }}>
-         <div style={{ background: '#fff', borderRadius: '16px', padding: '4px', display: 'flex', alignItems: 'center', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
-            <div style={{ padding: '10px', color: '#94a3b8' }}><Search size={18} /></div>
-            <input 
-              type="text" 
-              placeholder="Cari histori aktivitas..." 
-              style={{ flex: 1, border: 'none', outline: 'none', fontSize: '14px', fontWeight: 700, padding: '10px 0' }}
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-            />
-         </div>
+        {/* Filter Chips */}
+        <div style={{ display: 'flex', padding: '16px 20px', gap: '10px', overflowX: 'auto', background: '#fff' }} className="hide-scrollbar">
+          {['Semua', 'Visit', 'WA', 'Call', 'Order'].map(filter => (
+            <div 
+              key={filter}
+              onClick={() => setActiveFilter(filter)}
+              style={{ 
+                padding: '8px 16px', 
+                borderRadius: '20px', 
+                border: activeFilter === filter ? '1px solid #00AA13' : '1px solid #E8E8E8',
+                background: activeFilter === filter ? '#E6F6EC' : '#fff',
+                color: activeFilter === filter ? '#00AA13' : '#1C1C1C',
+                fontSize: '13px',
+                fontWeight: 700,
+                whiteSpace: 'nowrap',
+                cursor: 'pointer'
+              }}
+            >
+              {filter}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* History List */}
-      <div style={{ padding: '24px 20px' }}>
-        {sortedDates.length === 0 ? (
-          <div style={{ textAlign: 'center', marginTop: '60px', color: '#94a3b8' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-              <MapPin size={32} opacity={0.3} />
+      <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        {filteredActivities.length === 0 ? (
+          <div style={{ textAlign: 'center', marginTop: '60px', color: '#727272' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid #E8E8E8' }}>
+              <History size={32} opacity={0.3} />
             </div>
-            <div style={{ fontSize: '16px', fontWeight: 900, color: '#475569' }}>Belum Ada Aktivitas</div>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C' }}>Belum Ada Aktivitas</div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {sortedDates.map(date => {
-              const actsInGroup = groupedActivities[date].filter(a => 
-                a.target_nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                a.catatan_hasil.toLowerCase().includes(searchTerm.toLowerCase())
-              );
-              
-              if (actsInGroup.length === 0) return null;
+          filteredActivities.map(act => {
+            const style = getAksiColor(act.tipe_aksi);
+            const dateStr = format(new Date(act.timestamp), 'dd MMM, HH:mm', { locale: localeId });
+            
+            return (
+              <div key={act.id} style={{ background: '#fff', borderRadius: '20px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #f1f5f9' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#727272', fontWeight: 600 }}>{dateStr}</div>
+                  {/* Empty space for price/amount if needed */}
+                  <div style={{ fontSize: '13px', color: '#1C1C1C', fontWeight: 800 }}></div>
+                </div>
 
-              const isExpanded = expandedDates.includes(date);
-
-              return (
-                <div key={date} style={{ background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)', border: '1px solid #f1f5f9' }}>
-                  {/* Card Header (Accordion Trigger) */}
-                  <div 
-                    onClick={() => toggleExpand(date)}
-                    style={{ 
-                      padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', 
-                      background: '#fff',
-                      borderLeft: '6px solid #06b6d4',
-                      position: 'relative'
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '16px', fontWeight: 950, color: '#1e293b', marginBottom: '4px' }}>{formatGroupName(date)}</div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#94a3b8' }}>
-                         <History size={12} style={{ opacity: 0.7 }} />
-                         <span style={{ fontSize: '11px', fontWeight: 800 }}>{actsInGroup.length} Aktivitas</span>
-                      </div>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                       {isExpanded ? <ChevronDown size={14} color="#94a3b8" /> : <ChevronRight size={14} color="#94a3b8" />}
-                    </div>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Thumbnail */}
+                  <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: style.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                    {(act.tipe_aksi === 'Visit' || act.tipe_aksi === 'Order') && act.foto_bukti ? (
+                      <LazyPhotoThumbnail actId={act.id} />
+                    ) : (
+                      style.icon
+                    )}
                   </div>
                   
-                  {isExpanded && (
-                    <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {actsInGroup.map(act => {
-                        const style = getAksiColor(act.tipe_aksi);
-                        return (
-                          <div key={act.id} style={{ background: '#f8fafc', padding: '14px', borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '13px', fontWeight: 900, color: '#1e293b' }}>{act.target_nama}</div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '4px' }}>
-                                   <div style={{ padding: '4px 8px', borderRadius: '6px', background: style.bg, color: style.text, fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                      {style.icon} {act.tipe_aksi}
-                                   </div>
-                                   <div style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8' }}>{format(new Date(act.timestamp), 'HH:mm')}</div>
-                                </div>
-                              </div>
-                              {(act.tipe_aksi === 'Visit' || act.tipe_aksi === 'Order') && (
-                                <div style={{ width: '48px', height: '48px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-                                  <LazyPhotoThumbnail actId={act.id} />
-                                </div>
-                              )}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#64748b', fontWeight: 600, lineHeight: 1.4, borderTop: '1px dashed #e2e8f0', paddingTop: '8px' }}>
-                              {act.catatan_hasil}
-                            </div>
-                          </div>
-                        );
-                      })}
+                  {/* Content */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
+                      {act.target_nama}
                     </div>
-                  )}
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
+                      {act.catatan_hasil.length > 35 ? act.catatan_hasil.substring(0, 35) + '...' : act.catatan_hasil}
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <CheckCircle2 size={14} color="#00AA13" fill="#00AA13" stroke="#fff" />
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#727272' }}>Selesai - {act.tipe_aksi}</span>
+                      </div>
+                      
+                      {/* Action Button (like Mau lagi) */}
+                      <button style={{ 
+                        background: '#00AA13', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '20px', 
+                        padding: '6px 12px', 
+                        fontSize: '12px', 
+                        fontWeight: 800,
+                        cursor: 'pointer'
+                      }} onClick={() => alert('Detail aktivitas: ' + act.catatan_hasil)}>
+                        Detail
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })
         )}
       </div>
-    </div>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button for Add Activity */}
       <button 
         onClick={() => setIsFormOpen(true)}
-        style={{ position: 'fixed', bottom: '110px', right: '20px', width: '60px', height: '60px', borderRadius: '50%', background: '#3B82F6', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', boxShadow: '0 8px 24px rgba(59, 130, 246, 0.4)', zIndex: 100 }}
+        style={{ 
+          position: 'fixed', 
+          bottom: 'calc(98px + env(safe-area-inset-bottom))', 
+          right: '20px', 
+          width: '56px', 
+          height: '56px', 
+          borderRadius: '50%', 
+          background: '#00AA13', 
+          color: '#fff', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center', 
+          boxShadow: '0 4px 15px rgba(0, 170, 19, 0.4)',
+          border: 'none',
+          zIndex: 99,
+          cursor: 'pointer'
+        }}
       >
-        <Plus size={32} strokeWidth={3} />
+        <Plus size={24} strokeWidth={3} />
       </button>
 
-      {/* Activity Form Drawer (Moved for stability) */}
+      {/* Add Activity Modal */}
       {isFormOpen && (
-        <div onClick={() => setIsFormOpen(false)} style={{ 
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', 
-          zIndex: 999999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center' 
-        }}>
-          <div onClick={e => e.stopPropagation()} style={{ 
-            height: '92vh', width: '100%', maxWidth: '500px', background: '#fff', 
-            borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-            display: 'flex', flexDirection: 'column', overflowY: 'auto',
-            boxShadow: '0 -10px 40px rgba(0,0,0,0.1)',
-            position: 'relative', margin: 0, padding: 0,
-            left: 0, right: 0
-          }}>
-            {/* Close Button Overlay */}
-            <button 
-              onClick={() => setIsFormOpen(false)}
-              style={{ position: 'absolute', top: '24px', right: '24px', background: '#f1f5f9', border: 'none', width: '36px', height: '36px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}
-            >
-              <X size={20} color="#64748b" />
-            </button>
-            <ActivityReport salesId={user?.id || ''} onSuccess={() => setIsFormOpen(false)} />
-          </div>
-        </div>
+        <ActivityReport 
+          salesId={user.id} 
+          onClose={() => setIsFormOpen(false)}
+        />
       )}
+    </div>
     </>
   );
 }

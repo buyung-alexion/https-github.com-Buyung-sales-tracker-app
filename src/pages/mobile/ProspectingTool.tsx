@@ -3,7 +3,7 @@ import { type StatusProspek, type Prospek } from '../../types';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCheck, Search, Filter, MessageCircle, FileText, X, Plus, Camera, Loader2, 
-  Users, MapPin, Map, PhoneCall, Activity, Edit3, CheckCircle, Phone, 
+  Users, MapPin, PhoneCall, Activity, Edit3, CheckCircle, 
   Image as ImageIcon 
 } from 'lucide-react';
 import { store } from '../../store/dataStore';
@@ -221,8 +221,7 @@ export default function ProspectingTool({ salesId }: Props) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
-  const getAreaName = (id: string) => masterAreas.find(a => a.id === id || a.name === id)?.name || id;
-
+  
   const getStatusColor = (status: string = 'Cold') => {
     // Normalize status (could be ID or Name)
     const statusName = getStatusName(status);
@@ -247,9 +246,9 @@ export default function ProspectingTool({ salesId }: Props) {
         padding: 'calc(16px + env(safe-area-inset-top)) 20px 48px', 
         position: 'relative', 
         overflow: 'hidden',
-        background: 'var(--brand-yellow)',
-        borderBottomLeftRadius: '32px',
-        borderBottomRightRadius: '32px',
+        background: 'var(--brand-primary)',
+        
+        
         boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
         zIndex: 50
       }}>
@@ -319,80 +318,64 @@ export default function ProspectingTool({ salesId }: Props) {
             );
 
             return (
-              <div 
-                key={p.id} 
+              <div key={p.id}>
+                <div 
                 className="tap-active"
                 onClick={() => setExpandedId(isExpanded ? null : p.id)}
-                style={{ 
-                  background: '#fff', 
-                  borderRadius: '16px', 
-                  padding: '16px', 
-                  marginBottom: '12px', 
-                  position: 'relative', 
-                  border: '1px solid rgba(0,0,0,0.02)',
-                  borderLeft: `5px solid ${accent}`,
-                  boxShadow: `0 10px 25px ${accent}15`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  overflow: 'hidden'
-                }}
+                style={{ background: '#fff', borderRadius: '20px', padding: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', border: '1px solid #E8E8E8' }}
               >
-                {/* Main Info - Simplified Header */}
-                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                  <div style={{ 
-                    width: '48px', height: '48px', borderRadius: '14px', 
-                    background: `${accent}15`, color: accent,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '15px', fontWeight: 900, flexShrink: 0,
-                    border: `1.5px solid ${accent}30`
-                  }}>
-                    {getInitials(p.nama_toko)}
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ fontSize: '13px', color: '#727272', fontWeight: 600 }}>
+                    {new Date(p.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <h3 style={{ fontSize: '15.5px', fontWeight: 900, color: '#111827', margin: 0, lineHeight: 1.25, letterSpacing: '-0.3px', flex: 1 }}>{p.nama_toko}</h3>
-                        {p.link_map && (
-                          <button 
-                            className="tap-active"
-                            onClick={(e) => { e.stopPropagation(); window.open(p.link_map, '_blank'); }}
-                            style={{ 
-                              background: '#3B82F6', color: '#fff', border: 'none', borderRadius: '10px', 
-                              width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                              boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)', flexShrink: 0, marginLeft: '8px' 
-                            }}
-                          >
-                            <Map size={16} strokeWidth={2.5} />
-                          </button>
-                        )}
-                      </div>
-                      
-                      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
-                        <div style={{ background: `${accent}15`, color: accent, fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', textTransform: 'uppercase', border: `1px solid ${accent}25` }}>{getStatusName(p.status)}</div>
-                        {isFollowedUp && (
-                          <div style={{ background: '#ECFDF5', color: '#059669', fontSize: '8.5px', fontWeight: 900, padding: '1.5px 6px', borderRadius: '5px', border: '1px solid #D1FAE5', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <CheckCheck size={9} strokeWidth={3.5} /> FOLLOW UP
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <Phone size={10} color="#94a3b8" strokeWidth={2.5} />
-                            <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#94a3b8' }}>{p.no_wa}</span>
-                          </div>
-                          <span style={{ width: '3px', height: '3px', borderRadius: '50%', background: '#cbd5e1' }}></span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <MapPin size={10} color="#94a3b8" />
-                            <span style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8' }}>{getAreaName(p.area)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                  <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
+                    Rp{(5000000).toLocaleString('id-ID')}
                   </div>
                 </div>
 
-                {/* Expanded Action Panel */}
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+                  {/* Thumbnail */}
+                  <div style={{ width: '60px', height: '60px', borderRadius: '16px', background: `${accent}15`, color: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: 900, flexShrink: 0 }}>
+                    {getInitials(p.nama_toko)}
+                  </div>
+                  
+                  {/* Content */}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
+                      {p.nama_toko}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4 }}>
+                      {p.no_wa || '-'}
+                    </div>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
+                      {p.kategori || 'Uncategorized'}
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: 700, color: '#1C1C1C', background: `${accent}18`, padding: '2px 8px', borderRadius: '12px' }}>
+                          {getStatusName(p.status)}
+                        </span>
+                        {isFollowedUp && <span style={{ fontSize: '12px', fontWeight: 700, color: '#00AA13', background: '#E6F6EC', padding: '2px 8px', borderRadius: '12px' }}>Followed Up</span>}
+                      </div>
+                      
+                      {/* Action Button (Setting) */}
+                      <button style={{ 
+                        background: '#00AA13', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: '20px', 
+                        padding: '6px 16px', 
+                        fontSize: '12px', 
+                        fontWeight: 800,
+                        cursor: 'pointer'
+                      }} onClick={(e) => { e.stopPropagation(); setEditModal(p); setEditForm({...p, }); }}>
+                        Setting
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
                 <div style={{ 
                   maxHeight: isExpanded ? '400px' : '0', 
                   opacity: isExpanded ? 1 : 0,
@@ -490,7 +473,7 @@ export default function ProspectingTool({ salesId }: Props) {
           width: '60px', 
           height: '60px', 
           borderRadius: '50%', 
-          background: 'var(--brand-yellow)', 
+          background: 'var(--brand-primary)', 
           color: '#111827', 
           display: 'flex', 
           alignItems: 'center', 
@@ -595,7 +578,7 @@ export default function ProspectingTool({ salesId }: Props) {
                 <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, false)} />
                 {addForm.foto_profil && (
                   <div className="animate-scale" style={{ position: 'relative', width: '80px', height: '80px', marginTop: '4px' }}>
-                    <img src={addForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
+                    <img src={addForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-primary)' }} />
                     <button onClick={() => setAddForm({...addForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <X size={12} />
                     </button>
@@ -652,7 +635,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   disabled={!addForm.nama_toko || !addForm.no_wa || isSubmitting}
                   style={{ 
                     flex: 2, padding: '18px', borderRadius: '20px', 
-                    background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-yellow)', 
+                    background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-primary)', 
                     color: saveSuccess ? '#fff' : '#111827', fontWeight: 900, border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
@@ -707,7 +690,7 @@ export default function ProspectingTool({ salesId }: Props) {
                 <input type="file" ref={fileInputRef} accept="image/*" style={{ display: 'none' }} onChange={(e) => handleFileChange(e, true)} />
                 {editForm.foto_profil && (
                   <div className="animate-scale" style={{ position: 'relative', width: '80px', height: '80px', marginTop: '4px' }}>
-                    <img src={editForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-yellow)' }} />
+                    <img src={editForm.foto_profil} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '20px', border: '2px solid var(--brand-primary)' }} />
                     <button onClick={() => setEditForm({...editForm, foto_profil: ''})} style={{ position: 'absolute', top: '-5px', right: '-5px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <X size={12} />
                     </button>
@@ -764,7 +747,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   disabled={!editForm.nama_toko || !editForm.no_wa || isSubmitting}
                   style={{ 
                     flex: 2, padding: '18px', borderRadius: '20px', 
-                    background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-yellow)', 
+                    background: isSubmitting ? '#E2E8F0' : saveSuccess ? '#10B981' : 'var(--brand-primary)', 
                     color: saveSuccess ? '#fff' : '#111827', fontWeight: 900, border: 'none',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
                     boxShadow: '0 10px 20px rgba(0,0,0,0.1)'
@@ -910,7 +893,7 @@ export default function ProspectingTool({ salesId }: Props) {
                   borderRadius: '16px', 
                   fontSize: '15px', 
                   fontWeight: 950, 
-                  background: 'var(--brand-yellow)', 
+                  background: 'var(--brand-primary)', 
                   color: '#111827',
                   border: 'none',
                   boxShadow: '0 8px 20px rgba(255, 204, 0, 0.25)'
