@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Routes, Route, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, MapPin, BarChart2, MessageSquare, X, LogOut, User as UserIcon, ShoppingCart, Users } from 'lucide-react';
+import { LayoutDashboard, MapPin, MessageSquare, X, LogOut, User as UserIcon, ShoppingCart, Users } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import Homepage from './HomepageV3';
 import DashboardTarget from './DashboardTarget';
