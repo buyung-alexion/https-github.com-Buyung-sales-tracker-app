@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
-import { formatDistanceToNow } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
-import { Bell, Search, MapPin, Target, MessageSquare, ShoppingCart, BarChart3, Users, Trophy, Menu, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+
+
+import { Trophy, Menu, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import '../../brand-style.css'; 
 
@@ -13,7 +12,7 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   const { user } = useAuth();
   const { activities = [], prospek = [], customers = [], sales = [], orders = [] } = useSalesData() || {};
   const currentSales = sales.find(s => s.id === salesId) || (user as any);
-  const navigate = useNavigate();
+  
 
   const now = new Date();
   const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -33,14 +32,14 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   thisMonthActivities.forEach(a => {
     if (a.tipe_aksi === 'Visit') currentMonthPoints += 10;
     else if (a.tipe_aksi === 'Call') currentMonthPoints += 5;
-    else if (a.tipe_aksi === 'WA' || a.tipe_aksi === 'Email') currentMonthPoints += 2;
+    else if (a.tipe_aksi === 'WA') currentMonthPoints += 2;
   });
   thisMonthOrders.forEach(() => {
     currentMonthPoints += 50;
   });
 
   // Calculate Sales Performance (Kg)
-  const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.volume || o.amount || 0), 0);
+  const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
   const salesTargetKg = currentSales?.target_penjualan || 50000; // default 50.000 kg
   const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
@@ -84,7 +83,7 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   const customerVolumes: Record<string, number> = {};
   thisMonthOrders.forEach(o => {
     if(o.customer_id) {
-       customerVolumes[o.customer_id] = (customerVolumes[o.customer_id] || 0) + (o.volume || o.amount || 0);
+       customerVolumes[o.customer_id] = (customerVolumes[o.customer_id] || 0) + (o.amount || 0);
     }
   });
   
@@ -103,7 +102,7 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
 
   const maxTopVol = topCustomers.length > 0 ? topCustomers[0].vol : 1;
 
-  const monthStr = now.toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
+  
   const dayRange = `1 ${now.toLocaleDateString('id-ID', { month: 'short' })} - ${now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
 
   return (

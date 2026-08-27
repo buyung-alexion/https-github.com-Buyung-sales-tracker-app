@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react';
 import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Search, MapPin, Target, MessageSquare, ShoppingCart, BarChart3, Users, Trophy, Menu, Clock } from 'lucide-react';
+import { Search, MapPin, Target, MessageSquare, ShoppingCart, BarChart3, Users, Trophy, Menu, Clock } from 'lucide-react';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import '../../brand-style.css'; // Sesuaikan lokasi import jika disatukan ke wallet-style.css
 
@@ -33,22 +32,16 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
   thisMonthActivities.forEach(a => {
     if (a.tipe_aksi === 'Visit') currentMonthPoints += 10;
     else if (a.tipe_aksi === 'Call') currentMonthPoints += 5;
-    else if (a.tipe_aksi === 'WA' || a.tipe_aksi === 'Email') currentMonthPoints += 2;
+    else if (a.tipe_aksi === 'WA') currentMonthPoints += 2;
   });
   thisMonthOrders.forEach(() => {
     currentMonthPoints += 50;
   });
 
   // Calculate Sales Performance
-  const totalSalesAmount = thisMonthOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
-  const salesTarget = currentSales?.target_penjualan || 50000000; // Default 50M if not set
-  const salesAchievedPct = Math.min(100, (totalSalesAmount / salesTarget) * 100);
-
+      
   // Calculate Activity Performance
-  const totalActivities = thisMonthActivities.length;
-  const activityTarget = currentSales?.target_aktivitas || 100; // Default 100 if not set
-  const activityAchievedPct = Math.min(100, (totalActivities / activityTarget) * 100);
-
+      
     // Calculate Chart Data for all sales
   const chartData = sales.map(s => {
     const sActs = activities.filter(a => a.id_sales === s.id && new Date(a.timestamp) >= currentMonthStart);
