@@ -179,8 +179,8 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                 border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative'
               }}
             >
-              <Bell size={22} color="#111827" strokeWidth={2.5} />
-              <span style={{ position: 'absolute', top: '8px', right: '10px', width: '8px', height: '8px', background: '#EF4444', borderRadius: '50%', border: '2px solid var(--brand-yellow)' }}></span>
+              <Bell size={22} color="#FFFFFF" strokeWidth={2.5} />
+              <span style={{ position: 'absolute', top: '8px', right: '10px', width: '8px', height: '8px', background: '#EF4444', borderRadius: '50%', border: '2px solid var(--brand-primary)' }}></span>
             </button>
 
             <button 
@@ -192,13 +192,13 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                 border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
             >
-              <Menu size={22} color="#111827" strokeWidth={2.5} />
+              <Menu size={22} color="#FFFFFF" strokeWidth={2.5} />
             </button>
           </div>
         </div>
 
-        <div className="wallet-balance-label">POIN BULAN INI</div>
-        <div className="wallet-balance-value">
+        <div className="wallet-balance-label" style={{ color: 'rgba(255,255,255,0.9)' }}>POIN BULAN INI</div>
+        <div className="wallet-balance-value" style={{ color: '#FFFFFF' }}>
           {totalActualPoints.toLocaleString('id-ID')}
           <span style={{ fontSize: '20px', color: '#111827', opacity: 0.8 }}>★</span>
         </div>
