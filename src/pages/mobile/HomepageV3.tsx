@@ -3,7 +3,7 @@ import { useSalesData } from '../../hooks/useSalesData';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, MessageSquare, BarChart3, Users, Target, Clock, Trophy, Menu, ChevronLeft, ChevronRight, Timer } from 'lucide-react';
+import { Search, MapPin, MessageSquare, BarChart3, Users, Target, Clock, Trophy, Menu, ChevronLeft, ChevronRight, Timer, ShoppingCart } from 'lucide-react';
 import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import '../../brand-style.css'; // Sesuaikan lokasi import jika disatukan ke wallet-style.css
 
@@ -48,6 +48,12 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
   const myProspek = prospek.filter(p => p.sales_owner === salesId).length;
   const myCustomers = customers.filter(c => c.sales_pic === salesId).length;
   const myOrderan = thisMonthOrders.length;
+  const uncontactedCustomerCount = customers.filter(c => c.sales_pic === salesId).filter(c => {
+    const act = activities.find(a => a.target_id === c.id);
+    return !act;
+  }).length;
+  const uncontactedProspekCount = prospek.filter(p => p.sales_owner === salesId).filter(p => p.status === 'Cold').length;
+
   const totalData = myProspek + myCustomers + myOrderan;
   
   const pieData = [
