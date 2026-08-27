@@ -221,7 +221,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
   return (
     <div className="page-content" style={{ paddingTop: 0 }}>
       {/* Header with zIndex fix to ensure interactivity - More Compact GrabFood Style */}
-      <div className="yellow-bg-top" style={{ height: '180px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 20px 20px', zIndex: 50 }}>
+      <div className="gojek-bg-top" style={{ height: '180px', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '0 20px 20px', zIndex: 50 }}>
         {/* Decorative elements with pointer-events: none */}
         <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,255,255,0.3)', filter: 'blur(45px)', pointerEvents: 'none' }}></div>
         <div style={{ position: 'absolute', top: '10px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(255,255,255,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }}></div>
@@ -229,7 +229,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 6, marginBottom: '20px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <h2 className="hero-premium-title" style={{ fontSize: '24px', margin: 0 }}>Customer</h2>
+              <h2 className="hero-premium-title" style={{ fontSize: '20px', margin: 0, color: '#fff' }}>Customer Maintenance</h2>
               <div style={{ background: '#111827', color: '#FFCC00', padding: '2px 8px', borderRadius: '8px', fontSize: '10px', fontWeight: 900 }}>{myCustomers.length} TOKO</div>
             </div>
             <div className="hero-premium-subtitle">Management & Retention</div>
@@ -304,7 +304,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     {new Date(c.created_at || Date.now()).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </div>
                   <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
-                    Rp{((c as any).target_penjualan || 5000000).toLocaleString('id-ID')}
+                    {((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg
                   </div>
                 </div>
 
@@ -319,7 +319,7 @@ export default function CustomerMaintenance({ salesId }: Props) {
                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
                       {c.nama_toko}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {c.no_wa || '-'}
                     </div>
                     <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>

@@ -145,7 +145,7 @@ export default function MobileShell() {
 
       {/* FAB is now integrated into Bottom Nav for perfect alignment */}
       {(!isEditingProfile) && (
-        <nav className="bottom-nav shadow-premium wallet-nav-dark">
+        <nav className="bottom-nav shadow-premium gojek-nav">
           <div 
             style={{ 
               left: '50%', 
@@ -153,7 +153,7 @@ export default function MobileShell() {
               zIndex: 10001,
               cursor: 'pointer'
             }}
-            className="wallet-nav-fab tap-active" 
+            className="gojek-nav-fab tap-active" 
             onClick={() => navigate('/mobile/order-history')}
           >
             <ShoppingCart size={24} strokeWidth={2.5} color="#111827" />

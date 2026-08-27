@@ -345,7 +345,7 @@ export default function ProspectingTool({ salesId }: Props) {
                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2 }}>
                       {p.nama_toko}
                     </div>
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4 }}>
+                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '2px', lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {p.no_wa || '-'}
                     </div>
                     <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
