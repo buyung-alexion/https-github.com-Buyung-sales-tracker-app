@@ -494,7 +494,7 @@ export default function Homepage({ salesId, setSidebarOpen }: Props) {
                           className="tap-active"
                           onClick={() => handleProcessNego(nego)}
                           style={{ 
-                            background: 'var(--brand-yellow)', color: '#111827', border: 'none',
+                            background: 'var(--gojek-green)', color: '#111827', border: 'none',
                             padding: '8px 16px', borderRadius: '12px', fontSize: '12px', fontWeight: 950,
                             boxShadow: '0 4px 12px rgba(255, 204, 0, 0.3)'
                           }}
