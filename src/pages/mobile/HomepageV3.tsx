@@ -84,6 +84,26 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
     });
   const maxTopVol = topCustomers.length > 0 ? topCustomers[0].vol : 1;
   const dayRange = `1 ${now.toLocaleDateString('id-ID', { month: 'short' })} - ${now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+
+  // Data for Sales Activity Chart (7 Days)
+  const last7Days = Array.from({length: 7}).map((_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    return d;
+  });
+
+  const activityData = last7Days.map(date => {
+    const dayStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+    const dayActs = thisMonthActivities.filter(a => new Date(a.timestamp).toDateString() === date.toDateString());
+    const dayOrders = thisMonthOrders.filter(o => new Date(o.created_at).toDateString() === date.toDateString());
+    return {
+      name: dayStr,
+      Order: dayOrders.length,
+      Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
+      Closing: dayOrders.length
+    };
+  });
+
 return (
     <div className="brand-dashboard" style={{ background: '#F8FAFC', minHeight: '100vh', paddingBottom: '100px' }}>
       
@@ -281,25 +301,6 @@ return (
                {pieData.map(item => {
                  const pct = totalData > 0 ? Math.round((item.value / totalData) * 100) : 0;
                
-    // Data for Sales Activity Chart (7 Days)
-    const last7Days = Array.from({length: 7}).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - (6 - i));
-      return d;
-    });
-  
-    const activityData = last7Days.map(date => {
-      const dayStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
-      const dayActs = thisMonthActivities.filter(a => new Date(a.timestamp).toDateString() === date.toDateString());
-      const dayOrders = thisMonthOrders.filter(o => new Date(o.created_at).toDateString() === date.toDateString());
-      return {
-        name: dayStr,
-        Order: dayOrders.length,
-        Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
-        Closing: dayOrders.length
-      };
-    });
-
   return (
                    <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
