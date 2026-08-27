@@ -361,6 +361,8 @@ export default function CustomerMaintenance({ salesId }: Props) {
                 <div style={{ 
                   maxHeight: isExpanded ? '300px' : '0', 
                   opacity: isExpanded ? 1 : 0,
+                  overflow: 'hidden',
+                  pointerEvents: isExpanded ? 'auto' : 'none',
                   marginTop: isExpanded ? '16px' : '0',
                   transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
                   paddingTop: isExpanded ? '16px' : '0',
