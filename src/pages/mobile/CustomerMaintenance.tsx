@@ -306,12 +306,12 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   </div>
                   <div style={{ fontSize: '14px', color: '#1C1C1C', fontWeight: 800 }}>
                     <span 
-                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }} 
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 0); }} 
                       onTouchStart={(e) => { e.stopPropagation(); }}
-                      onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 1000); }}
+                      onTouchEnd={(e) => { e.preventDefault(); e.stopPropagation(); setTargetModal(c); setTargetVal((c as any).target_volume || 0); }}
                       style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', padding: '8px', margin: '-8px', background: 'rgba(0,170,19,0.05)', borderRadius: '8px' }}
                     >
-                      {((c as any).target_volume || 1000).toLocaleString('id-ID')} Kg <Edit3 size={14} style={{marginLeft: '6px', color: '#00AA13'}} />
+                      {((c as any).target_volume || 0).toLocaleString('id-ID')} Kg <Edit3 size={14} style={{marginLeft: '6px', color: '#00AA13'}} />
                     </span>
                   </div>
                 </div>
@@ -323,14 +323,12 @@ export default function CustomerMaintenance({ salesId }: Props) {
                   </div>
                   
                   {/* Content */}
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                     <div style={{ fontSize: '16px', fontWeight: 800, color: '#1C1C1C', marginBottom: '4px', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 'calc(100vw - 130px)' }}>
                       {c.nama_toko}
                     </div>
                     
-                    <div style={{ fontSize: '13px', color: '#727272', fontWeight: 500, marginBottom: '8px', lineHeight: 1.4 }}>
-                      {c.kategori || 'Uncategorized'}
-                    </div>
+                    
                     
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
