@@ -10,7 +10,7 @@ interface Props { salesId: string; setSidebarOpen?: (open: boolean) => void; }
 
 export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   const { user } = useAuth();
-  const { activities = [], prospek = [], customers = [], sales = [], orders = [] } = useSalesData() || {};
+  const { activities = [], prospek = [], customers = [], sales = [], orders = [], systemTargets = null } = useSalesData() || {};
   const currentSales = sales.find(s => s.id === salesId) || (user as any);
   
 
@@ -30,13 +30,13 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   // Calculate Points
   let currentMonthPoints = 0;
   thisMonthActivities.forEach(a => {
-    if (a.tipe_aksi === 'Visit') currentMonthPoints += 10;
-    else if (a.tipe_aksi === 'Call') currentMonthPoints += 5;
-    else if (a.tipe_aksi === 'WA') currentMonthPoints += 2;
-  });
+      if (a.tipe_aksi === 'Visit') currentMonthPoints += (systemTargets?.b_visit || 10);
+      else if (a.tipe_aksi === 'Call') currentMonthPoints += (systemTargets?.b_chat || 5);
+      else if (a.tipe_aksi === 'WA') currentMonthPoints += (systemTargets?.b_chat || 2);
+    });
   thisMonthOrders.forEach(() => {
-    currentMonthPoints += 50;
-  });
+      currentMonthPoints += (systemTargets?.b_order || 50);
+    });
 
   // Calculate Sales Performance (Kg)
   const totalSalesKg = thisMonthOrders.reduce((sum, o) => sum + (o.amount || 0), 0);
@@ -45,7 +45,7 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
   const salesAchievedPct = Math.min(100, (totalSalesKg / salesTargetKg) * 100);
 
   // Target Poin
-  const pointsTarget = currentSales?.target_kunjungan || 2000;
+  const pointsTarget = systemTargets?.ind_poin || currentSales?.target_kunjungan || 2000;
   const pointsAchievedPct = Math.min(100, (currentMonthPoints / pointsTarget) * 100);
 
   // Data for Sales Activity Chart (Gambar 2)
