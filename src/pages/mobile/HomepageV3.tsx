@@ -231,6 +231,29 @@ return (
           </div>
         </div>
 
+        
+        {/* 1.5 Grafik Aktivitas Sales (Order, Visit, Closing) */}
+        <div style={{ background: '#fff', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #E8E8E8', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
+             <div style={{ fontWeight: 800, color: '#1C1C1C', fontSize: '14px' }}>Aktivitas Sales (7 Hari)</div>
+             <Clock size={16} color="#727272" />
+          </div>
+          <div style={{ width: '100%', height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={activityData} margin={{ top: 10, right: 0, left: -25, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E8E8E8" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#727272' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#727272' }} />
+                <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '10px', paddingTop: '10px' }} />
+                <Bar dataKey="Visit" fill="#A7F3D0" barSize={20} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Order" fill="#FCA5A5" barSize={20} radius={[4, 4, 0, 0]} />
+                <Line type="monotone" dataKey="Closing" stroke="#3B82F6" strokeWidth={2} dot={{ r: 4, fill: '#3B82F6', strokeWidth: 2, stroke: '#fff' }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         {/* 2. Performance Overview */}
         <div style={{ background: '#fff', borderRadius: '16px', padding: '16px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', border: '1px solid #E8E8E8' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px', marginBottom: '16px' }}>
@@ -257,7 +280,27 @@ return (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                {pieData.map(item => {
                  const pct = totalData > 0 ? Math.round((item.value / totalData) * 100) : 0;
-                 return (
+               
+    // Data for Sales Activity Chart (7 Days)
+    const last7Days = Array.from({length: 7}).map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d;
+    });
+  
+    const activityData = last7Days.map(date => {
+      const dayStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+      const dayActs = thisMonthActivities.filter(a => new Date(a.timestamp).toDateString() === date.toDateString());
+      const dayOrders = thisMonthOrders.filter(o => new Date(o.created_at).toDateString() === date.toDateString());
+      return {
+        name: dayStr,
+        Order: dayOrders.length,
+        Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
+        Closing: dayOrders.length
+      };
+    });
+
+  return (
                    <div key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                        <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: item.color }}></div>
