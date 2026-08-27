@@ -169,11 +169,11 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
       setSaveSuccess(true);
       await refresh();
-      setTimeout(() => {
-        setEditModal(null);
-        setSaveSuccess(false);
-        setEditForm({ ...c, id: '', nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
-      }, 1500);
+      
+      setEditModal(null);
+      setSaveSuccess(false);
+      setEditForm({ ...c, id: '', nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
+
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
     } finally {
@@ -207,11 +207,11 @@ export default function CustomerMaintenance({ salesId }: Props) {
 
       setSaveSuccess(true);
       await refresh();
-      setTimeout(() => {
-        setAddModal(false);
-        setSaveSuccess(false);
-        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
-      }, 1500);
+      
+      setAddModal(false);
+      setSaveSuccess(false);
+      setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
+
     } catch (err) {
       setSaveError('Terjadi kesalahan sistem.');
     } finally {

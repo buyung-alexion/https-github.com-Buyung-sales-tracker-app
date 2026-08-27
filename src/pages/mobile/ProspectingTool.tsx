@@ -127,11 +127,11 @@ export default function ProspectingTool({ salesId }: Props) {
       }
       setSaveSuccess(true);
       await refresh();
-      setTimeout(() => {
-        setAddModal(false);
-        setSaveSuccess(false);
-        setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: 'SMD', status: 'Cold', link_map: '', kategori: 'Retail', rating: 0, foto_profil: '', channel: 'Canvasing' });
-      }, 1500);
+      
+      setAddModal(false);
+      setSaveSuccess(false);
+      setAddForm({ nama_toko: '', nama_pic: '', no_wa: '', area: '', status: '', channel: '', link_map: '', kategori: '', rating: 0, foto_profil: '' });
+
     } catch (err) {
       setSaveError('Kesalahan sistem.');
     } finally {
