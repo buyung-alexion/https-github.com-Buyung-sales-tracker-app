@@ -51,7 +51,7 @@ export default function OrderHistory() {
     
     const amount = parseFloat(orderAmount.replace(/[^0-9]/g, ''));
     if (isNaN(amount) || amount <= 0) {
-      alert('Nominal tidak valid.');
+      alert('Quantity tidak valid.');
       return;
     }
 
@@ -267,7 +267,7 @@ export default function OrderHistory() {
                     </div>
 
                     <div style={{ marginBottom: '20px' }}>
-                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Nominal Pesanan (Rp)</label>
+                      <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#475569', marginBottom: '8px' }}>Quantity order (Kg)</label>
                       <input 
                         type="text" 
                         inputMode="numeric"
