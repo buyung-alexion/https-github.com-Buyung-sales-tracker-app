@@ -158,7 +158,6 @@ export default function CustomerMaintenance({ salesId }: Props) {
         kategori: editForm.kategori,
         rating: editForm.rating,
         foto_profil: editForm.foto_profil,
-        target_volume: (editForm as any).target_volume,
       });
 
       if (error) {
