@@ -153,7 +153,7 @@ const handleSaveEdit = async () => {
         kategori: editForm.kategori,
         rating: editForm.rating,
         foto_profil: editForm.foto_profil,
-        channel: addForm.channel,
+        channel: editForm.channel,
       });
 
       if (error) {
