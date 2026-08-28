@@ -64,7 +64,7 @@ export default function DashboardTarget({ salesId, setSidebarOpen }: Props) {
       name: dayStr,
       Order: dayOrders.length,
       Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
-      Closing: dayOrders.length // Simplification
+      Closing: customers.filter(c => c.sales_pic === salesId && new Date(c.tanggal_join || c.created_at || Date.now()).toDateString() === date.toDateString()).length
     };
   });
 

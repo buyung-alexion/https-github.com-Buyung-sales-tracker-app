@@ -96,11 +96,12 @@ export default function HomepageV3({ salesId, setSidebarOpen }: Props) {
     const dayStr = date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
     const dayActs = thisMonthActivities.filter(a => new Date(a.timestamp).toDateString() === date.toDateString());
     const dayOrders = thisMonthOrders.filter(o => new Date(o.created_at).toDateString() === date.toDateString());
+    const dayCustomers = customers.filter(c => c.sales_pic === salesId && new Date(c.tanggal_join || c.created_at || Date.now()).toDateString() === date.toDateString());
     return {
       name: dayStr,
       Order: dayOrders.length,
       Visit: dayActs.filter(a => a.tipe_aksi === 'Visit').length,
-      Closing: dayOrders.length
+      Closing: dayCustomers.length
     };
   });
 
